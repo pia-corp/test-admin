@@ -1,3 +1,6 @@
 [submodule "test-admin_submoduleA"]
 	path = test-admin_submoduleA
 	url = https://github.com/pia-corp/test-admin_submoduleA.git
+[submodule "test-admin_submoduleB"]
+	path = test-admin_submoduleB
+	url = https://github.com/pia-corp/test-admin_submoduleB.git
