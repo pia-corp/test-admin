@@ -35,23 +35,23 @@ jobs:
         run: |
           git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          cache: npm
-          node-version: "23.2.0"
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     cache: npm
+      #     node-version: "23.2.0"
 
-      - uses: actions/cache@v4
-        id: cache
-        with:
-          path: node_modules
-          key: ${{ runner.arch }}-${{ runner.os }}-node-${{ steps.setup_node.outputs.node-version }}-npm-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.arch }}-${{ runner.os }}-node-${{ steps.setup_node.outputs.node-version }}-npm-
+      # - uses: actions/cache@v4
+      #   id: cache
+      #   with:
+      #     path: node_modules
+      #     key: ${{ runner.arch }}-${{ runner.os }}-node-${{ steps.setup_node.outputs.node-version }}-npm-${{ hashFiles('**/package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.arch }}-${{ runner.os }}-node-${{ steps.setup_node.outputs.node-version }}-npm-
 
-      - name: Install dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: npm ci --no-audit --progress=false --silent
+      # - name: Install dependencies
+      #   if: steps.cache.outputs.cache-hit != 'true'
+      #   run: npm ci --no-audit --progress=false --silent
 
       # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
       - name: Copy Files
