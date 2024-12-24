@@ -31,6 +31,7 @@ jobs:
           ref: main
           fetch-depth: 0
           submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create new branch
         run: |
