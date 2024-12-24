@@ -28,14 +28,11 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v4.2.2
         with:
-          ref: main
-          fetch-depth: 0
           submodules: recursive
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create new branch
-        run: |
-          git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
+      # - name: Create new branch
+      #   run: |
+      #     git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
 
       # - name: Setup Node.js
       #   uses: actions/setup-node@v4
@@ -58,8 +55,9 @@ jobs:
       # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
       - name: Copy Files
         run: |
+          -p out
           mkdir out
-          cp -R test-admin_submoduleA/* out/
+          cp -R test-admin_submoduleA/**/* out/
 
       # - name: include sitemap
       #   uses: ./.github/workflow/_create_sitemap
