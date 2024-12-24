@@ -31,6 +31,10 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Update submodules
+        id: update
+        run: git submodule update --remote --recursive
+
       # - name: Create new branch
       #   run: |
       #     git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
@@ -56,8 +60,7 @@ jobs:
       # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
       - name: Copy Files
         run: |
-          -p out
-          mkdir out
+          mkdir -p out
           cp -R test-admin_submoduleA/**/* out/
 
       # 結果確認のため、outフォルダの内容を表示
