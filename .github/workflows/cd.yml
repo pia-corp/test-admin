@@ -7,11 +7,11 @@ on:
     types:
       - closed
 
-env:
-  AWS_REGION: ${{ vars.AWS_REGION }}
-  SYSTEM: ${{ vars.SYSTEM }}
-  DEV_AWS_ACCOUNT_ID: ${{ secrets.DEV_AWS_ACCOUNT_ID }}
-  PROD_AWS_ACCOUNT_ID: ${{ secrets.PROD_AWS_ACCOUNT_ID }}
+# env:
+#   AWS_REGION: ${{ vars.AWS_REGION }}
+#   SYSTEM: ${{ vars.SYSTEM }}
+#   DEV_AWS_ACCOUNT_ID: ${{ secrets.DEV_AWS_ACCOUNT_ID }}
+#   PROD_AWS_ACCOUNT_ID: ${{ secrets.PROD_AWS_ACCOUNT_ID }}
 
 permissions:
   contents: read
@@ -26,7 +26,7 @@ jobs:
 
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -58,6 +58,12 @@ jobs:
           -p out
           mkdir out
           cp -R test-admin_submoduleA/**/* out/
+
+      # 結果確認のため、outフォルダの内容を表示
+      - name: Display out folder content
+        run: |
+          echo "Contents of out folder:"
+          ls -la out
 
       # - name: include sitemap
       #   uses: ./.github/workflow/_create_sitemap
