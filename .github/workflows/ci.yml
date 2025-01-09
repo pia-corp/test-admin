@@ -1,0 +1,328 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+    # types: [opened, edited, reopened, synchronize]
+
+jobs:
+  Clone:
+    runs-on: ubuntu-latest
+    run: |
+      git clone --recurse-submodules https://github.com/pia-corp/test-admin_submoduleB
+
+    # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
+    - name: Copy Files
+      run: |
+        mkdir -p out/test-admin_submoduleB/
+        cp -R test-admin_submoduleB/**/* out/test-admin_submoduleB/
+
+
+#   CheckChangesPub:
+#     runs-on: ubuntu-latest
+#     outputs:
+#       public_changed: ${{ env.public_changed }}
+#     steps:
+#       - uses: actions/checkout@v4.1.6
+#         name: checkout "${{ github.base_ref }}"
+#         with:
+#           fetch-depth: 1
+#           ref: ${{ github.base_ref }}
+
+#       - uses: actions/checkout@v4.1.6
+#         name: checkout "${{ github.head_ref }}"
+#         with:
+#           fetch-depth: 1
+#           ref: ${{ github.head_ref}}
+
+#       - name: check_diff
+#         shell: bash
+#         run: |
+#           files=$(git diff --name-only origin/${{ github.base_ref }} origin/${{ github.head_ref }} -- public/)
+#           if [ -n "$files" ]; then
+#             echo "public_changed=true" >> $GITHUB_ENV
+#           else
+#             echo "public_changed=false" >> $GITHUB_ENV
+#           fi
+
+#   MarkupLinter:
+#     name: Markup Linter
+#     needs: CheckChangesPub
+#     if: github.event.sender.type != 'Bot' && contains(github.head_ref, 'develop') && needs.CheckChangesPub.outputs.public_changed == 'true'
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 5
+#     permissions:
+#       contents: read
+
+#     steps:
+#       - name: Checkout the repository
+#         uses: actions/checkout@v4.1.6
+#         with:
+#           ref: ${{ github.head_ref || github.ref_name }}
+
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v4.0.2
+#         with:
+#           node-version: "23.2.0"
+#           cache: npm
+
+#       - name: Restore npm dependencies
+#         id: cache-npm
+#         uses: actions/cache@v4.0.2
+#         env:
+#           cache-name: cache-node-modules
+#         with:
+#           path: ~/.npm
+#           key: ${{ runner.os }}-build-${{ env.cache-name }}-v23.2.0-${{ hashFiles('**/package-lock.json') }}
+
+#       - name: Install npm dependencies (if cache miss)
+#         run: npm ci --no-audit --progress=false --silent
+
+#       - name: Lint and rewrite markup
+#         run: npm run linter
+
+#   MarkupLinterNoNeed:
+#     needs: CheckChangesPub
+#     name: Markup Linter(no need)
+#     if: github.event.sender.type == 'Bot' || contains(github.head_ref, 'release') || needs.CheckChangesPub.outputs.public_changed == 'false'
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 1
+#     permissions:
+#       contents: read
+
+#     steps:
+#       - name: Skip Action
+#         run: echo "linter skip"
+
+#   CheckImageSize:
+#     name: Check Image Size
+#     needs: CheckChangesPub
+#     if: github.event.sender.type != 'Bot' && contains(github.head_ref, 'develop') && needs.CheckChangesPub.outputs.public_changed == 'true'
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4.1.6
+
+#       - name: Find large images
+#         id: file_size_larger_check
+#         run: |
+#           max_size=${{ vars.MAX_FILE_SIZE }}
+#           exists_error=0
+#           error_list=""
+
+#           for img in $(find ./public -type f \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.gif" -o -name "*.webp" \)); do
+#             if [ -f "$img" ]; then
+#               size=$(stat -c%s "$img" 2>/dev/null)
+#               if [ $? -eq 0 ] && [ $size -gt $max_size ]; then
+#                 exists_error=1
+#                 error_list="${error_list}\n❌ $img (${size} bytes)"
+#               fi
+#             fi
+#           done
+
+#           if [ "$exists_error" = 1 ]; then
+#             echo "exists_error=$exists_error" >> $GITHUB_ENV
+#             echo "error_message=画像のファイルサイズが大きすぎます:${error_list}" >> $GITHUB_ENV
+#           fi
+
+#       - name: Comment on PR with warnings
+#         if: ${{ env.exists_error == 1 }}
+#         uses: actions/github-script@v7.0.1
+#         with:
+#           github-token: ${{ secrets.GITHUB_TOKEN }}
+#           script: |
+#             const error_message = `${{ env.error_message }}`;
+#             let param = {
+#               issue_number: context.issue.number,
+#               owner: context.repo.owner,
+#               repo: context.repo.repo,
+#               body: error_message
+#             };
+#             await github.rest.issues.createComment(param);
+
+#       - name: Fail workflow if there are errors
+#         if: ${{ env.exists_error == 1 }}
+#         run: exit 1
+
+#   CheckImageSizeNoNeed:
+#     name: Check Image Size(no need)
+#     needs: CheckChangesPub
+#     if: github.event.sender.type == 'Bot' || contains(github.head_ref, 'release') || needs.CheckChangesPub.outputs.public_changed == 'false'
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 1
+#     permissions:
+#       contents: read
+
+#     steps:
+#       - name: Skip Action
+#         run: echo "check image skip"
+
+#   Lighthouse:
+#     name: Lighthouse-CI
+#     needs: CheckChangesPub
+#     if: github.event.sender.type != 'Bot' && contains(github.head_ref, 'develop') && needs.CheckChangesPub.outputs.public_changed == 'true'
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 30
+#     permissions:
+#       contents: read
+#       issues: write
+#       pull-requests: write
+
+#     steps:
+#       - name: Check out repository
+#         uses: actions/checkout@v4.1.6
+#         with:
+#           ref: ${{ github.head_ref || github.ref_name }}
+
+#       - name: Run Lighthouse against a static dist dir
+#         id: lighthouse_audit
+#         uses: treosh/lighthouse-ci-action@v11
+#         with:
+#           configPath: './.github/config/.lighthouserc.json'
+#           budgetPath: ./.github/config/budget.json
+#           temporaryPublicStorage: true
+#         continue-on-error: true
+
+#       - name: Comment on PR with Lighthouse results
+#         id: format_lighthouse_score
+#         uses: actions/github-script@v7.0.1
+#         with:
+#           github-token: ${{ secrets.GITHUB_TOKEN }}
+#           script: |
+#             const urls = ${{ steps.lighthouse_audit.outputs.links }};
+#             const assertions =${{ steps.lighthouse_audit.outputs.assertionResults }};
+#             const manifest = ${{ steps.lighthouse_audit.outputs.manifest }};
+#             const formatResult = (res) => Math.round(res * 100);
+#             const fileName = (url) => url.replace(/^http:\/\/localhost:\d+\//, "");
+#             const score = (res) => res >= 90 ? '🟢' : res >= 50 ? '🟠' : '🔴';
+#             let existsError = 0;
+#             let viewAssertion = "";
+#             let scoreArray = {};
+
+#             const getAssertionScore = (value) => {
+#               let returnArray = {};
+#               if (value.auditId === "interactive") {
+#                 if (!value.passed) {
+#                   const tti = Math.round(value.actual) / 1000;
+#                   returnArray.tti_score = `❌${tti}s`;
+#                 }
+#               }
+#               if (value.auditId === "first-meaningful-paint") {
+#                 if (!value.passed) {
+#                   const fmp = Math.round(value.actual) / 1000;
+#                   returnArray.fmp_score = `❌${fmp}s`;
+#                 }
+#               }
+#               if (value.auditId === "resource-summary") {
+#                 if (!value.passed) {
+#                   if (value.auditProperty === "image.size") {
+#                     const img = Math.round(value.actual / 1024);
+#                     returnArray.img_score = `❌${img}KB`;
+#                   }
+#                 }
+#                 if (!value.passed) {
+#                   if (value.auditProperty === "script.size") {
+#                     const js = Math.round(value.actual / 1024);
+#                     returnArray.js_score = `❌${js}KB`;
+#                   }
+#                 }
+#                 if (!value.passed) {
+#                   if (value.auditProperty === "total.size") {
+#                     const total = Math.round(value.actual / 1024);
+#                     returnArray.total_score = `❌${total}KB`;
+#                   }
+#                 }
+#               }
+#               return returnArray;
+#             };
+
+#             const assertionBody = (value) => {
+#               const scores = getAssertionScore(value);
+#               const filename = fileName(value.url);
+#               if (typeof scoreArray[filename] === "undefined") {
+#                 scoreArray[filename] = {
+#                   "tti_score": "✅",
+#                   "fmp_score": "✅",
+#                   "img_score": "✅",
+#                   "js_score": "✅",
+#                   "total_score": "✅",
+#                 };
+#               }
+#               const object = {
+#                 url: filename
+#               };
+
+#               scoreArray[filename] = { ...scoreArray[filename], ...object };
+#               scoreArray[filename] = { ...scoreArray[filename], ...scores };
+#             };
+#             Object.values(assertions).forEach(assertionBody);
+
+#             const assertionView = (value) => {
+#               if (typeof value.url != "undefined") {
+#                 viewAssertion += `| ${value.url} | ${value.tti_score} | ${value.fmp_score} | ${value.img_score} | ${value.js_score} | ${value.total_score} |\n`;
+#               }
+#             };
+#             Object.values(scoreArray).forEach(assertionView);
+
+#             let viewText = "";
+#             const tableBody = (urlArray) => {
+#               if (urlArray.isRepresentativeRun) {
+#                 const accessibility = formatResult(urlArray.summary.accessibility);
+#                 const practices = formatResult(urlArray.summary["best-practices"]);
+#                 const performance = formatResult(urlArray.summary.performance);
+#                 const seo = formatResult(urlArray.summary.seo);
+#                 viewText += `| [${fileName(urlArray.url)}](${urls[urlArray.url]}) | ${score(performance)} ${performance} | ${score(accessibility)} ${accessibility} | ${score(practices)} ${practices} | ${score(seo)} ${seo} |\n`;
+#                 if ( 50 < score(performance) || 50 < score(performance) || 50 < score(accessibility) || 50 < score(practices) ) {
+#                   existsError = 1;
+#                 }
+#               }
+#             };
+#             Object.values(manifest).forEach(tableBody);
+
+#             const commentBody = `
+#             ⚡️ **Lighthouse Mobile Report**:
+
+#             | File name | Performance | Accessibility | Best practices | SEO |
+#             | --- | --- | --- | --- | --- |
+#             ${viewText}
+
+#             | File name | TTI | FMP | IMG | JS | TOTAL |
+#             | --- | --- | --- | --- | --- | --- |
+#             ${viewAssertion}
+
+#             TTI: ページが完全にインタラクティブになるまでにかかる時間。
+#             FMP: 主要コンテンツが表示されるまでの時間。
+#             IMG: ページで読み込まれる画像のファイル容量。
+#             JS: ページで読み込まれるjavascriptのファイル容量。
+#             TOTAL: ページで読み込まれるファイル容量の合計。
+
+#             ※表示されている結果は複数回の結果から得られた中央値です。
+#             ※パフォーマンス結果はブレがありますリンク先の診断結果を見て判断してください。
+#             `;
+
+#             core.setOutput("exists_error", existsError);
+#             await github.rest.issues.createComment({
+#               issue_number: context.payload.pull_request.number,
+#               owner: context.repo.owner,
+#               repo: context.repo.repo,
+#               body: commentBody
+#             });
+
+#       - name: Fail workflow if there are errors
+#         if: ${{ steps.format_lighthouse_score.outputs.exists_error == '1' }}
+#         run: exit 1
+
+#   LighthouseNoNeed:
+#     name: Lighthouse-CI(no need)
+#     needs: CheckChangesPub
+#     if: github.event.sender.type == 'Bot' || contains(github.head_ref, 'release') || needs.CheckChangesPub.outputs.public_changed == 'false'
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 1
+#     permissions:
+#       contents: read
+
+#     steps:
+#       - name: Skip Action
+#         run: echo "Lighthouse skip"

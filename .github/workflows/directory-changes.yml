@@ -1,0 +1,103 @@
+name: Copy Assets from test
+on:
+  # repository_dispatchでサーバ側のymlで指定したevent-type `directory-changes`をフックする
+  repository_dispatch:
+    types: [directory-changes]
+
+jobs:
+  directory-changes:
+    if: github.event.action != 'closed'
+    name: Copy Assets
+    runs-on: ubuntu-latest
+    steps:
+      # コピー先のリポジトリをclone
+      - name: Clone
+        uses: actions/checkout@v4.1.6
+        with:
+          ref: ${{ github.head_ref }}
+
+      # GitHub Actionsのコンテキストを表示するためにechoを使用
+      - name: Display event action
+        run: |
+          echo "GitHub event action: ${{ github.event.action }}"
+
+      # コピー元リポジトリをclone
+      - name: Clone <サーバ側リポジトリ名>
+        uses: actions/checkout@v4.1.6
+        with:
+          repository: pia-corp/${{ vars.SYNC_REPOSITORIES }}
+          path: template
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      # デバッグ: コピー先リポジトリの内容を表示
+      - name: List Server Repo Files
+        run: ls -R ${{ vars.SYNC_REPOSITORIES }}
+
+      - name: Copy .github Files
+        run: |
+          rsync -av \
+            --exclude='workflows/sync_repositories.yml' \
+            --exclude='workflows/update-pat.yml' \
+            ${{ vars.SYNC_REPOSITORIES }}/.github/ ./.github
+
+      - name: Copy components Files
+        run: |
+          mkdir -p components
+          cp -r ${{ vars.SYNC_REPOSITORIES }}/components/* components
+
+      - name: Copy interfaces Files
+        run: |
+          mkdir -p interfaces
+          cp -r ${{ vars.SYNC_REPOSITORIES }}/interfaces/* interfaces
+
+      - name: Copy libs Files
+        run: |
+          mkdir -p libs
+          cp -r ${{ vars.SYNC_REPOSITORIES }}/libs/* libs
+
+      - name: Copy types Files
+        run: |
+          mkdir -p types
+          cp -r ${{ vars.SYNC_REPOSITORIES }}/types/* types
+
+      - name: Copy styles Files
+        run: |
+          mkdir -p styles
+          cp -r ${{ vars.SYNC_REPOSITORIES }}/styles/* styles
+
+      - name: Copy templates Files
+        run: |
+          mkdir -p templates
+          cp -r ${{ vars.SYNC_REPOSITORIES }}/templates/* templates
+
+      - name: Copy pages Files
+        run: |
+          mkdir -p pages
+          cp -r ${{ vars.SYNC_REPOSITORIES }}/pages/* pages
+
+      - name: Copy package
+        run: |
+          cp -r ${{ vars.SYNC_REPOSITORIES }}/*.json .
+          cp -r ${{ vars.SYNC_REPOSITORIES }}/*.conf .
+          cp -r ${{ vars.SYNC_REPOSITORIES }}/*.mjs .
+          cp -r ${{ vars.SYNC_REPOSITORIES }}/.* .
+
+      # コピーが済んだためcloneしたサーバ側リポジトリを削除
+      - name: Clean .github
+        run: rm -rf ${{ vars.SYNC_REPOSITORIES }}
+
+      # Git 状態確認
+      - name: Check Git Status
+        run: git status
+
+      # プルリク作成
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6.0.5
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          commit-message: 'Update Assets'
+          branch: develop/asset-files-changes
+          base: main
+          # 同一ブランチ名にならないよう後ろにタイムスタンプを付加
+          branch-suffix: timestamp
+          delete-branch: false

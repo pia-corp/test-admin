@@ -1,73 +1,73 @@
-name: CD
+# name: CD
 
-on:
-  pull_request:
-    branches:
-      - main
-    types:
-      - closed
+# on:
+#   pull_request:
+#     branches:
+#       - main
+#     types:
+#       - closed
 
-# env:
-#   AWS_REGION: ${{ vars.AWS_REGION }}
-#   SYSTEM: ${{ vars.SYSTEM }}
-#   DEV_AWS_ACCOUNT_ID: ${{ secrets.DEV_AWS_ACCOUNT_ID }}
-#   PROD_AWS_ACCOUNT_ID: ${{ secrets.PROD_AWS_ACCOUNT_ID }}
+# # env:
+# #   AWS_REGION: ${{ vars.AWS_REGION }}
+# #   SYSTEM: ${{ vars.SYSTEM }}
+# #   DEV_AWS_ACCOUNT_ID: ${{ secrets.DEV_AWS_ACCOUNT_ID }}
+# #   PROD_AWS_ACCOUNT_ID: ${{ secrets.PROD_AWS_ACCOUNT_ID }}
 
-# permissions:
-#   contents: read
-#   id-token: write
-#   pull-requests: write
-#   actions: read
+# # permissions:
+# #   contents: read
+# #   id-token: write
+# #   pull-requests: write
+# #   actions: read
 
-jobs:
-  Build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+# jobs:
+#   Build:
+#     runs-on: ubuntu-latest
+#     timeout-minutes: 5
 
-    steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          token: ${{ secrets.GITHUB_TOKEN }}
+#     steps:
+#       - name: Checkout the repository
+#         uses: actions/checkout@v4
+#         with:
+#           submodules: recursive
+#           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update submodules
-        id: update
-        run: git submodule update --remote --recursive
+#       - name: Update submodules
+#         id: update
+#         run: git submodule update --remote --recursive
 
-      # - name: Create new branch
-      #   run: |
-      #     git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
+#       # - name: Create new branch
+#       #   run: |
+#       #     git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
 
-      # - name: Setup Node.js
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     cache: npm
-      #     node-version: "23.2.0"
+#       # - name: Setup Node.js
+#       #   uses: actions/setup-node@v4
+#       #   with:
+#       #     cache: npm
+#       #     node-version: "23.2.0"
 
-      # - uses: actions/cache@v4
-      #   id: cache
-      #   with:
-      #     path: node_modules
-      #     key: ${{ runner.arch }}-${{ runner.os }}-node-${{ steps.setup_node.outputs.node-version }}-npm-${{ hashFiles('**/package-lock.json') }}
-      #     restore-keys: |
-      #       ${{ runner.arch }}-${{ runner.os }}-node-${{ steps.setup_node.outputs.node-version }}-npm-
+#       # - uses: actions/cache@v4
+#       #   id: cache
+#       #   with:
+#       #     path: node_modules
+#       #     key: ${{ runner.arch }}-${{ runner.os }}-node-${{ steps.setup_node.outputs.node-version }}-npm-${{ hashFiles('**/package-lock.json') }}
+#       #     restore-keys: |
+#       #       ${{ runner.arch }}-${{ runner.os }}-node-${{ steps.setup_node.outputs.node-version }}-npm-
 
-      # - name: Install dependencies
-      #   if: steps.cache.outputs.cache-hit != 'true'
-      #   run: npm ci --no-audit --progress=false --silent
+#       # - name: Install dependencies
+#       #   if: steps.cache.outputs.cache-hit != 'true'
+#       #   run: npm ci --no-audit --progress=false --silent
 
-      # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
-      - name: Copy Files
-        run: |
-          mkdir -p out
-          cp -R test-admin_submoduleA/**/* out/
+#       # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
+#       - name: Copy Files
+#         run: |
+#           mkdir -p out
+#           cp -R test-admin_submoduleA/**/* out/
 
-      # 結果確認のため、outフォルダの内容を表示
-      - name: Display out folder content
-        run: |
-          echo "Contents of out folder:"
-          ls -la out
+#       # 結果確認のため、outフォルダの内容を表示
+#       - name: Display out folder content
+#         run: |
+#           echo "Contents of out folder:"
+#           ls -la out
 
-      # - name: include sitemap
-      #   uses: ./.github/workflow/_create_sitemap
+#       # - name: include sitemap
+#       #   uses: ./.github/workflow/_create_sitemap
