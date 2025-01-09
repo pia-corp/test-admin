@@ -24,7 +24,7 @@ jobs:
       - name: Copy Files
         run: |
           mkdir -p out/test-admin_submoduleB/
-          cp -R test-admin_submoduleB/**/* out/test-admin_submoduleB/
+          cp -R test-admin_submoduleB/* out/test-admin_submoduleB/
 
 
 #   CheckChangesPub:
