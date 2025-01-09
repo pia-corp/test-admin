@@ -12,11 +12,12 @@ jobs:
     run: |
       git clone --recurse-submodules https://github.com/pia-corp/test-admin_submoduleB
 
-    # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
-    - name: Copy Files
-      run: |
-        mkdir -p out/test-admin_submoduleB/
-        cp -R test-admin_submoduleB/**/* out/test-admin_submoduleB/
+    steps:
+      # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
+      - name: Copy Files
+        run: |
+          mkdir -p out/test-admin_submoduleB/
+          cp -R test-admin_submoduleB/**/* out/test-admin_submoduleB/
 
 
 #   CheckChangesPub:
