@@ -1,0 +1,123 @@
+name: Reservation
+
+on:
+  workflow_dispatch:
+    inputs:
+      month:
+        type: choice
+        required: true
+        description: 月
+        options:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+      day:
+        type: choice
+        required: true
+        description: 日
+        options:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 17
+          - 18
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+          - 24
+          - 25
+          - 26
+          - 27
+          - 28
+          - 29
+          - 30
+          - 31
+      hour:
+        type: choice
+        required: true
+        description: 時間
+        options:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 17
+          - 18
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+          - 24
+      minutes:
+        type: choice
+        required: true
+        description: 分
+        options:
+          - 00
+          - 05
+          - 10
+          - 15
+          - 20
+          - 25
+          - 30
+          - 35
+          - 40
+          - 45
+          - 50
+          - 55
+
+jobs:
+  Cron:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+      - name: Register Cron job
+        env:
+          month: ${{ github.event.inputs.month }}
+          day: ${{ github.event.inputs.day }}
+          hour: ${{ github.event.inputs.hour }}
+          minutes: ${{ github.event.inputs.minutes }}
+        run: |
+          curl -X PATCH \
+          -H 'Content-Type: application/json' \
+          -H 'Authorization: Bearer ${{ secrets.CRON_TOKEN }}' \
+          -d '{"job":{"enabled":"true","schedule":{"hours":[${{env.hour}}],"mdays":[${{env.day}}],"minutes":[${{env.minutes}}],"months":[${{env.month}}]}}}' \
+          https://api.cron-job.org/jobs/${{ vars.CRON_ID }}

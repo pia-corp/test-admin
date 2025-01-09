@@ -1,0 +1,52 @@
+name: sitemap
+
+on:
+  workflow_run:
+    workflows: [Upload data]
+    types:
+      - completed
+
+# env:
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  sitemap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4.2.2
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Create sitemap
+        run: |
+          if [ ! -d "./public" ]; then
+            echo "Error: ./public directory does not exist."
+            exit 1
+          fi
+
+          files=$(find ./public -type f -name '*.html')
+
+          echo '<?xml version="1.0" encoding="UTF-8"?>' > sitemap.xml
+          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> sitemap.xml
+
+          for file in $files; do
+            relative_path=${file#./public/}
+            url="https://example.com/$relative_path"
+            lastmod=$(stat -c %y "$file" | TZ=Asia/Tokyo git log -1 --format="%ci" -- "$file")
+
+            echo '  <url>' >> sitemap.xml
+            echo "    <loc>$url</loc>" >> sitemap.xml
+            echo "    <lastmod>$lastmod</lastmod>" >> sitemap.xml
+            echo '  </url>' >> sitemap.xml
+          done
+
+          echo '</urlset>' >> sitemap.xml

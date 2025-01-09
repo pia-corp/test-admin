@@ -1,0 +1,125 @@
+name: HeadlessCMS webhook
+
+on:
+  repository_dispatch:
+    types: [update-posts]
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ProcessData:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    outputs:
+      exists_brand: ${{ steps.exists_data.outputs.exists_brand }}
+
+    steps:
+      - name: Get Data from MicroCMS
+        env:
+          DOMAIN: ${{ vars.MICROCMS_SERVICE_DOMAIN }}
+          API_KEY: ${{ secrets.MICROCMS_API_KEY }}
+        run: |
+          article_id=${{ github.event.client_payload.id }}
+          DATA=$(curl -X GET "https://${{ env.DOMAIN }}.microcms.io/api/v1/news/$article_id" -H "X-MICROCMS-API-KEY: ${{ env.API_KEY }}")
+          echo "$DATA" > data.json
+          echo "data=$(cat data.json | jq -c '.')" >> $GITHUB_ENV
+
+      - name: Confirm Data
+        id: exists_data
+        env:
+          REPOSITORY: ${{ github.event.repository.name }}
+          DATA: ${{ env.data }}
+        run: |
+          category_id=$(echo "$DATA" | jq -r '.category.id')
+          category_name="${category_id}"
+          # category_name="${category_id}.jp" // 本番用
+          if [[ "$category_id" == "$REPOSITORY" ]]; then
+            echo "exists_brand=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists_brand=false" >> $GITHUB_OUTPUT
+          fi
+
+  ExecuteProcess:
+    needs: ProcessData
+    if: needs.process_data.outputs.exists_brand == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RELEASE_BRANCH_NAME: ${{ github.run_id }}
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4.1.6
+        with:
+          ref: main
+
+      - name: Set Git configuration
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create new branch
+        run: |
+          git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4.0.2
+        with:
+          node-version: "23.2.0"
+          cache: npm
+
+      - name: Restore npm dependencies
+        id: node_modules_cache_id
+        uses: actions/cache@v4.0.2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-v23.2.0-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install npm dependencies (if cache miss)
+        if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        run: npm ci --no-audit --progress=false --silent
+
+      - name: Build Next.js App
+        run: npx next build
+        env:
+          MICROCMS_SERVICE_DOMAIN: ${{ vars.MICROCMS_SERVICE_DOMAIN }}
+          MICROCMS_API_KEY: ${{ secrets.MICROCMS_API_KEY }}
+
+      - name: Commit existing changes
+        id: commit_status
+        run: |
+          git add .
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "Commit existing changes for PR"
+            echo "changed_files=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes to commit"
+            echo "changed_files=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Push new branch
+        if: steps.commit_status.outputs.changed_files == 'true'
+        run: |
+          git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
+
+      - name: Create PR
+        if: steps.commit_status.outputs.changed_files == 'true'
+        run: |
+          gh pr create --fill
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Auto-merge PR
+        if: steps.commit_status.outputs.changed_files == 'true'
+        run: gh pr merge --auto --merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: skip
+        if: steps.commit_status.outputs.changed_files == 'false'
+        run: echo "No Changes in files related to"

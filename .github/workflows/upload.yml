@@ -1,0 +1,66 @@
+name: File upload
+
+on:
+  workflow_dispatch:
+    inputs:
+      sync:
+        description: "File synchronization"
+        required: true
+        default: "full"
+
+jobs:
+  Upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4.1.6
+        with:
+          fetch-depth: 0
+
+      - name: Error handling for invalid protocol
+        if: ${{ vars.PROTOCOL != 'ftp' && vars.PROTOCOL != 'sftp' }}
+        run: |
+          echo "::error file=プロトコルの指定が不正です。"
+          exit 1
+
+      - name: Deploy via SFTP
+        uses: milanmk/actions-file-deployer@1.15
+        with:
+          remote-protocol: 'sftp'
+          remote-host: ${{ vars.HOST }}
+          remote-port: ${{ vars.PORT }}
+          remote-user: ${{ vars.USER_NAME }}
+          remote-password: ${{ secrets.PASSWORD }}
+          local-path: ${{ vars.LOCAL_PATH }}
+          remote-path: ${{ vars.REMOTE_PATH }}
+          sync: ${{ vars.UPLOAD_TYPE }}
+          debug: true
+
+      - name: Deploy via FTP
+        if: ${{ vars.PROTOCOL == 'ftp' }}
+        uses: SamKirkland/FTP-Deploy-Action@4.2.0
+        with:
+          server: ${{ vars.HOST }}
+          username: ${{ vars.USER_NAME }}
+          password: ${{ secrets.PASSWORD }}
+          port:  ${{ vars.PORT }}
+          local-dir: ${{ vars.LOCAL_PATH }}
+          server-dir: ${{ vars.REMOTE_PATH }}
+          ARGS: --delete --parallel=15
+
+  Cron:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+      - name: Cancellation Cron job
+        run: |
+          curl -X PATCH \
+          -H 'Content-Type: application/json' \
+          -H 'Authorization: Bearer ${{ secrets.CRON_TOKEN }}' \
+          -d '{"job":{"enabled":false}}' \
+          https://api.cron-job.org/jobs/${{ vars.CRON_ID }}
