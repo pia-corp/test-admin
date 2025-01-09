@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Clone
         run: |
-          git clone https://github.com/pia-corp/test-admin_submoduleB
+          git clone https://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@github.com/pia-corp/test-admin_submoduleB
           git submodule update --init --recursive
 
       # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
