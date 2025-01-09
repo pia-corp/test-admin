@@ -13,7 +13,8 @@ jobs:
     steps:
       - name: Clone
         run: |
-          git clone --recurse-submodules https://github.com/pia-corp/test-admin_submoduleB
+          git clone https://github.com/pia-corp/test-admin_submoduleB
+          git submodule update --init --recursive
 
       # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
       - name: Copy Files
