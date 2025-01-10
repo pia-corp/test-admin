@@ -27,13 +27,8 @@ jobs:
         run: |
           git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
 
-      - name: Clone
-        run: |
-          git clone https://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@github.com/pia-corp/test-admin_submoduleB
-          git clone https://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@github.com/pia-corp/test-admin_submoduleA
-
       - name: Update submodules
-        run: git submodule update --init --recursive
+        run: git submodule update --remote --recursive
 
       - name: Commit existing changes
         id: commit_status
