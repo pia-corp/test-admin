@@ -43,7 +43,7 @@ jobs:
       - name: Display out folder content
         run: |
           echo "Contents of out folder:"
-          ls -la test-admin_submoduleB
+          ls -la out/test-admin_submoduleB
 
       - name: Commit existing changes
         id: commit_status
