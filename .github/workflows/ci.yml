@@ -36,7 +36,7 @@ jobs:
       - name: Copy Files
         run: |
           mkdir -p out
-          mkdir -p test-admin_submoduleB
+          mkdir -p out/test-admin_submoduleB
           cp -R test-admin_submoduleB/* out/test-admin_submoduleB/
 
       # 結果確認のため、outフォルダの内容を表示
