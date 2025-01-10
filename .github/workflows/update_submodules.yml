@@ -43,19 +43,16 @@ jobs:
           fi
 
       - name: Push new branch
-        if: steps.commit_status.outputs.changed_files == 'true'
         run: |
           git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
 
       - name: Create PR
-        if: steps.commit_status.outputs.changed_files == 'true'
         run: |
           gh pr create --fill
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Auto-merge PR
-        if: steps.commit_status.outputs.changed_files == 'true'
         run: gh pr merge --auto --merge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
