@@ -35,14 +35,15 @@ jobs:
       # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
       - name: Copy Files
         run: |
-          mkdir -p out/test-admin_submoduleB/
+          mkdir -p out
+          mkdir -p test-admin_submoduleB
           cp -R test-admin_submoduleB/* out/test-admin_submoduleB/
 
       # 結果確認のため、outフォルダの内容を表示
       - name: Display out folder content
         run: |
           echo "Contents of out folder:"
-          ls -la out
+          ls -la test-admin_submoduleB
 
       - name: Commit existing changes
         id: commit_status
