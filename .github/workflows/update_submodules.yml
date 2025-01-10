@@ -1,0 +1,66 @@
+name: Submodules Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      sync:
+        description: "submodules update"
+        required: true
+        default: ""
+
+jobs:
+  Upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      RELEASE_BRANCH_NAME: ${{ github.run_id }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Git configuration
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create new branch
+        run: |
+          git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
+
+      - name: Clone
+        run: |
+          git clone https://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@github.com/pia-corp/test-admin_submoduleB
+          git clone https://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@github.com/pia-corp/test-admin_submoduleA
+
+      - name: Update submodules
+        run: git submodule update --init --recursive
+
+      - name: Commit existing changes
+        id: commit_status
+        run: |
+          git add .
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "Commit existing changes for PR"
+            echo "changed_files=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes to commit"
+            echo "changed_files=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Push new branch
+        if: steps.commit_status.outputs.changed_files == 'true'
+        run: |
+          git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
+
+      - name: Create PR
+        if: steps.commit_status.outputs.changed_files == 'true'
+        run: |
+          gh pr create --fill
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Auto-merge PR
+        if: steps.commit_status.outputs.changed_files == 'true'
+        run: gh pr merge --auto --merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
