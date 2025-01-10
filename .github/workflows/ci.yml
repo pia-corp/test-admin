@@ -31,8 +31,7 @@ jobs:
 
       - name: Update submodules
         run: |
-          git submodule update --init --recursive
-          git clone --recurse-submodules https://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@github.com/pia-corp/test-admin_submoduleB
+          git submodule update --remote --recursive
 
       # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
       - name: Copy Files
