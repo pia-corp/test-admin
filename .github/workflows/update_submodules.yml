@@ -28,7 +28,7 @@ jobs:
           git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
 
       - name: Update submodules
-        run: git submodule update --remote --recursive
+        run: git submodule update --remote
 
       - name: Commit existing changes
         id: commit_status
