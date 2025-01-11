@@ -26,8 +26,8 @@ jobs:
 
       - name: Set Git configuration
         run: |
-          git config --global user.name "pia"
-          git config --global user.email "sysadmin@pia-corp.jp"
+          git config --global user.name ${{ vars.USERNAME }}
+          git config --global user.email ${{ vars.MAILADDRESS }}
           git config --global url."https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
 
       - name: Create new branch
@@ -35,7 +35,8 @@ jobs:
           git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
 
       - name: Update submodules
-        run: git submodule update --init --recursive --remote
+        # run: git submodule update --init --recursive --remote
+        run: git submodule update --init --remote test-admin_submoduleB
 
       - name: Commit and push changes
         id: commit
