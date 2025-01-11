@@ -33,6 +33,8 @@ jobs:
         run: |
           git submodule update --init --recursive
           git submodule update --remote
+        env:
+          GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit and push changes
         run: |
