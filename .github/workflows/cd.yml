@@ -22,72 +22,72 @@ permissions:
 jobs:
   Clone:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    env:
-      RELEASE_BRANCH_NAME: ${{ github.run_id }}
+    # timeout-minutes: 5
+    # env:
+    #   RELEASE_BRANCH_NAME: ${{ github.run_id }}
 
-    steps:
-      - uses: actions/checkout@v4
+    # steps:
+    #   - uses: actions/checkout@v4
 
-      - name: Set Git configuration
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+    #   - name: Set Git configuration
+    #     run: |
+    #       git config --local user.name "github-actions[bot]"
+    #       git config --local user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create new branch
-        run: |
-          git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
+    #   - name: Create new branch
+    #     run: |
+    #       git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
 
-      - name: Clone
-        run: |
-          git clone https://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@github.com/pia-corp/test-admin_submoduleB
-          git clone https://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@github.com/pia-corp/test-admin_submoduleA
+    #   - name: Clone
+    #     run: |
+    #       git clone https://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@github.com/pia-corp/test-admin_submoduleB
+    #       git clone https://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@github.com/pia-corp/test-admin_submoduleA
 
-      - name: Update submodules
-        run: git submodule update --init --recursive
+    #   - name: Update submodules
+    #     run: git submodule update --init --recursive
 
-      # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
-      - name: Copy Files
-        run: |
-          mkdir -p out
-          mkdir -p out/test-admin_submoduleB
-          cp -R test-admin_submoduleB/* out/test-admin_submoduleB/
+    #   # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
+    #   - name: Copy Files
+    #     run: |
+    #       mkdir -p out
+    #       mkdir -p out/test-admin_submoduleB
+    #       cp -R test-admin_submoduleB/* out/test-admin_submoduleB/
 
-      # 結果確認のため、outフォルダの内容を表示
-      - name: Display out folder content
-        run: |
-          echo "Contents of out folder:"
-          ls -la out/test-admin_submoduleB
+    #   # 結果確認のため、outフォルダの内容を表示
+    #   - name: Display out folder content
+    #     run: |
+    #       echo "Contents of out folder:"
+    #       ls -la out/test-admin_submoduleB
 
-      - name: Commit existing changes
-        id: commit_status
-        run: |
-          git add .
-          if ! git diff-index --quiet HEAD; then
-            git commit -m "Commit existing changes for PR"
-            echo "changed_files=true" >> $GITHUB_OUTPUT
-          else
-            echo "No changes to commit"
-            echo "changed_files=false" >> $GITHUB_OUTPUT
-          fi
+    #   - name: Commit existing changes
+    #     id: commit_status
+    #     run: |
+    #       git add .
+    #       if ! git diff-index --quiet HEAD; then
+    #         git commit -m "Commit existing changes for PR"
+    #         echo "changed_files=true" >> $GITHUB_OUTPUT
+    #       else
+    #         echo "No changes to commit"
+    #         echo "changed_files=false" >> $GITHUB_OUTPUT
+    #       fi
 
-      - name: Push new branch
-        if: steps.commit_status.outputs.changed_files == 'true'
-        run: |
-          git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
+    #   - name: Push new branch
+    #     if: steps.commit_status.outputs.changed_files == 'true'
+    #     run: |
+    #       git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
 
-      - name: Create PR
-        if: steps.commit_status.outputs.changed_files == 'true'
-        run: |
-          gh pr create --fill
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    #   - name: Create PR
+    #     if: steps.commit_status.outputs.changed_files == 'true'
+    #     run: |
+    #       gh pr create --fill
+    #     env:
+    #       GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Auto-merge PR
-        if: steps.commit_status.outputs.changed_files == 'true'
-        run: gh pr merge --auto --merge
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   - name: Auto-merge PR
+    #     if: steps.commit_status.outputs.changed_files == 'true'
+    #     run: gh pr merge --auto --merge
+    #     env:
+    #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
 
