@@ -30,11 +30,9 @@ jobs:
           git config --global user.email "sysadmin@pia-corp.jp"
 
       - name: Update submodules
-        run: |
-          git submodule update --init --recursive
-          git submodule update --remote
+        run: git submodule update --init --recursive --remote
         env:
-          GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Commit and push changes
         run: |
