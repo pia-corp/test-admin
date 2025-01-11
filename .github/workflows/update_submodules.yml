@@ -17,34 +17,51 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set Git configuration
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        with:
+          fetch-depth: 0
 
       - name: Create new branch
         run: |
           git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
 
-      - name: Update submodules
-        run: git submodule update --remote
+      - name: Set Git configuration
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Commit existing changes
-        id: commit_status
+      - name: Update submodules
+        run: |
+          git submodule update --init --recursive
+          git submodule update --remote
+
+      - name: Commit and push changes
         run: |
           git add .
           if ! git diff-index --quiet HEAD; then
-            git commit -m "Commit existing changes for PR"
+            git commit -m "Automatically update submodules"
             echo "changed_files=true" >> $GITHUB_OUTPUT
           else
             echo "No changes to commit"
             echo "changed_files=false" >> $GITHUB_OUTPUT
           fi
-
-      - name: Push new branch
-        run: |
           git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
+
+
+      # - name: Commit existing changes
+      #   id: commit_status
+      #   run: |
+      #     git add .
+      #     if ! git diff-index --quiet HEAD; then
+      #       git commit -m "Commit existing changes for PR"
+      #       echo "changed_files=true" >> $GITHUB_OUTPUT
+      #     else
+      #       echo "No changes to commit"
+      #       echo "changed_files=false" >> $GITHUB_OUTPUT
+      #     fi
+
+      # - name: Push new branch
+      #   run: |
+      #     git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
 
       - name: Create PR
         run: |
