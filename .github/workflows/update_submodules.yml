@@ -8,33 +8,37 @@ on:
         required: true
         default: ""
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   Upload:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      RELEASE_BRANCH_NAME: ${{ github.run_id }}
+      RELEASE_BRANCH_NAME: "release-${{ github.run_id }}"
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Create new branch
-        run: |
-          git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
-
       - name: Set Git configuration
         run: |
           git config --global user.name "pia"
           git config --global user.email "sysadmin@pia-corp.jp"
+          git config --global url."https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
+      - name: Create new branch
+        run: |
+          git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
 
       - name: Update submodules
         run: git submodule update --init --recursive --remote
-        env:
-          GIT_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Commit and push changes
+        id: commit
         run: |
           git add .
           if ! git diff-index --quiet HEAD; then
@@ -46,30 +50,15 @@ jobs:
           fi
           git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
 
-
-      # - name: Commit existing changes
-      #   id: commit_status
-      #   run: |
-      #     git add .
-      #     if ! git diff-index --quiet HEAD; then
-      #       git commit -m "Commit existing changes for PR"
-      #       echo "changed_files=true" >> $GITHUB_OUTPUT
-      #     else
-      #       echo "No changes to commit"
-      #       echo "changed_files=false" >> $GITHUB_OUTPUT
-      #     fi
-
-      # - name: Push new branch
-      #   run: |
-      #     git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
-
       - name: Create PR
+        if: ${{ steps.commit.outputs.changed_files == 'true' }}
         run: |
           gh pr create --fill
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Auto-merge PR
+        if: ${{ steps.commit.outputs.changed_files == 'true' }}
         run: gh pr merge --auto --merge
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
