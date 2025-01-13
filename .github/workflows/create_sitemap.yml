@@ -1,13 +1,15 @@
 name: サイトマップ生成
 
 on:
-  workflow_call:
-  # workflow_run:
-  #   workflows: [Upload data]
-  #   types:
-  #     - completed
-
-# env:
+  inputs:
+    repository:
+      description: "Repository name"
+      required: true
+      type: string
+    repository_no_register:
+      description: "Alternative repository name if provided"
+      required: true
+      type: string
 
 permissions:
   contents: read
@@ -19,6 +21,8 @@ jobs:
   sitemap:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
 
     steps:
       - name: Checkout the repository
@@ -41,7 +45,7 @@ jobs:
 
           for file in $files; do
             relative_path=${file#./public/}
-            url="https://${REPO_NAME}/$relative_path"
+            url="https://${REPOSITORY}/$relative_path"
             lastmod=$(stat -c %y "$file" | TZ=Asia/Tokyo git log -1 --format="%ci" -- "$file")
 
             echo '  <url>' >> sitemap.xml
@@ -51,16 +55,3 @@ jobs:
           done
 
           echo '</urlset>' >> sitemap.xml
-
-
-
-# 予約
-# アップロード
-# サブモジュール更新、マージ
-# サイトマップ作成、マージ
-
-# サブモジュール更新、サイトマップ作成、マージ、予約、アップロード
-
-
-
-# 最新の納品ファイル取得
