@@ -48,6 +48,8 @@ jobs:
     timeout-minutes: 20
     env:
       RELEASE_BRANCH_NAME: "release-${{ github.run_id }}"
+      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
+
 
     steps:
       - uses: actions/checkout@v4
@@ -65,7 +67,7 @@ jobs:
           git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
 
       - name: Update submodules
-        run: git submodule update --init --remote ${{env.repository}}
+        run: git submodule update --init --remote ${{env.REPOSITORY}}
 
       - name: Commit and push changes
         id: commit
