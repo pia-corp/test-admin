@@ -4,9 +4,11 @@ on:
   workflow_call:
     inputs:
       repository:
+        description: "Repository name"
         required: true
         type: string
       repository_no_register:
+        description: "Alternative repository name if provided"
         required: true
         type: string
   workflow_dispatch:
