@@ -1,4 +1,4 @@
-name: Reservation
+name: アップロード予約
 
 on:
   workflow_dispatch:

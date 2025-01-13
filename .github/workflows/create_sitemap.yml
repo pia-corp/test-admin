@@ -1,10 +1,11 @@
-name: sitemap
+name: サイトマップ生成
 
 on:
-  workflow_run:
-    workflows: [Upload data]
-    types:
-      - completed
+  workflow_call:
+  # workflow_run:
+  #   workflows: [Upload data]
+  #   types:
+  #     - completed
 
 # env:
 
@@ -21,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
@@ -40,7 +41,7 @@ jobs:
 
           for file in $files; do
             relative_path=${file#./public/}
-            url="https://example.com/$relative_path"
+            url="https://${REPO_NAME}/$relative_path"
             lastmod=$(stat -c %y "$file" | TZ=Asia/Tokyo git log -1 --format="%ci" -- "$file")
 
             echo '  <url>' >> sitemap.xml
@@ -50,3 +51,16 @@ jobs:
           done
 
           echo '</urlset>' >> sitemap.xml
+
+
+
+# 予約
+# アップロード
+# サブモジュール更新、マージ
+# サイトマップ作成、マージ
+
+# サブモジュール更新、サイトマップ作成、マージ、予約、アップロード
+
+
+
+# 最新の納品ファイル取得

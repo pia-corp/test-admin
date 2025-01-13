@@ -1,0 +1,98 @@
+name: Cron-job Create
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_title:
+        description: "Cron Job Title"
+        required: true
+
+jobs:
+  Cron:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+
+    steps:
+      - name: Set Title
+        id: set_title
+        run: |
+          if [ -z "${{ github.event.inputs.job_title }}" ]; then
+            echo "Error: 'job_title' input is required but not provided."
+            exit 1
+          fi
+          echo "title=${{ github.event.inputs.job_title }}" >> $GITHUB_ENV
+
+      - name: Check Existing Cron Job
+        id: check_cron
+        run: |
+          response=$(curl -s -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
+            https://api.cron-job.org/jobs)
+
+          # Check if the title already exists
+          title_exists=$(echo "$response" | jq -r --arg title "${{ env.title }}" '.jobs[] | select(.url | contains($title)) | .url')
+
+          if [ -n "$title_exists" ]; then
+            echo "Error: A cron job with the title '${{ env.title }}' already exists."
+            exit 1
+          fi
+
+      - name: Create Cron job and Fetch ID
+        id: create_cron
+        run: |
+          response=$(curl -s -X PUT \
+            -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
+            -d '{
+              "job": {
+                "url": "https://api.github.com/repos/pia-corp/${{ env.title }}/actions/workflows/upload.yml/dispatches",
+                "enabled": false,
+                "saveResponses": false,
+                "title": "${{ env.title }}",
+                "schedule": {
+                  "timezone": "Asia/Tokyo",
+                  "expiresAt": 1,
+                  "hours": [-1],
+                  "mdays": [-1],
+                  "minutes": [-1],
+                  "months": [-1],
+                  "wdays": [-1]
+                },
+                "extendedData": {
+                  "headers": {
+                    "Authorization": "Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"
+                  }
+                },
+                "requestMethod": 1
+              }
+            }' https://api.cron-job.org/jobs)
+
+          # Parse job ID from the response
+          job_id=$(echo "$response" | jq -r '.job.id')
+          if [ -z "$job_id" ]; then
+            echo "Error: Failed to fetch job ID."
+            exit 1
+          fi
+
+          echo "job_id=$job_id" >> $GITHUB_ENV
+
+      - name: Update each Cron job
+        run: |
+          if [ -z "${{ env.job_id }}" ]; then
+            echo "Error: Job ID is not set."
+            exit 1
+          fi
+
+          echo "Updating job: ${{ env.job_id }}"
+          curl -s -X PATCH \
+            -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
+            -d '{
+              "job": {
+                "extendedData": {
+                  "headers": {
+                    "Authorization": "Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"
+                  }
+                }
+              }
+            }' https://api.cron-job.org/jobs/${{ env.job_id }}

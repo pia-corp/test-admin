@@ -1,12 +1,42 @@
 name: Submodules Update
 
 on:
+  workflow_call:
+    inputs:
+      repository:
+        required: true
+        type: string
+      repository_no_register:
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
-      sync:
-        description: "submodules update"
+      repository:
+        type: choice
+        description: "Target Submodules"
         required: true
-        default: ""
+        options:
+          - "topards.jp"
+          - "feliamo.jp"
+          - "molak.jp"
+          - "ns-collection.jp"
+          - "lilmoon.jp"
+          - "minette-lens.jp"
+          - "mirage-c.jp"
+          - "mimuco.jp"
+          - "harne.jp"
+          - "louer.jp"
+          - "lumieu.jp"
+          - "puuuuchu.jp"
+          - "melady.jp"
+          - "melloew.jp"
+          - "faloom.jp"
+          - "mimicharme.jp"
+          - "lensbe.jp"
+          - "clainel.jp"
+          - "chapun.jp"
+          - "resay.jp"
+          - "michou.jp"
 
 permissions:
   contents: write
@@ -35,8 +65,7 @@ jobs:
           git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
 
       - name: Update submodules
-        # run: git submodule update --init --recursive --remote
-        run: git submodule update --init --remote test-admin_submoduleB
+        run: git submodule update --init --remote ${{env.repository}}
 
       - name: Commit and push changes
         id: commit
