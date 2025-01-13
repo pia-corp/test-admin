@@ -39,19 +39,22 @@ permissions:
   pull-requests: write
   actions: read
 
+env:
+  RELEASE_BRANCH_NAME: ${{ github.run_id }}
+
 jobs:
   UpdateSubmodules:
     uses: ./.github/workflows/update_submodules.yml
     with:
-      repository: ${{ env.repository }}
-      repository_no_register: ${{ env.repository_no_register }}
+      repository: ${{ inputs.repository }}
+      repository_no_register: ${{ inputs.repository_no_register }}
 
   CreateSiteMap:
     needs: UpdateSubmodules
     uses: ./.github/workflows/create_sitemap.yml
     with:
-      repository: ${{ env.repository }}
-      repository_no_register: ${{ env.repository_no_register }}
+      repository: ${{ inputs.repository }}
+      repository_no_register: ${{ inputs.repository_no_register }}
 
   merge:
     needs: CreateSiteMap
