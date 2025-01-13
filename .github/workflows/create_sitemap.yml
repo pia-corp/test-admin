@@ -1,15 +1,16 @@
 name: サイトマップ生成
 
 on:
-  inputs:
-    repository:
-      description: "Repository name"
-      required: true
-      type: string
-    repository_no_register:
-      description: "Alternative repository name if provided"
-      required: true
-      type: string
+  workflow_call:
+    inputs:
+      repository:
+        description: "Repository name"
+        required: true
+        type: string
+      repository_no_register:
+        description: "Alternative repository name if provided"
+        required: true
+        type: string
 
 permissions:
   contents: read
