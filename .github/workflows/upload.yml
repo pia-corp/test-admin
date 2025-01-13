@@ -1,12 +1,15 @@
-name: File upload
+name: 手動ファイルアップロード
 
 on:
   workflow_dispatch:
     inputs:
       sync:
+        type: choice
         description: "File synchronization"
         required: true
-        default: "full"
+        options:
+          - "full"
+          - "delta"
 
 jobs:
   Upload:
