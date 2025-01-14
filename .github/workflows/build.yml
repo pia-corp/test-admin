@@ -43,11 +43,25 @@ env:
   RELEASE_BRANCH_NAME: ${{ github.run_id }}
 
 jobs:
+  CreateBranch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create new branch
+        run: |
+          git checkout -b ${{ env.RELEASE_BRANCH_NAME }}
+      - name: Push new branch
+        run: |
+          git push -u origin ${{ env.RELEASE_BRANCH_NAME }}
+
   UpdateSubmodules:
     uses: ./.github/workflows/update_submodules.yml
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
+      branch_name: ${{ env.RELEASE_BRANCH_NAME }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
@@ -64,27 +78,6 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Create new branch
-        run: |
-          git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
-
-      - name: Commit and push changes
-        id: commit
-        run: |
-          git add .
-          if ! git diff-index --quiet HEAD; then
-            git commit -m "Automatically update submodules"
-            echo "changed_files=true" >> $GITHUB_OUTPUT
-          else
-            echo "No changes to commit"
-            echo "changed_files=false" >> $GITHUB_OUTPUT
-          fi
-          git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
-
       - name: Create PR
         if: ${{ steps.commit.outputs.changed_files == 'true' }}
         run: |

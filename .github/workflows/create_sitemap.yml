@@ -11,7 +11,10 @@ on:
         description: "Alternative repository name if provided"
         required: false
         type: string
-
+      branch_name:
+        description: "Branch name to commit changes"
+        required: false
+        type: string
 permissions:
   contents: read
   id-token: write
@@ -56,3 +59,21 @@ jobs:
           done
 
           echo '</urlset>' >> sitemap.xml
+
+
+      - name: Checkout branch
+        run: |
+          git checkout ${{ inputs.branch_name }}
+
+      - name: Commit changes
+        id: commit
+        run: |
+          git add .
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "Automatically update submodules"
+            echo "changed_files=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes to commit"
+            echo "changed_files=false" >> $GITHUB_OUTPUT
+          fi
+          git push -u origin ${{ inputs.branch_name }}
