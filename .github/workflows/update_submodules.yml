@@ -66,12 +66,12 @@ jobs:
         run: |
           git config --global user.name ${{ vars.USERNAME }}
           git config --global user.email ${{ vars.MAILADDRESS }}
-          git config --global url."https://${{ inputs.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
 
       - name: Update submodules
         run: git submodule update --init --remote ${{env.REPOSITORY}}
         env:
-          GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create new branch
         run: |
