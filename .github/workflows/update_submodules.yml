@@ -73,6 +73,23 @@ jobs:
           git config --global user.email ${{ vars.MAILADDRESS }}
           git config --global url."https://${{ secrets.GITHUB_TOKEN_VALUE }}@github.com/".insteadOf "https://github.com/"
 
+      - name: Check if submodule exists
+        id: check_submodule
+        run: |
+          if git config --file .gitmodules --name-only --get-regexp path | grep -q "^submodule\.$REPOSITORY\.path$"; then
+            echo "Submodule exists"
+            echo "submodule_exists=true" >> $GITHUB_ENV
+          else
+            echo "Submodule does not exist"
+            echo "submodule_exists=false" >> $GITHUB_ENV
+          fi
+
+      - name: Add submodule if not exists
+        if: env.submodule_exists == 'false'
+        run: |
+          git submodule add https://github.com/your-org/${{ env.REPOSITORY }} ${{ env.REPOSITORY }}
+          git submodule update --init --remote
+
       - name: Update submodules
         run: git submodule update --init --remote ${{env.REPOSITORY}}
         env:
