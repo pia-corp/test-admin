@@ -56,6 +56,7 @@ jobs:
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
+      repository_no_register: ${{ inputs.repository_no_register }}
 
   merge:
     needs: CreateSiteMap
