@@ -44,24 +44,22 @@ jobs:
   CreateBranch:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    env:
-      RELEASE_BRANCH_NAME: ${{ github.run_id }}
 
     steps:
       - uses: actions/checkout@v4
       - name: Create new branch
         run: |
-          git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
+          git checkout -b release/github_${{ github.run_id }}
       - name: Push new branch
         run: |
-          git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
+          git push -u origin release/github_${{ github.run_id }}
 
   UpdateSubmodules:
     uses: ./.github/workflows/update_submodules.yml
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: ${{ env.RELEASE_BRANCH_NAME }}
+      branch_name: ${{ github.run_id }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
