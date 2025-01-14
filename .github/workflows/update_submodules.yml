@@ -12,7 +12,10 @@ on:
         required: false
         type: string
       GITHUB_TOKEN:
+        description: "GitHub Token for authentication"
+        required: true
         type: string
+
   workflow_dispatch:
     inputs:
       repository:
@@ -71,6 +74,8 @@ jobs:
 
       - name: Update submodules
         run: git submodule update --init --remote ${{env.REPOSITORY}}
+        env:
+          GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
 
       - name: Create new branch
         run: |
