@@ -41,7 +41,7 @@ jobs:
         run: |
           mkdir -p out
           mkdir -p out/${{ env.REPOSITORY }}
-          cp -R ${{ env.REPOSITORY }}/* out/${{ env.REPOSITORY }}/
+          cp -R ./${{ env.REPOSITORY }}/public/* out/${{ env.REPOSITORY }}/
 
       # 結果確認のため、outフォルダの内容を表示
       - name: Display out folder content
