@@ -48,8 +48,6 @@ jobs:
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   CreateSiteMap:
     needs: UpdateSubmodules

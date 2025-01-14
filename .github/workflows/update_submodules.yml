@@ -11,10 +11,6 @@ on:
         description: "Alternative repository name if provided"
         required: false
         type: string
-      GITHUB_TOKEN:
-        description: "GitHub Token for authentication"
-        required: true
-        type: string
 
   workflow_dispatch:
     inputs:
