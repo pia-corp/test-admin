@@ -12,7 +12,7 @@ on:
         required: false
         type: string
     secrets:
-      MY_GITHUB_TOKEN:
+      GITHUB_TOKEN_VALUE:
         description: "GitHub Token"
         required: true
   workflow_dispatch:
@@ -56,7 +56,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      RELEASE_BRANCH_NAME: "${{ github.run_id }}"
       REPOSITORY: ${{ inputs.repository_no_register && inputs.repository_no_register || inputs.repository }}
 
     steps:
@@ -68,39 +67,9 @@ jobs:
         run: |
           git config --global user.name ${{ vars.USERNAME }}
           git config --global user.email ${{ vars.MAILADDRESS }}
-          git config --global url."https://${{ secrets.MY_GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://${{ secrets.GITHUB_TOKEN_VALUE }}@github.com/".insteadOf "https://github.com/"
 
       - name: Update submodules
         run: git submodule update --init --remote ${{env.REPOSITORY}}
         env:
-          MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
-
-      - name: Create new branch
-        run: |
-          git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
-
-      - name: Commit and push changes
-        id: commit
-        run: |
-          git add .
-          if ! git diff-index --quiet HEAD; then
-            git commit -m "Automatically update submodules"
-            echo "changed_files=true" >> $GITHUB_OUTPUT
-          else
-            echo "No changes to commit"
-            echo "changed_files=false" >> $GITHUB_OUTPUT
-          fi
-          git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
-
-      - name: Create PR
-        if: ${{ steps.commit.outputs.changed_files == 'true' }}
-        run: |
-          gh pr create --fill
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
-      - name: Auto-merge PR
-        if: ${{ steps.commit.outputs.changed_files == 'true' }}
-        run: gh pr merge --auto --merge
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN_VALUE }}
