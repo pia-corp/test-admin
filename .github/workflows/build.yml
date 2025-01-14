@@ -49,14 +49,13 @@ jobs:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
     secrets:
-      MY_GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
   CreateSiteMap:
     needs: UpdateSubmodules
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
-      repository_no_register: ${{ inputs.repository_no_register }}
 
   merge:
     needs: CreateSiteMap
@@ -64,14 +63,32 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - name: Checkout the repository
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: Merge
+      - name: Create new branch
         run: |
-          git checkout main
-          git merge --no-ff release/github_${{ env.RELEASE_BRANCH_NAME }}
-          git push origin main
+          git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
+
+      - name: Commit and push changes
+        id: commit
+        run: |
+          git add .
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "Automatically update submodules"
+            echo "changed_files=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes to commit"
+            echo "changed_files=false" >> $GITHUB_OUTPUT
+          fi
+          git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
+
+      - name: Create PR
+        if: ${{ steps.commit.outputs.changed_files == 'true' }}
+        run: |
+          gh pr create --fill
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Auto-merge PR
+        if: ${{ steps.commit.outputs.changed_files == 'true' }}
+        run: gh pr merge --auto --merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
