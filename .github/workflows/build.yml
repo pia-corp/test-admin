@@ -39,22 +39,22 @@ permissions:
   pull-requests: write
   actions: read
 
-env:
-  RELEASE_BRANCH_NAME: ${{ github.run_id }}
 
 jobs:
   CreateBranch:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      RELEASE_BRANCH_NAME: ${{ github.run_id }}
 
     steps:
       - uses: actions/checkout@v4
       - name: Create new branch
         run: |
-          git checkout -b ${{ env.RELEASE_BRANCH_NAME }}
+          git checkout -b release/github_${{ env.RELEASE_BRANCH_NAME }}
       - name: Push new branch
         run: |
-          git push -u origin ${{ env.RELEASE_BRANCH_NAME }}
+          git push -u origin release/github_${{ env.RELEASE_BRANCH_NAME }}
 
   UpdateSubmodules:
     uses: ./.github/workflows/update_submodules.yml
