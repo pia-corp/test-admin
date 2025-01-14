@@ -60,7 +60,7 @@ jobs:
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: ${{ github.run_id }}
+      branch_name: release/github_${{ github.run_id }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
@@ -70,6 +70,7 @@ jobs:
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
+      branch_name: release/github_${{ github.run_id }}
 
   merge:
     needs: CreateSiteMap
