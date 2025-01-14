@@ -34,19 +34,19 @@ jobs:
 
       - name: Create sitemap
         run: |
-          if [ ! -d "./${env.REPOSITORY}" ]; then
-            echo "Error: ./${env.REPOSITORY} directory does not exist."
+          if [ ! -d "./${{ env.REPOSITORY }}" ]; then
+            echo "Error: ./${{ env.REPOSITORY }} directory does not exist."
             exit 1
           fi
 
-          files=$(find ./${env.REPOSITORY} -type f -name '*.html')
+          files=$(find ./${{ env.REPOSITORY }} -type f -name '*.html')
 
           echo '<?xml version="1.0" encoding="UTF-8"?>' > sitemap.xml
           echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> sitemap.xml
 
           for file in $files; do
-            relative_path=${file#./out/${env.REPOSITORY}/}
-            url="https://${env.REPOSITORY}/$relative_path"
+            relative_path=${file#./out/${{ env.REPOSITORY }}/}
+            url="https://${{ env.REPOSITORY }}/$relative_path"
             lastmod=$(stat -c %y "$file" | TZ=Asia/Tokyo git log -1 --format="%ci" -- "$file")
 
             echo '  <url>' >> sitemap.xml
