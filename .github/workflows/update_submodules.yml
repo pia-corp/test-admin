@@ -11,6 +11,10 @@ on:
         description: "Alternative repository name if provided"
         required: false
         type: string
+      TOKEN:
+        description: "Personal access token"
+        required: true
+        type: string
 
   workflow_dispatch:
     inputs:
@@ -65,12 +69,12 @@ jobs:
         run: |
           git config --global user.name ${{ vars.USERNAME }}
           git config --global user.email ${{ vars.MAILADDRESS }}
-          git config --global url."https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://${{ inputs.TOKEN }}@github.com/".insteadOf "https://github.com/"
 
       - name: Update submodules
         run: git submodule update --init --remote ${{env.REPOSITORY}}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ inputs.TOKEN }}
 
       - name: Create new branch
         run: |
