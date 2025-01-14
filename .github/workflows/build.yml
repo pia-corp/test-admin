@@ -55,6 +55,7 @@ jobs:
           git push -u origin release/github_${{ github.run_id }}
 
   UpdateSubmodules:
+    needs: CreateBranch
     uses: ./.github/workflows/update_submodules.yml
     with:
       repository: ${{ inputs.repository }}
