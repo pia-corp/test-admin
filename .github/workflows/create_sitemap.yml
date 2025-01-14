@@ -35,13 +35,21 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.branch_name }}
 
+      - name: Initialize and update submodules
+        run: |
+          git submodule update --init --recursive
 
       # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
       - name: Copy Files
         run: |
           mkdir -p out
           mkdir -p out/${{ env.REPOSITORY }}
-          cp -R ./${{ env.REPOSITORY }}/public/* out/${{ env.REPOSITORY }}/
+          if [ -d "./${{ env.REPOSITORY }}/public" ]; then
+            cp -R ./${{ env.REPOSITORY }}/public/* out/${{ env.REPOSITORY }}/
+          else
+            echo "Error: ./${{ env.REPOSITORY }}/public directory does not exist."
+            exit 1
+          fi
 
       # 結果確認のため、outフォルダの内容を表示
       - name: Display out folder content
