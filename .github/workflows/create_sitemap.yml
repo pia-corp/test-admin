@@ -35,14 +35,27 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
+      - name: Copy Files
+        run: |
+          mkdir -p out
+          mkdir -p out/${{ env.REPOSITORY }}
+          cp -R ${{ env.REPOSITORY }}/* out/${{ env.REPOSITORY }}/
+
+      # 結果確認のため、outフォルダの内容を表示
+      - name: Display out folder content
+        run: |
+          echo "Contents of out folder:"
+          ls -la out/${{ env.REPOSITORY }}
+
       - name: Create sitemap
         run: |
           if [ ! -d "./${{ env.REPOSITORY }}" ]; then
-            echo "Error: ./${{ env.REPOSITORY }} directory does not exist."
+            echo "Error: ./out/${{ env.REPOSITORY }} directory does not exist."
             exit 1
           fi
 
-          files=$(find ./${{ env.REPOSITORY }} -type f -name '*.html')
+          files=$(find ./out/${{ env.REPOSITORY }} -type f -name '*.html')
 
           echo '<?xml version="1.0" encoding="UTF-8"?>' > sitemap.xml
           echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> sitemap.xml
@@ -63,19 +76,6 @@ jobs:
       - name: Checkout branch
         run: |
           git checkout release/github_${{ inputs.branch_name }}
-
-      # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
-      - name: Copy Files
-        run: |
-          mkdir -p out
-          mkdir -p out/${{ env.REPOSITORY }}
-          cp -R ${{ env.REPOSITORY }}/* out/${{ env.REPOSITORY }}/
-
-      # 結果確認のため、outフォルダの内容を表示
-      - name: Display out folder content
-        run: |
-          echo "Contents of out folder:"
-          ls -la out/test-admin_submoduleB
 
       - name: Commit changes
         id: commit
