@@ -11,6 +11,8 @@ on:
         description: "Alternative repository name if provided"
         required: false
         type: string
+      GITHUB_TOKEN:
+        type: string
   workflow_dispatch:
     inputs:
       repository:
@@ -65,7 +67,7 @@ jobs:
         run: |
           git config --global user.name ${{ vars.USERNAME }}
           git config --global user.email ${{ vars.MAILADDRESS }}
-          git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://${{ inputs.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
 
       - name: Update submodules
         run: git submodule update --init --remote ${{env.REPOSITORY}}
