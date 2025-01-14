@@ -34,18 +34,18 @@ jobs:
 
       - name: Create sitemap
         run: |
-          if [ ! -d "./public" ]; then
-            echo "Error: ./public directory does not exist."
+          if [ ! -d "./${REPOSITORY}" ]; then
+            echo "Error: ./${REPOSITORY} directory does not exist."
             exit 1
           fi
 
-          files=$(find ./public -type f -name '*.html')
+          files=$(find ./${REPOSITORY} -type f -name '*.html')
 
           echo '<?xml version="1.0" encoding="UTF-8"?>' > sitemap.xml
           echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> sitemap.xml
 
           for file in $files; do
-            relative_path=${file#./public/}
+            relative_path=${file#./out/${REPOSITORY}/}
             url="https://${REPOSITORY}/$relative_path"
             lastmod=$(stat -c %y "$file" | TZ=Asia/Tokyo git log -1 --format="%ci" -- "$file")
 
