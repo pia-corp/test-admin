@@ -87,7 +87,7 @@ jobs:
       - name: Add submodule if not exists
         if: env.submodule_exists == 'false'
         run: |
-          git submodule add https://github.com/your-org/${{ env.REPOSITORY }} ${{ env.REPOSITORY }}
+          git submodule add https://github.com/pia-corp/${{ env.REPOSITORY }} ${{ env.REPOSITORY }}
           git submodule update --init --remote
 
       - name: Update submodules
