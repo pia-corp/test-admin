@@ -97,7 +97,7 @@ jobs:
 
       - name: Checkout branch
         run: |
-          git checkout release/github_${{ inputs.branch_name }}
+          git checkout ${{ inputs.branch_name }}
 
       - name: Commit changes
         id: commit
@@ -110,4 +110,4 @@ jobs:
             echo "No changes to commit"
             echo "changed_files=false" >> $GITHUB_OUTPUT
           fi
-          git push -u origin release/github_${{ inputs.branch_name }}
+          git push -u origin ${{ inputs.branch_name }}
