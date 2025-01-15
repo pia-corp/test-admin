@@ -62,7 +62,7 @@ jobs:
       repository_no_register: ${{ inputs.repository_no_register }}
       branch_name: release/github_${{ github.run_id }}
     secrets:
-      GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
   CreateSiteMap:
     needs: UpdateSubmodules
@@ -72,7 +72,7 @@ jobs:
       repository_no_register: ${{ inputs.repository_no_register }}
       branch_name: release/github_${{ github.run_id }}
     secrets:
-      GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
   merge:
     needs: CreateSiteMap
