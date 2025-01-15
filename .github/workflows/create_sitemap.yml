@@ -35,9 +35,9 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.branch_name }}
 
-      - name: Initialize and update submodules
-        run: |
-          git submodule update --init --remote ${{env.REPOSITORY}}
+      # - name: Initialize and update submodules
+      #   run: |
+      #     git submodule update --init --remote ${{env.REPOSITORY}}
 
       # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
       - name: Copy Files
