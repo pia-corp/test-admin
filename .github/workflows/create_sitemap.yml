@@ -43,6 +43,12 @@ jobs:
         run: |
           git checkout ${{ inputs.branch_name }}
 
+      - name: Set Git configuration
+        run: |
+          git config --global user.name ${{ vars.USERNAME }}
+          git config --global user.email ${{ vars.MAILADDRESS }}
+          git config --global url."https://${{ secrets.GITHUB_TOKEN_VALUE }}@github.com/".insteadOf "https://github.com/"
+
       - name: Update submodules
         run: git clone https://github.com/pia-corp/${{env.REPOSITORY}} --recursive
         env:
