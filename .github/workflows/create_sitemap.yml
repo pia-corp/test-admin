@@ -37,7 +37,7 @@ jobs:
 
       - name: Initialize and update submodules
         run: |
-          git submodule update --init --recursive
+          git submodule update --init --remote ${{env.REPOSITORY}}
 
       # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
       - name: Copy Files
