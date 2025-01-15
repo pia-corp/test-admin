@@ -44,7 +44,7 @@ jobs:
           git checkout ${{ inputs.branch_name }}
 
       - name: Update submodules
-        run: git submodule update --init --remote ${{env.REPOSITORY}}
+        run: git clone https://github.com/pia-corp/${{env.REPOSITORY}} --recursive
         env:
           GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN_VALUE }}
 
