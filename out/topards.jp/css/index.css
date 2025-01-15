@@ -1,0 +1,665 @@
+/* -------------------------------
+ * Index
+ * -------------------------------*/
+/* news */
+.news_list {
+  position: relative;
+  margin: 0 auto;
+  width: 940px;
+}
+.news_list li {
+  display: flex;
+  font-size: 1.6rem;
+  margin: 0 0 30px;
+  padding: 0 30px 30px;
+  border-bottom: 1px solid #e5e5e5;
+}
+.news_list li span {
+  display: block;
+  line-height: 1.8;
+  color: #999;
+  width: 15%;
+}
+.news_list li a {
+  line-height: 1.8;
+  width: 85%;
+}
+.news_list li a {
+  color: #d97258;
+  text-decoration: underline;
+}
+.news_list li a:hover {
+  text-decoration: none;
+}
+@media only screen and (min-width: 767px) and (max-width: 1280px) {
+  .news_list {
+    width: 90%;
+  }
+}
+@media screen and (max-width: 768px) {
+  .news_list {
+    position: static;
+    width: 100%;
+  }
+  .news_list li {
+    display: inline-block;
+    font-size: 1.2rem;
+    margin: 0 0 15px;
+    padding: 0 15px 15px;
+    width: 100%;
+  }
+  .news_list li:last-of-type {
+    border: none;
+    margin-bottom: 0;
+  }
+  .news_list li span {
+    margin: 0 0 5px;
+    width: 100%;
+  }
+  .news_list li a {
+    width: 100%;
+    line-height: 1.6;
+  }
+}
+/* concept */
+.p-concept {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  align-items: center;
+}
+.p-concept_ttl {
+  width: 25%;
+  margin: 0 auto;
+}
+.p-concept_ttl .c-title_l {
+  text-align: left;
+}
+.p-concept_ttl h3 {
+  font-size: 4rem;
+  margin: 4vw 0 2vw;
+}
+.p-concept_ttl p {
+  font-size: 1.4rem;
+  line-height: 2;
+  margin-bottom: 20px;
+}
+.p-concept_img {
+  width: 48%;
+}
+@media screen and (max-width: 768px) {
+  .p-concept {
+    text-align: center;
+  }
+  .p-concept_ttl .c-title_l {
+    text-align: center;
+  }
+  .p-concept_ttl {
+    width: 100%;
+    margin: 0 0 20px;
+  }
+  .p-concept_ttl h3 {
+    font-size: 2.5rem;
+    margin: 4vw 0;
+  }
+  .p-concept_ttl p {
+    font-size: 1.2rem;
+    line-height: 2;
+    margin-bottom: 20px;
+  }
+  .p-concept_img {
+    width: 100%;
+  }
+}
+/* lineup-card */
+.p-card {
+  /* background: #f3f3f8; */
+  padding: 40px 0;
+}
+.p-card_list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: -4vh;
+}
+.p-card_list li {
+  position: relative;
+  margin: 26px 0 0;
+  overflow: hidden;
+  width: 50%;
+  height: 280px;
+}
+.p-card_list li:nth-of-type(2n-1) {
+  left: -10px;
+}
+.p-card_list li:nth-of-type(2n) {
+  right: -10px;
+}
+.p-card_list li a {
+  display: block;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: #242424;
+  position: absolute;
+  top: 0;
+  left: -6%;
+  width: 112%;
+  height: 100%;
+  transition: color 0.3s;
+}
+.p-card_list li a:hover {
+  text-decoration: none;
+  color: white;
+}
+.p-card_icon-new {
+  position: absolute;
+  width: 65px;
+  top: 5%;
+  left: 14%;
+  z-index: 2;
+}
+.p-card_img {
+  width: 280px;
+  margin: 30px 0 0 30px;
+}
+.p-number {
+  text-align: center;
+  margin: 60px auto 0;
+}
+.p-card_list li.is-right .p-card_icon-new {
+  left: auto;
+  right: 33%;
+}
+.p-card_list li.is-right .p-card_img {
+  margin: 30px 60px 0 auto;
+}
+@media only screen and (min-width: 767px) and (max-width: 1280px) {
+  .p-card_list {
+    margin: 0 auto;
+    width: 90%;
+  }
+  .p-card_icon-new {
+    width: 55px;
+    top: 12%;
+    left: 16%;
+    z-index: 2;
+  }
+  .p-card_img {
+    width: 220px;
+    margin: 50px 0 0 30px;
+  }
+  .p-card_list li.is-right .p-card_icon-new {
+    right: 15%;
+  }
+  .p-card_list li.is-right .p-card_img {
+    margin: 50px 50px 0 auto;
+  }
+}
+@media screen and (max-width: 768px) {
+  .p-card {
+    padding: 10px 0;
+  }
+  .p-card_list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 5px;
+    margin-top: 0;
+  }
+  .p-card_list li {
+    aspect-ratio: 193 / 87;
+    height: auto;
+    width: 100%;
+    transform: none;
+    margin: 14px 0 0;
+  }
+  .p-card_list li:nth-of-type(2n-1) {
+    left: 0;
+  }
+  .p-card_list li:nth-of-type(2n) {
+    right: 0;
+  }
+  .p-card_list li.is-datetopaztoric {
+    grid-column: 1 / 3;
+    width: calc(50% - 5px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .p-card_list li a {
+    height: 100%;
+    transform: none;
+    position: static;
+    width: auto;
+  }
+  .p-number {
+    margin: 30px auto 0;
+  }
+  .p-card_list li .p-card_icon-new {
+    width: 11%;
+  }
+  .p-card_list li.is-right .p-card_icon-new {
+    right: 27%;
+  }
+  .p-card .p-card_list li .p-card_img {
+    width: 45%;
+    padding: 2vw 0;
+  }
+  .p-card_list li.is-right .p-card_img {
+    margin: 0 0 0 auto;
+  }
+}
+.p-card_list li.is-babyespresso1month a {
+  background-image: url('../images/top/lineup_babyespresso_1month.jpg');
+  background-position-y: 34%;
+}
+.p-card_list li.is-babyespresso1day a {
+  background-image: url('../images/top/lineup_babyespresso_1day.jpg');
+  background-position-y: 34%;
+}
+.p-card_list li.is-mocharing a {
+  background-image: url('../images/top/lineup_mocharing.jpg');
+  background-position-y: 34%;
+}
+.p-card_list li.is-cocotopaz a {
+  background-image: url('../images/top/lineup_cocotopaz.jpg');
+  background-position-y: 34%;
+}
+.p-card_list li.is-lattepearl a {
+  background-image: url('../images/top/lineup_lattepearl.jpg');
+  background-position-y: 34%;
+}
+.p-card_list li.is-creamrose a {
+  background-image: url('../images/top/lineup_creamrose.jpg');
+  background-position-y: 34%;
+}
+.p-card_list li.is-glowbrown a {
+  background-image: url('../images/top/lineup_glowbrown.jpg');
+  background-position-y: 34%;
+}
+.p-card_list li.is-rutilateddrop a {
+  background-image: url('../images/top/lineup_rutilateddrop.jpg');
+  background-position-y: 34%;
+}
+.p-card_list li.is-crystalbloom a {
+  background-image: url('../images/top/lineup_crystalbloom.jpg');
+  background-position-y: 30%;
+}
+.p-card_list li.is-garnet a {
+  background-image: url('../images/top/lineup_garnet.jpg');
+}
+.p-card_list li.is-smokyquartz a {
+  background-image: url('../images/top/lineup_smokyquartz.jpg');
+}
+.p-card_list li.is-twintopaz a {
+  background-image: url('../images/top/lineup_twintopaz.jpg');
+}
+.p-card_list li.is-datetopaz a {
+  background-image: url('../images/top/lineup_datetopaz.jpg');
+}
+.p-card_list li.is-strawberryquartz a {
+  background-image: url('../images/top/lineup_strawberryquartz.jpg');
+}
+.p-card_list li.is-opal a {
+  background-image: url('../images/top/lineup_opal.jpg');
+}
+.p-card_list li.is-pearlcatseye a {
+  background-image: url('../images/top/lineup_pearlcatseye.jpg');
+}
+.p-card_list li.is-gregequartz a {
+  background-image: url('../images/top/lineup_gregequartz.jpg');
+}
+.p-card_list li.is-amethyst a {
+  background-image: url('../images/top/lineup_amethyst.jpg');
+}
+.p-card_list li.is-citrine a {
+  background-image: url('../images/top/lineup_citrine.jpg');
+}
+.p-card_list li.is-datetopaztoric a {
+  background-image: url('../images/top/lineup_datetopaztoric.jpg');
+}
+.p-card_list li.is-strawberryquartztoric a {
+  background-image: url('../images/top/lineup_strawberryquartztoric.jpg');
+}
+.p-card_list li.is-opaltoric a {
+  background-image: url('../images/top/lineup_opaltoric.jpg');
+}
+.p-card_list li.is-datetopaz1month a {
+  background-image: url('../images/top/lineup_datetopaz_1month.jpg');
+}
+.p-card_list li.is-strawberryquartz1month a {
+  background-image: url('../images/top/lineup_strawberryquartz_1month.jpg');
+}
+.p-card_list li.is-garnet1month a {
+  background-image: url('../images/top/lineup_garnet_1month.jpg');
+}
+@media screen and (max-width: 768px) {
+  .p-card_icon-new {
+    top: 6%;
+    left: 6%;
+  }
+  .p-card_img {
+    margin: 0;
+  }
+}
+.p-card_more {
+  display: block;
+  font-family: 'aw-conqueror-sans';
+  padding: 10px;
+  text-align: center;
+  line-height: 1;
+  width: 200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+  transition: 0.3s;
+  border: 2px solid white;
+  overflow: hidden;
+}
+.p-card_more::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  background: white;
+}
+.p-card_list li a:hover .p-card_more::after {
+  left: -5%;
+}
+.is-babyespresso1month .p-card_more::after {
+  background: #ffc3f2;
+}
+.is-babyespresso1day .p-card_more::after {
+  background: #ffc3f2;
+}
+.is-datetopaz .p-card_more::after {
+  background: #b5a7cc;
+}
+.is-strawberryquartz .p-card_more::after {
+  background: #e59abc;
+}
+.is-opal .p-card_more::after {
+  background: #f4b19a;
+}
+.is-pearlcatseye .p-card_more::after {
+  background: #ccb0b1;
+}
+.is-gregequartz .p-card_more::after {
+  background: #d9cdbe;
+}
+.is-amethyst .p-card_more::after {
+  background: #bdb9ca;
+}
+.is-citrine .p-card_more::after {
+  background: #d9ccab;
+}
+.is-garnet .p-card_more::after {
+  background: #efd5c8;
+}
+.is-smokyquartz .p-card_more::after {
+  background: #fbdfdc;
+}
+.is-twintopaz .p-card_more::after {
+  background: #ded9e5;
+}
+.is-rutilateddrop .p-card_more::after {
+  background: #f9eeeb;
+}
+.is-crystalbloom .p-card_more::after {
+  background: #cfdde8;
+}
+.is-strawberryquartztoric .p-card_more::after {
+  background: #e59abc;
+}
+.is-opaltoric .p-card_more::after {
+  background: #f4b19a;
+}
+.is-datetopaztoric .p-card_more::after {
+  background: #b5a7cc;
+}
+.is-creamrose .p-card_more::after {
+  background: #cf8ab3;
+}
+.is-glowbrown .p-card_more::after {
+  background: #c2b09e;
+}
+.is-datetopaz1month .p-card_more::after {
+  background: #d5bdd3;
+}
+.is-strawberryquartz1month .p-card_more::after {
+  background: #d68b9e;
+}
+.is-garnet1month .p-card_more::after {
+  background: #e4d2ae;
+}
+.is-mocharing .p-card_more::after {
+  background: #edd8e0;
+}
+.is-cocotopaz .p-card_more::after {
+  background: #f099ad;
+}
+.is-lattepearl .p-card_more::after {
+  background: #d8bba3;
+}
+.p-card_more::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 105%;
+  width: 150%;
+  height: 100%;
+  z-index: -1;
+  transform: skew(-45deg);
+  transition: left 0.3s;
+}
+@media screen and (max-width: 768px) {
+  .p-card_more {
+    font-size: 10px;
+    width: 50px;
+    padding: 0px;
+  }
+  .p-card_more::after {
+    left: 100%;
+  }
+}
+/* producer */
+.p-producer {
+  margin: 100px auto 0;
+}
+.p-producer_bg {
+  display: flex;
+  justify-content: flex-end;
+  background: url('../images/top/producer.jpg') center/cover no-repeat;
+  height: 100vh;
+}
+.p-producer_ttl {
+  width: 30%;
+  margin: 0 8% 0 0;
+}
+.p-producer h3 {
+  font-size: 4rem;
+  margin: 8vw 0px 4vw;
+}
+.p-producer p {
+  font-size: 1.3rem;
+  line-height: 2;
+  text-align: justify;
+}
+@media only screen and (min-width: 767px) and (max-width: 1280px) {
+  .p-producer_ttl {
+    width: 30%;
+    margin: 0 5% 0 0;
+  }
+}
+@media screen and (max-width: 768px) {
+  .p-producer {
+    margin: 30px auto 0;
+  }
+  .p-producer_ttl {
+    padding: 5px 0 10px;
+    width: 82%;
+    margin: 0 auto 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 2px;
+  }
+  .p-producer .c-title_l {
+    text-align: center;
+  }
+  .p-producer h3 {
+    font-size: 2rem;
+    margin-top: 4vw;
+  }
+  .p-producer p {
+    font-size: 1.1rem;
+    color: #333;
+    line-height: 1.8;
+    margin: 10px 20px;
+  }
+}
+@media screen and (max-width: 768px) {
+  .p-producer_bg {
+    background: #ffe4f4 url('../images/top/producer_sp.jpg') no-repeat;
+    background-size: 100% auto;
+    height: 120vw;
+    align-items: flex-end;
+  }
+}
+@media screen and (max-width: 520px) {
+  .p-producer_bg {
+    height: 130vw;
+  }
+}
+@media screen and (max-width: 445px) {
+  .p-producer_bg {
+    height: 150vw;
+  }
+}
+/* movie */
+.p-movie {
+  width: 100%;
+  margin: 80px auto 0;
+}
+.p-movie iframe {
+  display: block;
+  margin: 0 auto 60px;
+  width: 75%;
+  height: 460px;
+}
+@media only screen and (min-width: 767px) and (max-width: 1280px) {
+  .p-movie iframe {
+    width: 100%;
+    height: 620px;
+  }
+}
+@media screen and (max-width: 768px) {
+  .p-movie {
+    margin: 30px auto;
+  }
+  .p-movie iframe {
+    margin: 0 auto 30px;
+    width: 100%;
+    height: 220px;
+  }
+}
+
+.hamburger {
+  display: block;
+  position: fixed;
+  z-index: 3;
+  right: 20px;
+  top: 20px;
+  width: 42px;
+  height: 42px;
+  cursor: pointer;
+  text-align: center;
+}
+.hamburger span {
+  display: block;
+  position: absolute;
+  width: 30px;
+  height: 2px;
+  left: 6px;
+  background: #bbbbbb;
+  -webkit-transition: 0.3s ease-in-out;
+  -moz-transition: 0.3s ease-in-out;
+  transition: 0.3s ease-in-out;
+}
+.hamburger span:nth-child(1) {
+  top: 10px;
+}
+.hamburger span:nth-child(2) {
+  top: 20px;
+}
+.hamburger span:nth-child(3) {
+  top: 30px;
+}
+
+/* スマホメニューを開いてる時のボタン */
+.hamburger.active span:nth-child(1) {
+  top: 16px;
+  left: 6px;
+  background: #fff;
+  -webkit-transform: rotate(-45deg);
+  -moz-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+
+.hamburger.active span:nth-child(2),
+.hamburger.active span:nth-child(3) {
+  top: 16px;
+  background: #fff;
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  transform: rotate(45deg);
+}
+
+/* メニュー背景　*/
+nav.globalMenuSp {
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  color: #fff;
+  background: rgba(71, 70, 73, 0.6);
+  text-align: center;
+  width: 100%;
+  opacity: 0;
+  display: none;
+  transition:
+    opacity 0.6s ease,
+    visibility 0.6s ease;
+}
+
+nav.globalMenuSp ul {
+  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+}
+
+nav.globalMenuSp ul li {
+  list-style-type: none;
+  padding: 0;
+  width: 100%;
+  transition: 0.4s all;
+}
+nav.globalMenuSp ul li:last-child {
+  padding-bottom: 0;
+}
+nav.globalMenuSp ul li:hover {
+  background: #ddd;
+}
+
+nav.globalMenuSp ul li a {
+  display: block;
+  color: #fff;
+  padding: 1em 0;
+  text-decoration: none;
+}
+
+/* クリックでjQueryで追加・削除 */
+nav.globalMenuSp.active {
+  opacity: 100;
+  display: block;
+}

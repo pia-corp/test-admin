@@ -1,0 +1,264 @@
+/* -------------------------------
+ * inquiry
+ * -------------------------------*/
+.c-title_l + p {
+  text-align: center;
+  line-height: 1.8;
+  margin: 0 0 20px 0;
+}
+.c-title_l + p span {
+  display: inline-block;
+  font-size: 1rem;
+  color: #fff;
+  line-height: 1.6;
+  margin: 4px 3px 0 7px;
+  padding: 0 5px 3px;
+  border-radius: 2px;
+  background-color: #ec4c5c;
+}
+table th.ind::after {
+  display: inline-block;
+  content: '必須';
+  font-size: 1rem;
+  font-weight: normal;
+  text-align: center;
+  color: #fff;
+  line-height: 1.6;
+  margin: 0 6px 6px;
+  padding: 2px 5px;
+  border-radius: 2px;
+  background-color: #ec4c5c;
+}
+input[type='radio'] {
+  display: none;
+}
+input[type='radio'] + label {
+  display: inline-block;
+  position: relative;
+  font-size: 1.6rem;
+  line-height: 1.4;
+  margin: 0 20px 0 0;
+  padding: 0 0 0 26px;
+  cursor: pointer;
+}
+input[type='radio'] + label:after {
+  position: absolute;
+  content: '';
+  display: block;
+  top: 2px;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  background-color: #fff;
+}
+input[type='radio']:checked + label:before {
+  position: absolute;
+  content: '';
+  top: 6px;
+  left: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #dd8c77;
+  z-index: 1;
+}
+input[type='text'],
+input[type='tel'],
+input[type='email'] {
+  display: block;
+  font-size: 1.6rem;
+  color: #666;
+  line-height: 1.8;
+  width: 94%;
+  padding: 10px 20px;
+  border: solid 1px #ddd;
+  background-color: #fff;
+}
+textarea {
+  display: block;
+  font-size: 1.6rem;
+  color: #666;
+  line-height: 1.75;
+  width: 94%;
+  height: 140px;
+  padding: 10px 20px;
+  border: solid 1px #ddd;
+  background-color: #fff;
+}
+table {
+  margin-bottom: 25px;
+}
+table + p {
+  text-align: center;
+  line-height: 2.1;
+  margin-bottom: 30px;
+}
+input[type='checkbox'] {
+  display: none;
+}
+input[type='checkbox'] + label {
+  position: relative;
+  font-size: 1.6rem;
+  padding-left: 26px;
+  cursor: pointer;
+}
+.checkbox_center {
+  text-align: center;
+}
+input[type='checkbox'] + label::after {
+  position: absolute;
+  content: '';
+  display: block;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  margin: 4px 0 0 0;
+  border: 1px solid #bbb;
+  border-radius: 2px;
+  background-color: #fff;
+}
+input[type='checkbox']:checked + label::before {
+  position: absolute;
+  content: '';
+  display: block;
+  top: 3px;
+  left: 5px;
+  width: 9px;
+  height: 14px;
+  border: 1px solid #dd8c77;
+  border-width: 0 3px 3px 0;
+  z-index: 1;
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+}
+input[type='submit'] {
+  display: block;
+  font-size: 1.6rem;
+  color: #fff;
+  text-align: center;
+  line-height: 71px;
+  width: 95%;
+  max-width: 376px;
+  margin: 40px auto;
+  border: none;
+  border-radius: 2px;
+  background-color: #dd8c77;
+  transition: 0.3s;
+}
+input[type='submit']:hover {
+  opacity: 0.8;
+}
+input[type='submit'].reset {
+  color: #666;
+  line-height: inherit;
+  max-width: fit-content;
+  margin: 30px auto;
+  padding: 0 0 2px;
+  border-bottom: 1px solid #666;
+  background-color: transparent;
+}
+p.error {
+  font-size: 1.6rem;
+  color: #ff0000;
+  margin-top: 22px;
+}
+p.error.md {
+  font-size: 1.4rem;
+  color: #fff;
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto 25px;
+  padding: 9.5px 0;
+  background-color: #ff0000;
+}
+.p-completed {
+  width: 90%;
+  margin: 0 auto 40px;
+}
+.p-completed_ttl {
+  font-size: 2.6rem;
+  color: #dd8c77;
+  text-align: center;
+}
+.p-completed_txt {
+  margin: 50px 0 0;
+}
+.p-completed_txt p {
+  font-size: 1.6rem;
+  text-align: center;
+  line-height: 1.6;
+  margin: 0 0 30px;
+}
+.contact form a {
+  color: #000;
+  text-decoration: underline;
+}
+.contact form a:hover {
+  text-decoration: none;
+}
+@media only screen and (max-width: 767px) {
+  .c-title_l + p {
+    line-height: 1.6;
+  }
+  input[type='radio'] + label {
+    display: inline-block;
+    font-size: 1.4rem;
+    margin: 0 8px 6px 0;
+    padding-left: 20px;
+  }
+  input[type='radio'] + label:after {
+    top: 3px;
+    width: 16px;
+    height: 16px;
+  }
+  tr:last-child td {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    padding-bottom: 20px;
+  }
+  table + p {
+    text-align: left;
+    line-height: 1.8;
+    margin: 10px 14px 30px;
+  }
+  p.error {
+    font-size: 1.2rem;
+    margin-top: 10px;
+    padding: 0 0 10px;
+  }
+  p.error.md {
+    font-size: 1.2rem;
+  }
+  input[type='radio']:checked + label:before {
+    top: 6px;
+    left: 3px;
+  }
+  input[type='text'],
+  input[type='tel'],
+  input[type='email'] {
+    width: 100%;
+  }
+  textarea {
+    width: 100%;
+    height: 100px;
+  }
+  input[type='checkbox'] + label {
+    font-size: 1.6rem;
+  }
+  .p-completed_ttl {
+    font-size: 2rem;
+  }
+  .p-completed_txt {
+    margin: 40px 0 0;
+  }
+  .p-completed_txt p {
+    font-size: 1.4rem;
+    text-align: center;
+    line-height: 1.6;
+    margin: 0 0 30px;
+  }
+}
