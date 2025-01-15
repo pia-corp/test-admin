@@ -4,3 +4,6 @@
 [submodule "test-admin_submoduleB"]
 	path = test-admin_submoduleB
 	url = https://github.com/pia-corp/test-admin_submoduleB.git
+[submodule "topards.jp"]
+	path = topards.jp
+	url = https://github.com/pia-corp/topards.jp
