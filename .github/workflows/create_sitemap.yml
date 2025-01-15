@@ -35,9 +35,14 @@ jobs:
           fetch-depth: 0
           ref: ${{ inputs.branch_name }}
 
-      # - name: Initialize and update submodules
-      #   run: |
-      #     git submodule update --init --remote ${{env.REPOSITORY}}
+      - name: Checkout branch
+        run: |
+          git checkout ${{ inputs.branch_name }}
+
+      - name: Update submodules
+        run: git submodule update --init --remote ${{env.REPOSITORY}}
+        env:
+          GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN_VALUE }}
 
       # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
       - name: Copy Files
@@ -82,16 +87,12 @@ jobs:
 
           echo '</urlset>' >> sitemap.xml
 
-      - name: Checkout branch
-        run: |
-          git checkout ${{ inputs.branch_name }}
-
       - name: Commit changes
         id: commit
         run: |
           git add .
           if ! git diff-index --quiet HEAD; then
-            git commit -m "Automatically update submodules"
+            git commit -m "Automatically update sitemap"
             echo "changed_files=true" >> $GITHUB_OUTPUT
           else
             echo "No changes to commit"
