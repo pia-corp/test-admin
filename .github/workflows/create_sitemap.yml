@@ -15,6 +15,10 @@ on:
         description: "Branch name to commit changes"
         required: false
         type: string
+    secrets:
+      GITHUB_TOKEN_VALUE:
+        description: "GitHub Token"
+        required: true
 permissions:
   contents: read
   id-token: write
