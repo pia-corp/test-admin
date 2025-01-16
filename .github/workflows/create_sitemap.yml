@@ -82,33 +82,33 @@ jobs:
       # 結果確認のため、outフォルダの内容を表示
       - name: Display out folder content
         run: |
-          echo "Contents of out folder:"
+            echo "outフォルダの内容:"
           ls -la out/${{ env.REPOSITORY }}
 
       - name: Create sitemap
         run: |
-          if [ ! -d "./${{ env.REPOSITORY }}" ]; then
-            echo "Error: ./out/${{ env.REPOSITORY }} directory does not exist."
+          if [ ! -d "./${{ env.REPOSITORY }}/public" ]; then
+            echo "エラー: ./${{ env.REPOSITORY }}/public ディレクトリが存在しません。"
             exit 1
           fi
 
-          files=$(find ./out/${{ env.REPOSITORY }} -type f -name '*.html')
+          files=$(find ./${{ env.REPOSITORY }}/public -type f -name '*.html')
 
-          echo '<?xml version="1.0" encoding="UTF-8"?>' > sitemap.xml
-          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> sitemap.xml
+          echo '<?xml version="1.0" encoding="UTF-8"?>' > out/${{ env.REPOSITORY }}/sitemap.xml
+          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> out/${{ env.REPOSITORY }}/sitemap.xml
 
           for file in $files; do
             relative_path=${file#./out/${{ env.REPOSITORY }}/}
             url="https://${{ env.REPOSITORY }}/$relative_path"
             lastmod=$(stat -c %y "$file" | TZ=Asia/Tokyo git log -1 --format="%ci" -- "$file")
 
-            echo '  <url>' >> sitemap.xml
-            echo "    <loc>$url</loc>" >> sitemap.xml
-            echo "    <lastmod>$lastmod</lastmod>" >> sitemap.xml
-            echo '  </url>' >> sitemap.xml
+            echo '  <url>' >> out/${{ env.REPOSITORY }}/sitemap.xml
+            echo "    <loc>$url</loc>" >> out/${{ env.REPOSITORY }}/sitemap.xml
+            echo "    <lastmod>$lastmod</lastmod>" >> out/${{ env.REPOSITORY }}/sitemap.xml
+            echo '  </url>' >> out/${{ env.REPOSITORY }}/sitemap.xml
           done
 
-          echo '</urlset>' >> sitemap.xml
+          echo '</urlset>' >> out/${{ env.REPOSITORY }}/sitemap.xml
 
       - name: Commit changes
         id: commit
