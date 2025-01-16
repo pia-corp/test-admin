@@ -74,19 +74,25 @@ jobs:
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-  merge:
+  CreatePR:
     needs: CreateSiteMap
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    if: needs.UpdateSubmodules.outputs.changed_files == 'true'
 
     steps:
       - name: Create PR
-        if: ${{ steps.commit.outputs.changed_files == 'true' }}
-        run: |
-          gh pr create --fill
+        run: gh pr create --fill
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  AutoMerge:
+    needs: CreateSiteMap
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: needs.UpdateSubmodules.outputs.changed_files == 'true'
+
+    steps:
       - name: Auto-merge PR
         if: ${{ steps.commit.outputs.changed_files == 'true' }}
         run: gh pr merge --auto --merge
