@@ -94,3 +94,10 @@ jobs:
             echo "changed_files=false" >> $GITHUB_OUTPUT
           fi
           git push -u origin ${{ inputs.branch_name }}
+
+      - name: Delete branch
+        if: env.changed_files == 'false'
+        run: |
+          git push origin --delete ${{ inputs.branch_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
