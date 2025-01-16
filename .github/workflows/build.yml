@@ -39,13 +39,12 @@ permissions:
   pull-requests: write
   actions: read
 
-env:
-  RELEASE_BRANCH_NAME: release/github_${{ github.run_id }}
-
 jobs:
   CreateBranch:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      RELEASE_BRANCH_NAME: release/github_${{ github.run_id }}
 
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +61,7 @@ jobs:
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: ${{ env.RELEASE_BRANCH_NAME }}
+      branch_name: ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN }}
 
@@ -72,7 +71,7 @@ jobs:
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: ${{ env.RELEASE_BRANCH_NAME }}
+      branch_name: ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN }}
 
@@ -103,6 +102,6 @@ jobs:
     steps:
       - name: Delete branch
         run: |
-          git push origin --delete ${{ env.RELEASE_BRANCH_NAME }}
+          git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
