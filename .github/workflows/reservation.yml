@@ -114,7 +114,7 @@ jobs:
         USER_LOGIN: ${{ github.actor }}
         CODE_OWNERS: ${{ vars.CODE_OWNERS }}
       run: |
-          echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
+        echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
         if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
           echo "ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
           exit 1
