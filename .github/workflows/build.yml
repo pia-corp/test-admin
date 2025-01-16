@@ -94,7 +94,19 @@ jobs:
 
     steps:
       - name: Auto-merge PR
-        if: ${{ steps.commit.outputs.changed_files == 'true' }}
         run: gh pr merge --auto --merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  DeleteBranch:
+    needs: UpdateSubmodules
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: needs.UpdateSubmodules.outputs.changed_files == 'false'
+
+    steps:
+      - name: Delete Branch
+        run: |
+          git push origin --delete ${{ env.RELEASE_BRANCH_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
