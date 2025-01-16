@@ -1,4 +1,4 @@
-name: Submodules Update
+name: Update Submodules
 
 on:
   workflow_call:
@@ -22,17 +22,16 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
-  Update:
+  update:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       REPOSITORY: ${{ inputs.repository_no_register && inputs.repository_no_register || inputs.repository }}
 
     outputs:
-      changed_files: ${{ steps.commit.outputs.changed_files }}
+      changed_files: ${{ steps.check_changes.outputs.changed_files }}
 
     steps:
       - name: Check if the user is authorized
@@ -85,9 +84,11 @@ jobs:
           if git diff --exit-code; then
             echo "No changes in submodules"
             echo "changed_files=false" >> $GITHUB_ENV
+            echo "changed_files=false" >> $GITHUB_OUTPUT
           else
             echo "Submodules have changed"
             echo "changed_files=true" >> $GITHUB_ENV
+            echo "changed_files=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Checkout branch
