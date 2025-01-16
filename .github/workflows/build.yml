@@ -1,4 +1,6 @@
 name: ブランドリポジトリ取得+サイトマップ生成
+# cron-jobを作成してIDをどうやって管理するか
+# submoduleの更新に関係なく、その後のジョブが実行されない
 
 on:
   workflow_dispatch:
