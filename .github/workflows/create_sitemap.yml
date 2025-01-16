@@ -33,6 +33,19 @@ jobs:
       REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
 
     steps:
+      - name: Check if the user is authorized
+        env:
+          USER_LOGIN: ${{ github.actor }}
+          CODE_OWNERS: ${{ vars.CODE_OWNERS }}
+        run: |
+            echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
+          if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
+            echo "ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
+            exit 1
+          fi
+            echo "ユーザー $USER_LOGIN は認証されました。続行します..."
+
+    steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
