@@ -84,7 +84,6 @@ on:
           - 21
           - 22
           - 23
-          - 24
       minutes:
         type: choice
         required: true
@@ -106,30 +105,41 @@ on:
 jobs:
   RESERVATION:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 3
 
-  steps:
-    - name: Check if the user is authorized
-      env:
-        USER_LOGIN: ${{ github.actor }}
-        CODE_OWNERS: ${{ vars.CODE_OWNERS }}
-      run: |
-        echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
-        if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
-          echo "ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
-          exit 1
-        fi
+    steps:
+      - name: Check if the user is authorized
+        env:
+          USER_LOGIN: ${{ github.actor }}
+          CODE_OWNERS: ${{ vars.CODE_OWNERS }}
+        run: |
+          echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
+          if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
+            echo "ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
+            exit 1
+          fi
           echo "ユーザー $USER_LOGIN は認証されました。続行します..."
 
-    - name: Register Cron job
-      env:
-        month: ${{ github.event.inputs.month }}
-        day: ${{ github.event.inputs.day }}
-        hour: ${{ github.event.inputs.hour }}
-        minutes: ${{ github.event.inputs.minutes }}
-      run: |
-        curl -X PATCH \
-        -H 'Content-Type: application/json' \
-        -H 'Authorization: Bearer ${{ secrets.CRON_TOKEN }}' \
-        -d '{"job":{"enabled":"true","schedule":{"hours":[${{env.hour}}],"mdays":[${{env.day}}],"minutes":[${{env.minutes}}],"months":[${{env.month}}]}}}' \
-        https://api.cron-job.org/jobs/${{ vars.CRON_ID }}
+      - name: Register Cron job
+        env:
+          month: ${{ github.event.inputs.month }}
+          day: ${{ github.event.inputs.day }}
+          hour: ${{ github.event.inputs.hour }}
+          minutes: ${{ github.event.inputs.minutes }}
+        run: |
+          echo "Registering the job with month=$month, day=$day, hour=$hour, minutes=$minutes..."
+          curl -X PATCH \
+            -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
+            -d "{
+              \"job\": {
+                \"enabled\": true,
+                \"schedule\": {
+                  \"hours\": [$hour],
+                  \"mdays\": [$day],
+                  \"minutes\": [$minutes],
+                  \"months\": [$month]
+                }
+              }
+            }" \
+            https://api.cron-job.org/jobs/${{ vars.CRON_ID }}
