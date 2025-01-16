@@ -79,7 +79,6 @@ jobs:
             exit 1
           fi
 
-      # 結果確認のため、outフォルダの内容を表示
       - name: Display out folder content
         run: |
             echo "outフォルダの内容:"
