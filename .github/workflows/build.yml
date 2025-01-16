@@ -39,20 +39,21 @@ permissions:
   pull-requests: write
   actions: read
 
-
 jobs:
   CreateBranch:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      RELEASE_BRANCH_NAME: release/github_${{ github.run_id }}
 
     steps:
       - uses: actions/checkout@v4
       - name: Create new branch
         run: |
-          git checkout -b release/github_${{ github.run_id }}
+          git checkout -b ${{ env.RELEASE_BRANCH_NAME }}
       - name: Push new branch
         run: |
-          git push -u origin release/github_${{ github.run_id }}
+          git push -u origin ${{ env.RELEASE_BRANCH_NAME }}
 
   UpdateSubmodules:
     needs: CreateBranch
@@ -60,9 +61,9 @@ jobs:
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: release/github_${{ github.run_id }}
+      branch_name: ${{ env.RELEASE_BRANCH_NAME }}
     secrets:
-      GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN }}
 
   CreateSiteMap:
     needs: UpdateSubmodules
@@ -70,30 +71,26 @@ jobs:
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: release/github_${{ github.run_id }}
+      branch_name: ${{ env.RELEASE_BRANCH_NAME }}
     secrets:
-      GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN }}
 
   CreatePR:
     needs: CreateSiteMap
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: needs.UpdateSubmodules.outputs.changed_files == 'true'
-
     steps:
       - name: Create PR
+        if: needs.UpdateSubmodules.outputs.changed_files == 'true'
         run: gh pr create --fill
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   AutoMerge:
-    needs: CreateSiteMap
+    needs: CreatePR
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: needs.UpdateSubmodules.outputs.changed_files == 'true'
-
     steps:
       - name: Auto-merge PR
+        if: needs.UpdateSubmodules.outputs.changed_files == 'true'
         run: gh pr merge --auto --merge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -101,11 +98,9 @@ jobs:
   DeleteBranch:
     needs: UpdateSubmodules
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     if: needs.UpdateSubmodules.outputs.changed_files == 'false'
-
     steps:
-      - name: Delete Branch
+      - name: Delete branch
         run: |
           git push origin --delete ${{ env.RELEASE_BRANCH_NAME }}
         env:
