@@ -39,12 +39,13 @@ permissions:
   pull-requests: write
   actions: read
 
+env:
+  RELEASE_BRANCH_NAME: release/github_${{ github.run_id }}
+
 jobs:
   CreateBranch:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    env:
-      RELEASE_BRANCH_NAME: release/github_${{ github.run_id }}
 
     steps:
       - uses: actions/checkout@v4
