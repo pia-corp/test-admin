@@ -56,7 +56,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  Upload:
+  Update:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -107,11 +107,24 @@ jobs:
         env:
           GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN_VALUE }}
 
+      - name: Check for submodule changes
+        id: check_changes
+        run: |
+          if git diff --exit-code; then
+            echo "No changes in submodules"
+            echo "changed_files=false" >> $GITHUB_ENV
+          else
+            echo "Submodules have changed"
+            echo "changed_files=true" >> $GITHUB_ENV
+          fi
+
       - name: Checkout branch
+        if: env.changed_files == 'true'
         run: |
           git checkout ${{ inputs.branch_name }}
 
       - name: Commit changes
+        if: env.changed_files == 'true'
         id: commit
         run: |
           git add .
