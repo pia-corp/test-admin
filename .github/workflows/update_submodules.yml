@@ -88,12 +88,21 @@ jobs:
           git add .
           if ! git diff-index --quiet HEAD; then
             git commit -m "Automatically update submodules"
-            echo "changed_files=true" >> $GITHUB_OUTPUT
-          else
-            echo "No changes to commit"
-            echo "changed_files=false" >> $GITHUB_OUTPUT
           fi
           git push -u origin ${{ inputs.branch_name }}
+
+      - name: Check for submodule changes
+        id: check_changes
+        run: |
+          if git diff --exit-code; then
+            echo "No changes in submodules"
+            echo "changed_files=false" >> $GITHUB_ENV
+            echo "changed_files=false" >> $GITHUB_OUTPUT
+          else
+            echo "Submodules have changed"
+            echo "changed_files=true" >> $GITHUB_ENV
+            echo "changed_files=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Delete branch
         if: env.changed_files == 'false'
