@@ -62,6 +62,9 @@ jobs:
     env:
       REPOSITORY: ${{ inputs.repository_no_register && inputs.repository_no_register || inputs.repository }}
 
+    outputs:
+      changed_files: ${{ steps.commit.outputs.changed_files }}
+
     steps:
       - name: Check if the user is authorized
         env:
