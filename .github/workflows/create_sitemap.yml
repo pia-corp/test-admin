@@ -32,7 +32,6 @@ jobs:
     timeout-minutes: 5
     env:
       REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
-    if: needs.UpdateSubmodules.outputs.changed_files == 'true'
 
     steps:
       - name: Check if the user is authorized
