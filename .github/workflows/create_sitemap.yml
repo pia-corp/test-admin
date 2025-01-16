@@ -45,7 +45,6 @@ jobs:
           fi
             echo "ユーザー $USER_LOGIN は認証されました。続行します..."
 
-    steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
