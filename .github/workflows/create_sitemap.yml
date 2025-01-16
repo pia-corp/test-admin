@@ -67,7 +67,6 @@ jobs:
         env:
           GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN_VALUE }}
 
-      # out フォルダを作成し、public フォルダ内のすべてのファイルをコピー
       - name: Copy Files
         run: |
           mkdir -p out
@@ -81,7 +80,7 @@ jobs:
 
       - name: Display out folder content
         run: |
-            echo "outフォルダの内容:"
+          echo "outフォルダの内容:"
           ls -la out/${{ env.REPOSITORY }}
 
       - name: Create sitemap
