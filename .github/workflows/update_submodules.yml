@@ -19,37 +19,6 @@ on:
       GITHUB_TOKEN_VALUE:
         description: "GitHub Token"
         required: true
-  workflow_dispatch:
-    inputs:
-      repository:
-        type: choice
-        description: "Target Submodules"
-        required: true
-        options:
-          - "topards.jp"
-          - "feliamo.jp"
-          - "molak.jp"
-          - "ns-collection.jp"
-          - "lilmoon.jp"
-          - "minette-lens.jp"
-          - "mirage-c.jp"
-          - "mimuco.jp"
-          - "harne.jp"
-          - "louer.jp"
-          - "lumieu.jp"
-          - "puuuuchu.jp"
-          - "melady.jp"
-          - "melloew.jp"
-          - "faloom.jp"
-          - "mimicharme.jp"
-          - "lensbe.jp"
-          - "clainel.jp"
-          - "chapun.jp"
-          - "resay.jp"
-          - "michou.jp"
-      repository_no_register:
-        description: "対象ブランド（未登録）"
-        default: ""
 
 permissions:
   contents: write
