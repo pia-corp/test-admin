@@ -54,7 +54,6 @@ jobs:
         id: set_branch_name
         run: |
           echo "RELEASE_BRANCH_NAME=release/github_${{ github.run_id }}" >> $GITHUB_ENV
-          echo "::set-output name=RELEASE_BRANCH_NAME::release/github_${{ github.run_id }}"
       - name: Push new branch
         run: |
           git push -u origin ${{ env.RELEASE_BRANCH_NAME }}
