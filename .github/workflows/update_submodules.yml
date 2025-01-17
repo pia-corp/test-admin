@@ -96,8 +96,9 @@ jobs:
           git push -u origin ${{ inputs.branch_name }}
 
       - name: Delete branch
-        if: env.commit_exits == 'false'
         run: |
-          git push origin --delete ${{ inputs.branch_name }}
+          if env.commit_exits == 'false'
+            git push origin --delete ${{ inputs.branch_name }}
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_VALUE }}
