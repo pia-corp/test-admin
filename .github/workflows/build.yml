@@ -89,8 +89,28 @@ jobs:
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+  ExistsCommit:
+    needs: UpdateSubmodules
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    outputs:
+      commit_exists: ${{ steps.commit.outputs.commit_exists }}
+
+    steps:
+      - name: Commit changes HEAD（最新コミット）とステージングエリアの差分があるか確認します。
+        id: commit
+        run: |
+            echo "未コミットの変更や新しいコミットがあるか確認しています..."
+          if git diff-index --quiet HEAD; then
+            echo "No new commits or changes."
+            echo "commit_exists=false" >> $GITHUB_OUTPUT
+          else
+            echo "Commits or changes exist."
+            echo "commit_exists=true" >> $GITHUB_OUTPUT
+
   CreateSiteMap:
-    needs: CreateBranch
+    needs: ExistsCommit
+    if: needs.ExistsCommit.outputs.commit_exists == 'true'
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
@@ -100,11 +120,11 @@ jobs:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
   DeleteBranch:
-    needs: CreateSiteMap
+    needs: ExistsCommit
     runs-on: ubuntu-latest
     steps:
       - name: Delete branch
-        if: needs.UpdateSubmodules.outputs.changed_files == 'false'
+        if: needs.ExistsCommit.outputs.commit_exists == 'false'
         run: git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_VALUE }}
@@ -114,7 +134,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create PR
-        if: needs.UpdateSubmodules.outputs.changed_files == 'true'
+        if: needs.ExistsCommit.outputs.commit_exists == 'true'
         run: gh pr create --fill
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -124,7 +144,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Auto-merge PR
-        if: needs.UpdateSubmodules.outputs.changed_files == 'true'
         run: gh pr merge --auto --merge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
