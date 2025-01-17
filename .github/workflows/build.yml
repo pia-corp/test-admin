@@ -36,7 +36,6 @@ on:
 
 permissions:
   contents: write
-  id-token: write
   pull-requests: write
 
 env:
@@ -44,6 +43,9 @@ env:
 
 jobs:
   Auth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
     steps:
       - name: Check if the user is authorized
         env:
@@ -102,7 +104,7 @@ jobs:
     steps:
       - name: Delete branch
         if: needs.UpdateSubmodules.outputs.changed_files == 'false'
-        run: git push origin --delete ${{ needs.CreateBranch.outputs.REPOSITORY_PATH }}
+        run: git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_VALUE }}
 
