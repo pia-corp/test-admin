@@ -94,11 +94,3 @@ jobs:
             echo "commit_exits=false" >> $GITHUB_ENV
           fi
           git push -u origin ${{ inputs.branch_name }}
-
-      - name: Delete branch
-        run: |
-          if [ "$commit_exists" == "false" ]; then
-            git push origin --delete ${{ inputs.branch_name }}
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_VALUE }}
