@@ -94,13 +94,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     outputs:
-      commit_exists: ${{ steps.commit.outputs.commit_exists }}
+      commit_exists: ${{ steps.commit_check.outputs.commit_exists }}
 
     steps:
-      - name: Commit changes HEAD（最新コミット）とステージングエリアの差分があるか確認します。
-        id: commit
+      - name: Check for uncommitted changes
+        id: commit_check
         run: |
-            echo "未コミットの変更や新しいコミットがあるか確認しています..."
+          echo "未コミットの変更や新しいコミットがあるか確認しています..."
           if git diff-index --quiet HEAD; then
             echo "No new commits or changes."
             echo "commit_exists=false" >> $GITHUB_OUTPUT
