@@ -109,9 +109,19 @@ jobs:
             echo "commit_exists=true" >> $GITHUB_OUTPUT
           fi
 
+  ExistsCommit:
+    needs: UpdateSubmodules
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Debug Outputs
+        run: |
+          echo "Commit Exists Output: ${{ steps.commit_check.outputs.commit_exists }}"
+          echo "Commit Exists Output: ${{ needs.ExistsCommit.outputs.commit_exists }}"
+
   CreateSiteMap:
     needs: ExistsCommit
-    if: needs.ExistsCommit.outputs.commit_exists == 'true'
+    if: ${{ needs.ExistsCommit.outputs.commit_exists }} == 'true'
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
@@ -125,7 +135,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete branch
-        if: needs.ExistsCommit.outputs.commit_exists == 'false'
+        if: ${{ needs.ExistsCommit.outputs.commit_exists }} == 'false'
         run: git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_VALUE }}
@@ -135,7 +145,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create PR
-        if: needs.ExistsCommit.outputs.commit_exists == 'true'
+        if: ${{ needs.ExistsCommit.outputs.commit_exists }} == 'true'
         run: gh pr create --fill
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
