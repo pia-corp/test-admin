@@ -43,21 +43,16 @@ jobs:
   CreateBranch:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    outputs:
-      RELEASE_BRANCH_NAME: ${{ steps.set_branch_name.RELEASE_BRANCH_NAME }}
 
     steps:
       - uses: actions/checkout@v4
       - name: Create new branch
         id: set_branch_name
         run: |
-          BRANCH_NAME=release/github_${{ github.run_id }}
-          echo "RELEASE_BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
-          echo "RELEASE_BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_OUTPUT
-          git checkout -b $BRANCH_NAME
+          git checkout -b release/github_${{ github.run_id }}
       - name: Push new branch
         run: |
-          git push -u origin ${{ env.RELEASE_BRANCH_NAME }}
+          git push -u origin release/github_${{ github.run_id }}
 
   UpdateSubmodules:
     needs: CreateBranch
@@ -65,7 +60,7 @@ jobs:
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
+      branch_name: release/github_${{ github.run_id }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
@@ -75,7 +70,7 @@ jobs:
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
+      branch_name: release/github_${{ github.run_id }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
