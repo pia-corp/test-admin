@@ -114,9 +114,7 @@ jobs:
           git add .
           if ! git diff-index --quiet HEAD; then
             git commit -m "Automatically update sitemap"
-            echo "changed_files=true" >> $GITHUB_OUTPUT
           else
             echo "No changes to commit"
-            echo "changed_files=false" >> $GITHUB_OUTPUT
           fi
           git push -u origin ${{ inputs.branch_name }}
