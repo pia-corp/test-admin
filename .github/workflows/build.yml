@@ -109,8 +109,8 @@ jobs:
             echo "commit_exists=true" >> $GITHUB_OUTPUT
           fi
 
-  ExistsCommit:
-    needs: UpdateSubmodules
+  Debug:
+    needs: ExistsCommit
     runs-on: ubuntu-latest
 
     steps:
