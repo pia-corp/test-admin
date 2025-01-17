@@ -39,12 +39,28 @@ permissions:
   id-token: write
   pull-requests: write
 
+env:
+  RELEASE_BRANCH_NAME: release/github_${{ github.run_id }}
+
 jobs:
+  Auth:
+    - name: Check if the user is authorized
+    env:
+      USER_LOGIN: ${{ github.actor }}
+      CODE_OWNERS: ${{ vars.CODE_OWNERS }}
+    run: |
+      echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
+      if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
+        echo "ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
+        exit 1
+      fi
+      echo "ユーザー $USER_LOGIN は認証されました。続行します..."
+
   CreateBranch:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      REPOSITORY_PATH: ${{ steps.set_branch_name.outputs.path }}
+      RELEASE_BRANCH_NAME: ${{ steps.set_branch_name.outputs.RELEASE_BRANCH_NAME }}
 
     steps:
       - uses: actions/checkout@v4
@@ -52,12 +68,12 @@ jobs:
         id: set_branch_name
         run: |
           BRANCH_NAME=release/github_${{ github.run_id }}
-          echo "REPOSITORY_PATH=$BRANCH_NAME" >> $GITHUB_ENV
-          echo "REPOSITORY_PATH=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          echo "RELEASE_BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "RELEASE_BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_OUTPUT
           git checkout -b $BRANCH_NAME
       - name: Push new branch
         run: |
-          git push -u origin ${{ env.REPOSITORY_PATH }}
+          git push -u origin ${{ env.RELEASE_BRANCH_NAME }}
 
   UpdateSubmodules:
     needs: CreateBranch
@@ -65,7 +81,7 @@ jobs:
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: ${{ needs.CreateBranch.outputs.REPOSITORY_PATH }}
+      branch_name: ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
@@ -75,7 +91,7 @@ jobs:
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: ${{ needs.CreateBranch.outputs.REPOSITORY_PATH }}
+      branch_name: ${{ env.RELEASE_BRANCH_NAME }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
@@ -108,3 +124,7 @@ jobs:
         run: gh pr merge --auto --merge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  CreateTag:
+    needs: UpdateSubmodules
+    uses: ./.github/workflows/create_tag.yml
