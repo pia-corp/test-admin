@@ -90,7 +90,7 @@ jobs:
   #     GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
   CreateSiteMap:
-    needs: UpdateSubmodules
+    needs: CreateBranch
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
