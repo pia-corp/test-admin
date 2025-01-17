@@ -46,16 +46,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      RELEASE_BRANCH_NAME: release/github_${{ github.run_id }}
+      RELEASE_BRANCH_NAME: ${{ steps.set_branch_name.outputs.RELEASE_BRANCH_NAME }}
 
     steps:
       - uses: actions/checkout@v4
       - name: Create new branch
+        id: set_branch_name
         run: |
-          git checkout -b release/github_${{ github.run_id }}
+          echo "RELEASE_BRANCH_NAME=release/github_${{ github.run_id }}" >> $GITHUB_ENV
+          echo "::set-output name=RELEASE_BRANCH_NAME::release/github_${{ github.run_id }}"
       - name: Push new branch
         run: |
-          git push -u origin release/github_${{ github.run_id }}
+          git push -u origin ${{ env.RELEASE_BRANCH_NAME }}
+
 
   UpdateSubmodules:
     needs: CreateBranch
