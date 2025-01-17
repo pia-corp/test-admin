@@ -51,12 +51,11 @@ jobs:
       - name: Create new branch
         id: set_branch_name
         run: |
-          echo "path=release/github_${{ github.run_id }}" >> $GITHUB_ENV
           echo "path=release/github_${{ github.run_id }}" >> $GITHUB_OUTPUT
-          git checkout -b $path
+          git checkout -b ${{ needs.CreateBranch.outputs.REPOSITORY_PATH }}
       - name: Push new branch
         run: |
-          git push -u origin $path
+          git push -u origin ${{ needs.CreateBranch.outputs.REPOSITORY_PATH }}
 
   UpdateSubmodules:
     needs: CreateBranch
