@@ -108,6 +108,9 @@ jobs:
     timeout-minutes: 3
 
     steps:
+      runs-on: ubuntu-latest
+      timeout-minutes: 1
+
       - name: Check if the user is authorized
         env:
           USER_LOGIN: ${{ github.actor }}
