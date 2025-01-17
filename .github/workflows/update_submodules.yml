@@ -97,7 +97,7 @@ jobs:
 
       - name: Delete branch
         run: |
-          if env.commit_exits == 'false'
+          if [ "$commit_exists" == "false" ]; then
             git push origin --delete ${{ inputs.branch_name }}
           fi
         env:
