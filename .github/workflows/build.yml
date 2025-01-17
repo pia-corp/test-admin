@@ -116,7 +116,6 @@ jobs:
     steps:
       - name: Debug Outputs
         run: |
-          echo "Commit Exists Output: ${{ steps.commit_check.outputs.commit_exists }}"
           echo "Commit Exists Output: ${{ needs.ExistsCommit.outputs.commit_exists }}"
 
   CreateSiteMap:
@@ -138,12 +137,16 @@ jobs:
         if: ${{ needs.ExistsCommit.outputs.commit_exists }} == 'false'
         run: git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_VALUE }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   CreatePR:
     needs: CreateSiteMap
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout branch
+        run: |
+          git checkout ${{ inputs.branch_name }}
+
       - name: Create PR
         if: ${{ needs.ExistsCommit.outputs.commit_exists }} == 'true'
         run: gh pr create --fill
