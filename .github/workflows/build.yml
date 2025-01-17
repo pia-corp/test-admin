@@ -60,6 +60,7 @@ jobs:
           echo "ユーザー $USER_LOGIN は認証されました。続行します..."
 
   CreateBranch:
+    needs: Auth
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -94,7 +95,7 @@ jobs:
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: ${{ env.RELEASE_BRANCH_NAME }}
+      branch_name: ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
@@ -129,5 +130,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   CreateTag:
-    needs: UpdateSubmodules
+    needs: CreatePR
     uses: ./.github/workflows/create_tag.yml
