@@ -22,37 +22,20 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   sitemap:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
+      REPOSITORY: ${{ inputs.repository_no_register && inputs.repository || inputs.repository }}
 
     steps:
-      - name: Check if the user is authorized
-        env:
-          USER_LOGIN: ${{ github.actor }}
-          CODE_OWNERS: ${{ vars.CODE_OWNERS }}
-        run: |
-          echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
-          if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
-            echo "ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
-            exit 1
-          fi
-          echo "ユーザー $USER_LOGIN は認証されました。続行します..."
-
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ inputs.branch_name }}
-
-      - name: Checkout branch
-        run: |
-          git checkout ${{ inputs.branch_name }}
 
       - name: Set Git configuration
         run: |
@@ -105,6 +88,10 @@ jobs:
           done
 
           echo '</urlset>' >> out/${{ env.REPOSITORY }}/sitemap.xml
+
+      - name: Checkout branch
+        run: |
+          git checkout ${{ inputs.branch_name }}
 
       - name: Commit changes
         id: commit

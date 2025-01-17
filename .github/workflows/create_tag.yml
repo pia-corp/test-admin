@@ -2,61 +2,88 @@ name: タグ生成
 
 on:
   workflow_call:
+    secrets:
 
 jobs:
   CreateTag:
-    needs: Build
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 2
 
     steps:
       - name: Checkout the repository
-        uses: actions/checkout@v4.1.6
+        uses: actions/checkout@v4
 
       - name: Get previous tag
         id: pre_tag
         run: |
           echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)" >> $GITHUB_ENV
 
-      - name: Generate release tag major version
-        if: needs.build.outputs.changed_files == 'true'
+      # タグを生成する 「{YYYY.MM.DD}-{当日リリース回数}」
+      - name: Generate tag
+        id: release_tag
         run: |
           today=$(date +'%Y.%m.%d')
-          pre_release_date=$(echo "${{ env.pre_tag }}" | awk -F'-' '{print $1}')
-          pre_release_count=$(echo "${{ env.pre_tag }}" | awk -F'-' '{print $2}')
+          pre_release_date=$(echo ${{ steps.pre_tag.outputs.pre_tag }} | awk -F'-' '{print $1}')
+          pre_release_count=$(echo ${{ steps.pre_tag.outputs.pre_tag }} | awk -F'-' '{print $2}')
           if [[ ! $pre_release_date = $today ]]; then
-            echo "init count"
             pre_release_count=0
           fi
-          release_ver=$(awk "BEGIN {printf \"%.1f\", $pre_release_count + 1}")
-          echo "release_tag__major=$today-$release_ver" >> $GITHUB_ENV
+          echo "release_tag=$today-$(($pre_release_count + 1))" >> $GITHUB_OUTPUT
 
-      - name: Generate release tag minor vertion
-        if: needs.build.outputs.changed_files == 'false'
+      # PRのDescriptionを取得しマークダウン形式に変換する
+      - name: Get pr description
+        id: pr_description
         run: |
-          today=$(date +'%Y.%m.%d')
-          pre_release_date=$(echo "${{ env.pre_tag }}" | awk -F'-' '{print $1}')
-          pre_release_count=$(echo "${{ env.pre_tag }}" | awk -F'-' '{print $2}')
-          if [[ ! $pre_release_date = $today ]]; then
-            echo "init count"
-            pre_release_count=0
-          fi
-          release_ver=$(awk "BEGIN {printf \"%.1f\", $pre_release_count + 0.01}")
-          echo "release_tag__minor=$today-$release_ver" >> $GITHUB_ENV
+          echo "pr_description=$(curl -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number}}' \
+            | jq .body | awk '{if ($0 == "null") print ""; else print}')" >> $GITHUB_OUTPUT
 
-      - name: Generate release note
-        id: release_note
+      # 前回リリースからの差分をもとに、変更点を取得する
+      - name: Generate release note changes
+        id: changes
         run: |
-          release_note=$(curl -X POST \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          echo "changes=$(
+          curl -X POST \
+            -H 'Accept: application/vnd.github.v3+json' \
+            -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
             https://api.github.com/repos/${{ github.repository }}/releases/generate-notes \
-            -d "{\"tag_name\":\"${{ env.release_tag__minor || env.release_tag__major }}\", \"previous_tag_name\":\"${{ env.pre_tag }}\"}" | jq .body | sed 's/"//g')
-          echo "release_note=$release_note" >> $GITHUB_ENV
+            -d '{
+              "tag_name": "${{ steps.release_tag.outputs.release_tag }}",
+              "previous_tag_name": "${{ steps.pre_tag.outputs.pre_tag }}",
+              "target_commitish": "main"
+            }' | jq .body
+          )" >> $GITHUB_OUTPUT
 
+      # リリースノートの本文を作成する
+      - name: Create release note body
+        id: release_note_body
+        run: |
+          echo "release_note_body=$(echo \
+            ${{ steps.pr_description.outputs.pr_description }} \
+            ${{ steps.changes.outputs.changes }} \
+            | sed 's/\\"//g' | sed 's/["“]//g')" >> $GITHUB_OUTPUT
+
+      # タグを切り、リリースノートを作成する
+      # PRのラベルに応じてカテゴライズする場合は、使用先のリポジトリで下記を定義する
+      # https://docs.github.com/ja/repositories/releasing-projects-on-github/automatically-generated-release-notes#configuring-automatically-generated-release-notes
       - name: Create Release
         run: |
-          curl -X POST \
+          response=$(curl -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -d "{ \"tag_name\": \"${{ env.release_tag__minor || env.release_tag__major }}\", \"name\": \"${{ env.release_tag__minor || env.release_tag__major }}\", \"body\": \"${{ env.release_tag__minor || env.release_tag__major }}}\"}" \
-            https://api.github.com/repos/${{ github.repository }}/releases
+            -d "{ \
+              \"tag_name\": \"${{ steps.release_tag.outputs.release_tag }}\", \
+              \"target_commitish\": \"main\", \
+              \"name\": \"${{ steps.release_tag.outputs.release_tag }}\", \
+              \"body\": \"${{ steps.release_note_body.outputs.release_note_body }}\" \
+            }" \
+            -w "%{http_code}" \
+            -o response_body.txt \
+            https://api.github.com/repos/${{ github.repository }}/releases)
+            status_code=$(tail -n1 <<< "$response")
+            echo "Status Code: $status_code"
+            body=$(cat response_body.txt)
+            echo "Response Body: $body"
+            if [ $status_code -ne 201 ]; then
+              echo "Failed to create release"
+              exit 1
+            fi
