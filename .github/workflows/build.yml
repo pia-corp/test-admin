@@ -79,15 +79,15 @@ jobs:
         run: |
           git push -u origin ${{ env.RELEASE_BRANCH_NAME }}
 
-  UpdateSubmodules:
-    needs: CreateBranch
-    uses: ./.github/workflows/update_submodules.yml
-    with:
-      repository: ${{ inputs.repository }}
-      repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
-    secrets:
-      GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+  # UpdateSubmodules:
+  #   needs: CreateBranch
+  #   uses: ./.github/workflows/update_submodules.yml
+  #   with:
+  #     repository: ${{ inputs.repository }}
+  #     repository_no_register: ${{ inputs.repository_no_register }}
+  #     branch_name: ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
+  #   secrets:
+  #     GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
   CreateSiteMap:
     needs: UpdateSubmodules
@@ -130,5 +130,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   CreateTag:
-    needs: CreatePR
+    needs: AutoMerge
     uses: ./.github/workflows/create_tag.yml
