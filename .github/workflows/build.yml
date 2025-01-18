@@ -220,7 +220,7 @@ jobs:
           echo "Last commit message: $COMMIT_MESSAGE"
 
           # 改行や特殊文字をエスケープして環境変数に設定
-          echo "COMMIT_MESSAGE=$(echo "$COMMIT_MESSAGE" | sed 's/$/\n/')" >> $GITHUB_ENV
+          echo "COMMIT_MESSAGE=$(echo "$COMMIT_MESSAGE" | sed 's/$/\n/')" >> $GITHUB_OUTPUT
 
   CreateSiteMap:
     needs: ExistsCommit
