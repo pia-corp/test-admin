@@ -263,6 +263,7 @@ jobs:
 
       - name: Create PR if commit exists
         run: |
+          git fetch --all
           gh pr create --fill
           PR_NUMBER=$(gh pr list --state open --head develop --base main --json number --jq '.[].number')
           if [ -n "$PR_NUMBER" ]; then
