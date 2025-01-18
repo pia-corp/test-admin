@@ -215,7 +215,7 @@ jobs:
       - name: Get commit message
         id: get_commit_message
         run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B --no-merges)
+          COMMIT_MESSAGE=$(git log -1 --pretty=%s)
           echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
 
 
@@ -246,7 +246,7 @@ jobs:
 
       - name: Get commit message
         run: |
-          echo ${{ needs.DEBUG.outputs.COMMIT_MESSAGE}}
+          echo ${{ needs.DEBUG.outputs.COMMIT_MESSAGE }}
 
       - name: Delete branch
         if: ${{ needs.DEBUG.outputs.COMMIT_MESSAGE }} != 'Automatically update submodules'
