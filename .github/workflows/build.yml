@@ -161,7 +161,7 @@ jobs:
           echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
           if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
             echo "ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
-            echo "::warning ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
+            echo "::warning:: ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
             exit 1
           fi
           echo "ユーザー $USER_LOGIN は認証されました。続行します..."
@@ -214,7 +214,7 @@ jobs:
         run: |
           echo "未コミットの変更や新しいコミットがあるか確認しています..."
           if git diff-index --quiet HEAD; then
-            echo "::error 新しいコミットや変更はありません。"
+            echo "::error:: 新しいコミットや変更はありません。"
             echo "commit_exists=false" >> $GITHUB_OUTPUT
           else
             echo "コミットや変更が存在します。"
@@ -223,7 +223,7 @@ jobs:
 
   CreateSiteMap:
     needs: ExistsCommit
-    if: needs.ExistsCommit.outputs.commit_exists == 'true'
+    if: ${{ needs.ExistsCommit.outputs.commit_exists == 'true' }}
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
@@ -241,8 +241,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check if the branch exists on the remote
+        run: |
+          # Fetch all branches from the remote
+          git fetch --all
+
+          # Check if the specified branch exists on the remote
+          BRANCH_NAME="release/github_${{ github.run_id }}"
+          if git branch -r | grep -q "origin/$BRANCH_NAME"; then
+            echo "Branch $BRANCH_NAME exists on the remote."
+          else
+            echo "Branch $BRANCH_NAME does not exist on the remote."
+            exit 1  # Exit with error if branch does not exist
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: release/github_${{ github.run_id }}
+
+      - name: Debug Outputs
+        run: |
+          echo "Commit Exists: ${{ needs.ExistsCommit.outputs.commit_exists }}"
+
       - name: Delete branch
-        if: needs.ExistsCommit.outputs.commit_exists == 'false'
+        if: ${{ needs.ExistsCommit.outputs.commit_exists == 'false' }}
         run: git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -280,7 +303,7 @@ jobs:
           echo "Commit Exists: ${{ needs.ExistsCommit.outputs.commit_exists }}"
 
       - name: Create PR
-        if: needs.ExistsCommit.outputs.commit_exists == 'true'
+        if: ${{ needs.ExistsCommit.outputs.commit_exists == 'true' }}
         run: gh pr create --fill
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

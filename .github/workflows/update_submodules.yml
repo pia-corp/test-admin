@@ -49,7 +49,7 @@ jobs:
             echo "Submodule exists"
             echo "submodule_exists=true" >> $GITHUB_ENV
           else
-            echo "Submodule does not exist"
+            echo "::notice:: サブモジュールの更新情報は存在しません"
             echo "submodule_exists=false" >> $GITHUB_ENV
           fi
 
@@ -75,7 +75,5 @@ jobs:
           git add .
           if ! git diff-index --quiet HEAD; then
             git commit -m "Automatically update submodules"
-          else
-            echo "No changes to submodule"
+            git push -u origin ${{ inputs.branch_name }}
           fi
-          git push -u origin ${{ inputs.branch_name }}
