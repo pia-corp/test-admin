@@ -224,7 +224,7 @@ jobs:
 
 
   CreateSiteMap:
-    needs: UpdateSubmodules
+    needs: DEBUG
     if: ${{ needs.DEBUG.output.COMMIT_MESSAGE}} == 'Automatically update submodules'
     uses: ./.github/workflows/create_sitemap.yml
     with:
@@ -237,7 +237,7 @@ jobs:
   # このジョブは、指定されたブランチが存在しない場合にそのブランチをリモートリポジトリから削除するためのものです。
   # 具体的には、UpdateSubmodulesジョブの出力がfalseの場合に、CreateBranchジョブで作成されたブランチを削除します。
   DeleteBranch:
-    needs: UpdateSubmodules
+    needs: DEBUG
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
