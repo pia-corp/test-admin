@@ -218,7 +218,7 @@ jobs:
           # 直前のコミットメッセージを取得
           COMMIT_MESSAGE=$(git log -1 --pretty=%B)
           # 改行や特殊文字をエスケープして環境変数に設定
-          echo "COMMIT_MESSAGE=$(echo "$COMMIT_MESSAGE" | sed 's/$/\n/')" >> $GITHUB_OUTPUT
+          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
 
   CreateSiteMap:
     needs: ExistsCommit
@@ -273,7 +273,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  Reservation:
+  UploadReservation:
     needs: [CreateSiteMap, DeleteBranch]
     runs-on: ubuntu-latest
     timeout-minutes: 1
