@@ -38,10 +38,13 @@ permissions:
   contents: write
   pull-requests: write
 
-env:
-  RELEASE_BRANCH_NAME: release/github_${{ github.run_id }}
+# env:
+#   RELEASE_BRANCH_NAME: release/github_${{ github.run_id }}
 
 jobs:
+  # このジョブは、ワークフローを実行するユーザーが許可されたリストに含まれているかどうかを確認します。
+  # 許可されていない場合、ワークフローは警告を出して終了します。
+  # 許可されている場合、ワークフローは続行されます。
   Auth:
     runs-on: ubuntu-latest
     timeout-minutes: 1
@@ -55,10 +58,14 @@ jobs:
           echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
           if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
             echo "ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
+            echo "::warning ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
             exit 1
           fi
           echo "ユーザー $USER_LOGIN は認証されました。続行します..."
 
+  # このジョブは、新しいリリースブランチを作成し、リモートリポジトリにプッシュするためのものです。
+  # 'Auth' ジョブが完了した後に実行されます。
+  # ジョブの出力として、作成されたリリースブランチの名前を提供します。
   CreateBranch:
     needs: Auth
     runs-on: ubuntu-latest
@@ -120,7 +127,7 @@ jobs:
 
   CreateSiteMap:
     needs: ExistsCommit
-    if: ${{ needs.ExistsCommit.outputs.commit_exists }} == 'true'
+    if: needs.ExistsCommit.outputs.commit_exists == 'true'
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
@@ -134,7 +141,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete branch
-        if: ${{ needs.ExistsCommit.outputs.commit_exists }} == 'false'
+        if: needs.ExistsCommit.outputs.commit_exists == 'false'
         run: git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -146,9 +153,11 @@ jobs:
       - name: Checkout branch
         run: |
           git checkout ${{ inputs.branch_name }}
+          BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+          echo "::warning $BRANCH_NAME"
 
       - name: Create PR
-        if: ${{ needs.ExistsCommit.outputs.commit_exists }} == 'true'
+        if: needs.ExistsCommit.outputs.commit_exists == 'true'
         run: gh pr create --fill
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
