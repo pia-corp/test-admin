@@ -77,3 +77,16 @@ jobs:
             git commit -m "Automatically update submodules"
             git push -u origin ${{ inputs.branch_name }}
           fi
+
+  DEBUG:
+    needs: UpdateSubmodules
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: DEBUG branch
+        run: |
+          git checkout ${{ inputs.branch_name }}
+          echo "${{ github.event.head_commit.message}}"
