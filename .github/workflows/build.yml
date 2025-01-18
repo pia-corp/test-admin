@@ -189,28 +189,32 @@ jobs:
         run: |
           git push -u origin ${{ env.RELEASE_BRANCH_NAME }}
 
-  UpdateSubmodules:
+  Build:
     needs: CreateBranch
-    uses: ./.github/workflows/update_submodules.yml
-    with:
-      repository: ${{ inputs.repository }}
-      repository_no_register: ${{ inputs.repository_no_register }}
-      branch_name: release/github_${{ github.run_id }}
-    secrets:
-      GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update submodules
+        uses: ./.github/workflows/update_submodules.yml
+        with:
+          repository: ${{ inputs.repository }}
+          repository_no_register: ${{ inputs.repository_no_register }}
+          branch_name: release/github_${{ github.run_id }}
+        secrets:
+          GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-    uses: ./.github/workflows/create_sitemap.yml
-      with:
-        repository: ${{ inputs.repository }}
-        repository_no_register: ${{ inputs.repository_no_register }}
-        branch_name: release/github_${{ github.run_id }}
-      secrets:
-        GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - name: Create sitemap
+        uses: ./.github/workflows/create_sitemap.yml
+        with:
+          repository: ${{ inputs.repository }}
+          repository_no_register: ${{ inputs.repository_no_register }}
+          branch_name: release/github_${{ github.run_id }}
+        secrets:
+          GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
   # このジョブは、未コミットの変更や新しいコミットが存在するかを確認するためのものです。
-  # `UpdateSubmodules`ジョブが完了した後に実行されます。
+  # `Build`ジョブが完了した後に実行されます。
   ExistsCommit:
-    needs: UpdateSubmodules
+    needs: Build
     runs-on: ubuntu-latest
     timeout-minutes: 1
     outputs:
