@@ -244,6 +244,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Get commit message
+        run: |
+          echo ${{ needs.DEBUG.output.COMMIT_MESSAGE}}
+
       - name: Delete branch
         if: ${{ needs.DEBUG.output.COMMIT_MESSAGE}} != 'Automatically update submodules'
         run: git push origin --delete release/github_${{ github.run_id }}
