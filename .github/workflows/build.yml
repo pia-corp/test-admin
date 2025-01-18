@@ -262,6 +262,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check for uncommitted changes
+        id: commit_check
+        run: |
+          echo "${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}"
+
       - name: Delete branch
         if: ${{ !contains(github.event.head_commit.message, 'Automatically update submodules') }}
         run: git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
