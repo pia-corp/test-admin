@@ -232,6 +232,21 @@ jobs:
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+  # このジョブは、指定されたブランチが存在しない場合にそのブランチをリモートリポジトリから削除するためのものです。
+  # 具体的には、ExistsCommitジョブの出力がfalseの場合に、CreateBranchジョブで作成されたブランチを削除します。
+  DeleteBranch:
+    needs: ExistsCommit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Delete branch
+        if: ${{ needs.ExistsCommit.outputs.commit_exists == 'false' }}
+        run: git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # このジョブは、リポジトリをチェックアウトし、指定されたブランチに切り替え、
   # コミットが存在する場合にプルリクエストを作成します。
   CloseBranch:
@@ -265,55 +280,11 @@ jobs:
           echo "Commit Exists: ${{ needs.ExistsCommit.outputs.commit_exists }}"
 
       - name: Create PR if commit exists
-        if: ${{ needs.ExistsCommit.outputs.commit_exists == 'true' }}
         run: |
           gh pr create --fill
           gh pr merge --auto --merge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Delete branch if no commit
-        if: ${{ needs.ExistsCommit.outputs.commit_exists == 'false' }}
-        run: |
-          git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # # CreatePRジョブが完了した後に自動的にプルリクエストをマージするためのものです。
-  # AutoMerge:
-  #   needs: CreatePR
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
-
-  #     - name: Check if the branch exists on the remote
-  #       run: |
-  #         # Fetch all branches from the remote
-  #         git fetch --all
-
-  #         # Check if the specified branch exists on the remote
-  #         BRANCH_NAME="release/github_${{ github.run_id }}"
-  #         if git branch -r | grep -q "origin/$BRANCH_NAME"; then
-  #           echo "Branch $BRANCH_NAME exists on the remote."
-  #         else
-  #           echo "Branch $BRANCH_NAME does not exist on the remote."
-  #           exit 1  # Exit with error if branch does not exist
-  #         fi
-
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
-  #       with:
-  #         ref: release/github_${{ github.run_id }}
-
-  #     - name: Debug Outputs
-  #       run: |
-  #         echo "Commit Exists: ${{ needs.ExistsCommit.outputs.commit_exists }}"
-
-  #     - name: Auto-merge PR
-  #       run: gh pr merge --auto --merge
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   CreateTag:
     needs: CloseBranch
