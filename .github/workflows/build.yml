@@ -166,6 +166,26 @@ jobs:
           fi
           echo "ユーザー $USER_LOGIN は認証されました。続行します..."
 
+      # Jobが落ちた場合のみ、Playbookを実行する
+      - name: Playbook
+        if: failure()
+        uses: ./.github/actions/playbook
+        with:
+          message: |
+            # ${{ github.job }} が失敗しました
+
+            ## 影響
+            - 何が影響を受けるか
+
+            ## 調査方法
+            - Jobの落ちてるステップのエラーログを確認してください
+
+            ## 修正方法
+            - どのように対応するか
+
+            ## 修正後の確認方法
+            - 修正後にどのように確認するか
+
   # このジョブは、新しいリリースブランチを作成し、リモートリポジトリにプッシュするためのものです。
   # 'Auth' ジョブが完了した後に実行されます。
   # ジョブの出力として、作成されたリリースブランチの名前を提供します。
@@ -214,16 +234,16 @@ jobs:
         with:
           ref: release/github_${{ github.run_id }}
 
-      - name: Get last commit message
-        id: get_commit_message
-        run: |
-          MESSAGE=$(git log -1 --pretty=%B)
-          echo "COMMIT_MESSAGE=$MESSAGE" >> $GITHUB_ENV
-          echo "COMMIT_MESSAGE=$MESSAGE" >> $GITHUB_OUTPUT
+      # - name: Get last commit message
+      #   id: get_commit_message
+      #   run: |
+      #     MESSAGE=$(git log -1 --pretty=%B)
+      #     echo "COMMIT_MESSAGE=$MESSAGE" >> $GITHUB_ENV
+      #     echo "COMMIT_MESSAGE=$MESSAGE" >> $GITHUB_OUTPUT
 
   CreateSiteMap:
     needs: ExistsCommit
-    if: ${{ needs.ExistsCommit.outputs.get_commit_message == 'Automatically update submodules' }}
+    if: contains(${{ github.event.head_commit.message }}, 'Automatically update submodules')
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
@@ -243,7 +263,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Delete branch
-        if: ${{ needs.ExistsCommit.outputs.get_commit_message != 'Automatically update submodules' }}
+        if: !contains(${{ github.event.head_commit.message }}, 'Automatically update submodules')
         run: git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
