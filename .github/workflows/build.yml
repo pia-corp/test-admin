@@ -38,9 +38,6 @@ permissions:
   contents: write
   pull-requests: write
 
-# env:
-#   RELEASE_BRANCH_NAME: release/github_${{ github.run_id }}
-
 jobs:
   # このジョブは、ワークフローを実行するユーザーが許可されたリストに含まれているかどうかを確認します。
   # 許可されていない場合、ワークフローは警告を出して終了します。
@@ -96,6 +93,8 @@ jobs:
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+  # このジョブは、未コミットの変更や新しいコミットが存在するかを確認するためのものです。
+  # `UpdateSubmodules`ジョブが完了した後に実行されます。
   ExistsCommit:
     needs: UpdateSubmodules
     runs-on: ubuntu-latest
@@ -109,10 +108,10 @@ jobs:
         run: |
           echo "未コミットの変更や新しいコミットがあるか確認しています..."
           if git diff-index --quiet HEAD; then
-            echo "No new commits or changes."
+            echo "::error 新しいコミットや変更はありません。"
             echo "commit_exists=false" >> $GITHUB_OUTPUT
           else
-            echo "Commits or changes exist."
+            echo "コミットや変更が存在します。"
             echo "commit_exists=true" >> $GITHUB_OUTPUT
           fi
 
@@ -136,6 +135,8 @@ jobs:
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+  # このジョブは、指定されたブランチが存在しない場合にそのブランチをリモートリポジトリから削除するためのものです。
+  # 具体的には、ExistsCommitジョブの出力がfalseの場合に、CreateBranchジョブで作成されたブランチを削除します。
   DeleteBranch:
     needs: ExistsCommit
     runs-on: ubuntu-latest
@@ -149,6 +150,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # このジョブは、リポジトリをチェックアウトし、指定されたブランチに切り替え、
+  # コミットが存在する場合にプルリクエストを作成します。
   CreatePR:
     needs: CreateSiteMap
     runs-on: ubuntu-latest
@@ -159,8 +162,6 @@ jobs:
       - name: Checkout branch
         run: |
           git checkout ${{ inputs.branch_name }}
-          BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-          echo "::warning $BRANCH_NAME"
 
       - name: Create PR
         if: needs.ExistsCommit.outputs.commit_exists == 'true'
@@ -168,10 +169,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # CreatePRジョブが完了した後に自動的にプルリクエストをマージするためのものです。
   AutoMerge:
     needs: CreatePR
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Auto-merge PR
         run: gh pr merge --auto --merge
         env:
