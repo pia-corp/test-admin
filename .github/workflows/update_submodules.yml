@@ -86,16 +86,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: repository
         id: commit_message
         run: |
-          {
-            echo 'COMMIT_MESSAGE=<<EOF'
-            git show ${{ github.event.pull_request.head.sha }} -s --format=%B
-            echo EOF
-          } >> $GITHUB_OUTPUT
-
-      - run: echo ${{ steps.commit_message.outputs.COMMIT_MESSAGE }}
+          echo ${{ github.event.head_commit.message }}
