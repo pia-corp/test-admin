@@ -79,7 +79,6 @@ jobs:
           fi
 
   DEBUG:
-    needs: UpdateSubmodules
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
