@@ -206,7 +206,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     outputs:
-      commit_exists: ${{ steps.commit_check.outputs.commit_message }}
+      commit_exists: ${{ steps.get_commit_message.outputs.commit_message }}
 
     steps:
       - name: Checkout repository
