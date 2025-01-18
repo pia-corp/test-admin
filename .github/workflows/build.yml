@@ -220,11 +220,11 @@ jobs:
           echo "Last commit message: $COMMIT_MESSAGE"
 
           # 改行や特殊文字をエスケープ
-          ESCAPED_COMMIT_MESSAGE=$(echo "$COMMIT_MESSAGE" | sed 's/\n/\\n/g' | sed 's/\r/\\r/g' | sed 's/"/\\"/g' | sed 's/\$/\\$/g')
+          SAFE_COMMIT_MESSAGE=$(echo "$COMMIT_MESSAGE" | sed 's/\r//g' | sed 's/\n/\\n/g')
 
           # エスケープしたコミットメッセージを環境変数に設定
-          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_ENV
-          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+          echo "commit_message=$SAFE_COMMIT_MESSAGE" >> $GITHUB_ENV
+          echo "commit_message=$SAFE_COMMIT_MESSAGE" >> $GITHUB_OUTPUT
 
   CreateSiteMap:
     needs: ExistsCommit
