@@ -217,8 +217,12 @@ jobs:
         run: |
           # 直前のコミットメッセージを取得
           COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          # 改行や特殊文字をエスケープして環境変数に設定
+          echo "Last commit message: $COMMIT_MESSAGE"
+
+          # 出力に使用するための適切な形式でコミットメッセージを設定
+          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_ENV
           echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+        shell: /usr/bin/bash -e {0}
 
   CreateSiteMap:
     needs: ExistsCommit
