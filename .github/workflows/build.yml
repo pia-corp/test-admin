@@ -223,8 +223,7 @@ jobs:
 
       - name: DEBUG branch
         run: |
-          git checkout release/github_${{ github.run_id }}
-          echo "${{ github.event.head_commit.message}}"
+          echo "${{ needs.UpdateSubmodules.outputs.changed_files }}"
 
 
   CreateSiteMap:
