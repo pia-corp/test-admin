@@ -27,8 +27,6 @@ jobs:
   update:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    outputs:
-      changed_files: ${{ steps.check_changes.outputs.changed_files }}
     env:
       REPOSITORY: ${{ inputs.repository_no_register && inputs.repository || inputs.repository }}
 
@@ -45,7 +43,6 @@ jobs:
           git config --global url."https://${{ secrets.GITHUB_TOKEN_VALUE }}@github.com/".insteadOf "https://github.com/"
 
       - name: Check if submodule exists
-        id: check_submodule
         run: |
           if git config --file .gitmodules --name-only --get-regexp path | grep -q "^submodule\.$REPOSITORY\.path$"; then
             echo "Submodule exists"
@@ -72,35 +69,11 @@ jobs:
           git checkout ${{ inputs.branch_name }}
 
       - name: Commit changes HEAD（最新コミット）とステージングエリアの差分があるか確認します。
-        id: commit
         run: |
           git add .
           if ! git diff-index --quiet HEAD; then
             git commit -m "Automatically update submodules"
             git push -u origin ${{ inputs.branch_name }}
-            echo "changed_files=true" >> $GITHUB_OUTPUT
           else
             echo "No changes in submodules"
-            echo "changed_files=false" >> $GITHUB_OUTPUT
           fi
-
-  DEBUG:
-    needs: update
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: repository
-        id: commit_message
-        run: |
-          echo "${{ toJSON(github.event.commits) }}"
-          echo ${{ github.event.head_commit.message }}
-
-      - name: Get commit message
-        run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          THIRD_LINE=$(echo "$COMMIT_MESSAGE" | sed -n '3p')
-          echo "Third line: $THIRD_LINE"
