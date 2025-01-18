@@ -211,21 +211,24 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: Get last commit message
         id: get_commit_message
         run: |
-          {
-            echo 'COMMIT_MESSAGE=<<EOF'
-            git show ${{ github.event.pull_request.head.sha }} -s --format=%B
-            echo EOF
-          } >> $GITHUB_OUTPUT
+          # 直前のコミットメッセージを取得
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "Last commit message: $COMMIT_MESSAGE"
+
+          # 改行や特殊文字をエスケープ
+          ESCAPED_COMMIT_MESSAGE=$(echo "$COMMIT_MESSAGE" | sed 's/\n/\\n/g' | sed 's/\r/\\r/g' | sed 's/"/\\"/g' | sed 's/\$/\\$/g')
+
+          # エスケープしたコミットメッセージを環境変数に設定
+          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_ENV
+          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
 
   CreateSiteMap:
     needs: ExistsCommit
-    if: "contains(github.event.head_commit.message, '[Automatically update submodules]')"
+    if: ${{ needs.ExistsCommit.outputs.get_commit_message == 'Automatically update submodules' }}
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
