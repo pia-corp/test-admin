@@ -225,7 +225,7 @@ jobs:
 
   CreateSiteMap:
     needs: ExistsCommit
-    if: ${{ needs.ExistsCommit.outputs.get_commit_message == 'Automatically update submodules' }}
+    if: "contains(github.event.head_commit.message, '[Automatically update submodules]')"
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
