@@ -87,7 +87,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.branch_name }}
-      - name: DEBUG branch
+          fetch-depth: 2
+
+      - id: commit_message
         run: |
-          git log ${{ github.event.before }}..${{ github.sha }} --format="%s %H"
+          {
+            echo 'COMMIT_MESSAGE=<<EOF'
+            git show ${{ github.event.pull_request.head.sha }} -s --format=%B
+            echo EOF
+          } >> $GITHUB_OUTPUT
+
+      - run: echo ${{ steps.commit_message.outputs.COMMIT_MESSAGE }}
