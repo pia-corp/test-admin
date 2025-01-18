@@ -210,20 +210,16 @@ jobs:
 
     steps:
       - name: Check for uncommitted changes
-        id: commit_check
+        id: get_commit_message
         run: |
-          echo "未コミットの変更や新しいコミットがあるか確認しています..."
-          if git diff-index --quiet HEAD; then
-            echo "::error:: 新しいコミットや変更はありません。"
-            echo "commit_exists=false" >> $GITHUB_OUTPUT
-          else
-            echo "コミットや変更が存在します。"
-            echo "commit_exists=true" >> $GITHUB_OUTPUT
-          fi
+          # 直前のコミットメッセージを取得
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "Last commit message: $COMMIT_MESSAGE"
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
 
   CreateSiteMap:
     needs: ExistsCommit
-    if: ${{ needs.ExistsCommit.outputs.commit_exists == 'true' }}
+    if: ${{ needs.ExistsCommit.outputs.COMMIT_MESSAGE == 'Automatically update submodules' }}
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
@@ -243,7 +239,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Delete branch
-        if: ${{ needs.ExistsCommit.outputs.commit_exists == 'false' }}
+        if: ${{ needs.ExistsCommit.outputs.COMMIT_MESSAGE != 'Automatically update submodules' }}
         run: git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -263,7 +259,6 @@ jobs:
 
       - name: Create PR if commit exists
         run: |
-          git fetch --all
           gh pr create --fill
           PR_NUMBER=$(gh pr list --state open --head develop --base main --json number --jq '.[].number')
           if [ -n "$PR_NUMBER" ]; then
