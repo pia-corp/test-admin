@@ -89,4 +89,4 @@ jobs:
       - name: DEBUG branch
         run: |
           git checkout ${{ inputs.branch_name }}
-          echo "${{ github.event.head_commit.message}}"
+          git log ${{ github.event.before }}..${{ github.sha }} --format="%s %H"
