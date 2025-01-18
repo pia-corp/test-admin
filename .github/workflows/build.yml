@@ -211,30 +211,21 @@ jobs:
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-  # このジョブは、未コミットの変更や新しいコミットが存在するかを確認するためのものです。
-  # `UpdateSubmodules`ジョブが完了した後に実行されます。
-  ExistsCommit:
+
+  DEBUG:
     needs: UpdateSubmodules
     runs-on: ubuntu-latest
-    timeout-minutes: 1
-    outputs:
-      commit_exists: ${{ steps.get_commit_message.outputs.COMMIT_MESSAGE }}
+    timeout-minutes: 5
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+          run: |
+            echo "${{ github.event.head_commit.message}}"
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: release/github_${{ github.run_id }}
 
-      # - name: Get last commit message
-      #   id: get_commit_message
-      #   run: |
-      #     MESSAGE=$(git log -1 --pretty=%B)
-      #     echo "COMMIT_MESSAGE=$MESSAGE" >> $GITHUB_ENV
-      #     echo "COMMIT_MESSAGE=$MESSAGE" >> $GITHUB_OUTPUT
 
   CreateSiteMap:
-    needs: ExistsCommit
+    needs: UpdateSubmodules
     if: ${{ contains(github.event.head_commit.message, 'Automatically update submodules') }}
     uses: ./.github/workflows/create_sitemap.yml
     with:
@@ -245,9 +236,9 @@ jobs:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
   # このジョブは、指定されたブランチが存在しない場合にそのブランチをリモートリポジトリから削除するためのものです。
-  # 具体的には、ExistsCommitジョブの出力がfalseの場合に、CreateBranchジョブで作成されたブランチを削除します。
+  # 具体的には、UpdateSubmodulesジョブの出力がfalseの場合に、CreateBranchジョブで作成されたブランチを削除します。
   DeleteBranch:
-    needs: ExistsCommit
+    needs: UpdateSubmodules
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
