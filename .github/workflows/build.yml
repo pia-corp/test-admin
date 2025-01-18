@@ -215,9 +215,8 @@ jobs:
       - name: Get commit message
         id: get_commit_message
         run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%s)
+          COMMIT_MESSAGE=$(git log -1 --pretty=%s | xargs)
           echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
-
 
 
 
@@ -249,7 +248,7 @@ jobs:
           echo ${{ needs.DEBUG.outputs.COMMIT_MESSAGE }}
 
       - name: Delete branch
-        if: ${{ needs.DEBUG.outputs.COMMIT_MESSAGE && (needs.DEBUG.outputs.COMMIT_MESSAGE | trim()) != 'Automatically update submodules' }}
+        if: ${{ needs.DEBUG.outputs.COMMIT_MESSAGE && needs.DEBUG.outputs.COMMIT_MESSAGE != 'Automatically update submodules' }}
         run: git push origin --delete release/github_${{ github.run_id }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
