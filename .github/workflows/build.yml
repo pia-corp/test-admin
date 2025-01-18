@@ -234,9 +234,11 @@ jobs:
         run: |
           git checkout ${{ inputs.branch_name }}
 
-      - name: DEBUG branch
+      # COMMIT_MESSAGE=$(git log -1 --pretty=%s)
+      - name: Get commit message
         run: |
-          echo "${{ needs.UpdateSubmodules.outputs.changed_files }}"
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          echo "Commit message: $COMMIT_MESSAGE"
 
 
 
