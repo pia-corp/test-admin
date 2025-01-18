@@ -35,10 +35,15 @@ on:
         description: "未登録のブランドリポジトリ"
         default: ""
       month:
+        type: boolean
+        description: 予約設定
+        default: false
+      month:
         type: choice
         required: false
         description: 月
         options:
+          - 0
           - 1
           - 2
           - 3
@@ -56,6 +61,7 @@ on:
         required: false
         description: 日
         options:
+          - 0
           - 1
           - 2
           - 3
@@ -92,6 +98,7 @@ on:
         required: false
         description: 時間
         options:
+          - 0
           - 1
           - 2
           - 3
@@ -246,12 +253,24 @@ jobs:
     needs: CreateSiteMap
     runs-on: ubuntu-latest
     steps:
+      - name: Check if the branch exists on the remote
+        run: |
+          # Fetch all branches from the remote
+          git fetch --all
+
+          # Check if the specified branch exists on the remote
+          BRANCH_NAME="release/github_${{ github.run_id }}"
+          if git branch -r | grep -q "origin/$BRANCH_NAME"; then
+            echo "Branch $BRANCH_NAME exists on the remote."
+          else
+            echo "Branch $BRANCH_NAME does not exist on the remote."
+            exit 1  # Exit with error if branch does not exist
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Checkout branch
-        run: |
-          git checkout release/github_${{ github.run_id }}
+        with:
+          ref: release/github_${{ github.run_id }}
 
       - name: Create PR
         if: needs.ExistsCommit.outputs.commit_exists == 'true'
@@ -266,10 +285,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Checkout branch
-        run: |
-          git checkout release/github_${{ github.run_id }}
+        with:
+          ref: release/github_${{ github.run_id }}
 
       - name: Auto-merge PR
         run: gh pr merge --auto --merge
