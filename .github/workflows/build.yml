@@ -140,6 +140,9 @@ jobs:
     needs: ExistsCommit
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Delete branch
         if: needs.ExistsCommit.outputs.commit_exists == 'false'
         run: git push origin --delete ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
@@ -150,6 +153,9 @@ jobs:
     needs: CreateSiteMap
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Checkout branch
         run: |
           git checkout ${{ inputs.branch_name }}
