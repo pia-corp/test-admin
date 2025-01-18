@@ -219,9 +219,12 @@ jobs:
           COMMIT_MESSAGE=$(git log -1 --pretty=%B)
           echo "Last commit message: $COMMIT_MESSAGE"
 
-          # 出力に使用するための適切な形式でコミットメッセージを設定
-          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_ENV
-          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+          # 改行や特殊文字をエスケープ
+          ESCAPED_COMMIT_MESSAGE=$(echo "$COMMIT_MESSAGE" | sed 's/\n/\\n/g' | sed 's/\r/\\r/g' | sed 's/"/\\"/g' | sed 's/\$/\\$/g')
+
+          # エスケープしたコミットメッセージを環境変数に設定
+          echo "commit_message=$ESCAPED_COMMIT_MESSAGE" >> $GITHUB_ENV
+          echo "commit_message=$ESCAPED_COMMIT_MESSAGE" >> $GITHUB_OUTPUT
         shell: /usr/bin/bash -e {0}
 
   CreateSiteMap:
