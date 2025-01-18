@@ -206,7 +206,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     outputs:
-      commit_exists: ${{ steps.commit_check.outputs.commit_exists }}
+      commit_exists: ${{ steps.commit_check.outputs.commit_message }}
 
     steps:
       - name: Checkout repository
@@ -272,11 +272,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  UploadReservation:
-    needs: [CreateSiteMap, DeleteBranch]
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
+  # UploadReservation:
+  #   needs: [CreateSiteMap, DeleteBranch]
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 1
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
