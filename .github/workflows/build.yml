@@ -217,8 +217,6 @@ jobs:
         run: |
           # 直前のコミットメッセージを取得
           COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          echo "Last commit message: $COMMIT_MESSAGE"
-
           # 改行や特殊文字をエスケープして環境変数に設定
           echo "COMMIT_MESSAGE=$(echo "$COMMIT_MESSAGE" | sed 's/$/\n/')" >> $GITHUB_OUTPUT
 
@@ -274,3 +272,12 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  CloseBranch:
+    needs: [CreateSiteMap, DeleteBranch]
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
