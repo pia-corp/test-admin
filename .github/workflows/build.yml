@@ -159,8 +159,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          ref: ${{ inputs.branch_name }}
+          fetch-depth: 1
+          ref: ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
 
       - name: Checkout branch
         run: |
@@ -180,8 +180,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          ref: ${{ inputs.branch_name }}
+          fetch-depth: 1
+          ref: ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
 
       - name: Auto-merge PR
         run: gh pr merge --auto --merge
