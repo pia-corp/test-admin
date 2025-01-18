@@ -1,7 +1,11 @@
 name: タグ生成
 
 on:
-  workflow_call:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
 
 jobs:
   CreateTag:
