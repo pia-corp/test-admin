@@ -224,7 +224,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: release/github_${{ github.run_id }}
+          repository: release/github_${{ github.run_id }}
       - run: |
           ls -a
           echo ""
