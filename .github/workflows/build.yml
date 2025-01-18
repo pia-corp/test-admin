@@ -237,6 +237,7 @@ jobs:
   DeleteBranch:
     needs: ExistsCommit
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -252,40 +253,21 @@ jobs:
   CloseBranch:
     needs: CreateSiteMap
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Check if the branch exists on the remote
-        run: |
-          # Fetch all branches from the remote
-          git fetch --all
-
-          # Check if the specified branch exists on the remote
-          BRANCH_NAME="release/github_${{ github.run_id }}"
-          if git branch -r | grep -q "origin/$BRANCH_NAME"; then
-            echo "Branch $BRANCH_NAME exists on the remote."
-          else
-            echo "Branch $BRANCH_NAME does not exist on the remote."
-            exit 1  # Exit with error if branch does not exist
-          fi
-
+    timeout-minutes: 1
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: release/github_${{ github.run_id }}
 
-      - name: Debug Outputs
-        run: |
-          echo "Commit Exists: ${{ needs.ExistsCommit.outputs.commit_exists }}"
-
       - name: Create PR if commit exists
         run: |
           gh pr create --fill
-          gh pr merge --auto --merge
+          PR_NUMBER=$(gh pr list --state open --head develop --base main --json number --jq '.[].number')
+          if [ -n "$PR_NUMBER" ]; then
+            gh pr merge $PR_NUMBER --merge --auto
+          else
+            echo "::error:: Mergeするプルリクエストが見つかりません。"
+            exit 1
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  CreateTag:
-    needs: CloseBranch
-    uses: ./.github/workflows/create_tag.yml
