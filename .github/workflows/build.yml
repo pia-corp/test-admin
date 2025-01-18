@@ -223,8 +223,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-          with:
-            ref: release/github_${{ github.run_id }}
+        with:
+          ref: release/github_${{ github.run_id }}
       - run: |
           ls -a
           echo ""
