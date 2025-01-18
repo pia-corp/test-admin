@@ -1,4 +1,5 @@
-name: ブランドリポジトリ取得+サイトマップ生成
+name: 00.納品ファイルの取得と公開予約
+# ブランドリポジトリ取得+サイトマップ生成
 # cron-jobを作成してIDをどうやって管理するか
 
 on:
@@ -33,6 +34,104 @@ on:
       repository_no_register:
         description: "未登録のブランドリポジトリ"
         default: ""
+      month:
+        type: choice
+        required: false
+        description: 月
+        options:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+      day:
+        type: choice
+        required: false
+        description: 日
+        options:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 17
+          - 18
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+          - 24
+          - 25
+          - 26
+          - 27
+          - 28
+          - 29
+          - 30
+          - 31
+      hour:
+        type: choice
+        required: false
+        description: 時間
+        options:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 17
+          - 18
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+      minutes:
+        type: choice
+        required: false
+        description: 分
+        options:
+          - 00
+          - 05
+          - 10
+          - 15
+          - 20
+          - 25
+          - 30
+          - 35
+          - 40
+          - 45
+          - 50
+          - 55
 
 permissions:
   contents: write
@@ -147,16 +246,12 @@ jobs:
     needs: CreateSiteMap
     runs-on: ubuntu-latest
     steps:
-      - name: Debug
-        run: |
-          echo "${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}"
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Checkout branch
         run: |
-          git checkout ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
+          git checkout release/github_${{ github.run_id }}
 
       - name: Create PR
         if: needs.ExistsCommit.outputs.commit_exists == 'true'
@@ -169,16 +264,12 @@ jobs:
     needs: CreatePR
     runs-on: ubuntu-latest
     steps:
-      - name: Debug
-        run: |
-          echo "${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}"
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Checkout branch
         run: |
-          git checkout ${{ needs.CreateBranch.outputs.RELEASE_BRANCH_NAME }}
+          git checkout release/github_${{ github.run_id }}
 
       - name: Auto-merge PR
         run: gh pr merge --auto --merge
