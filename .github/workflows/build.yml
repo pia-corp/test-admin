@@ -206,7 +206,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     outputs:
-      commit_exists: ${{ steps.get_commit_message.outputs.commit_message }}
+      commit_exists: ${{ steps.get_commit_message.outputs.COMMIT_MESSAGE }}
 
     steps:
       - name: Checkout repository
@@ -215,9 +215,9 @@ jobs:
       - name: Get last commit message
         id: get_commit_message
         run: |
-          # 直前のコミットメッセージを取得
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
-          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+          MESSAGE=$(git log -1 --pretty=%B)
+          echo "COMMIT_MESSAGE=$MESSAGE" >> $GITHUB_ENV
+          echo "COMMIT_MESSAGE=$MESSAGE" >> $GITHUB_OUTPUT
 
   CreateSiteMap:
     needs: ExistsCommit
