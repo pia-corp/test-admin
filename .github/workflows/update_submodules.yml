@@ -89,7 +89,8 @@ jobs:
         with:
           fetch-depth: 2
 
-      - id: commit_message
+      - name: repository
+        id: commit_message
         run: |
           {
             echo 'COMMIT_MESSAGE=<<EOF'
