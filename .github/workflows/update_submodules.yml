@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      REPOSITORY: ${{ inputs.repository_no_register && inputs.inputs.repository_no_register || inputs.repository }}
+      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
 
     steps:
       - name: Checkout the repository
