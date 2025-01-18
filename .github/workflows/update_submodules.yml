@@ -86,7 +86,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch_name }}
       - name: DEBUG branch
         run: |
-          git checkout ${{ inputs.branch_name }}
           git log ${{ github.event.before }}..${{ github.sha }} --format="%s %H"
