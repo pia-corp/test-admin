@@ -199,6 +199,8 @@ jobs:
     needs: UpdateSubmodules
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      COMMIT_MESSAGE: ${{ steps.get_commit_message.outputs.COMMIT_MESSAGE }}
 
     steps:
       - name: Checkout repository
@@ -210,14 +212,10 @@ jobs:
           echo ""
           git branch -a
 
-      # - name: Checkout branch
-      #   run: |
-      #     git checkout ${{ inputs.branch_name }}
-
-      # COMMIT_MESSAGE=$(git log -1 --pretty=%s)
       - name: Get commit message
+        id: get_commit_message
         run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%B --no-merges)
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B --no-merges) >> GITHUB_OUTPUT
           echo "Commit message: $COMMIT_MESSAGE"
 
 
@@ -227,7 +225,7 @@ jobs:
 
   CreateSiteMap:
     needs: UpdateSubmodules
-    if: ${{ contains(github.event.head_commit.message, 'Automatically update submodules') }}
+    if: ${{ needs.DEBUG.output.COMMIT_MESSAGE}} == 'Automatically update submodules'
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
@@ -238,19 +236,19 @@ jobs:
 
   # このジョブは、指定されたブランチが存在しない場合にそのブランチをリモートリポジトリから削除するためのものです。
   # 具体的には、UpdateSubmodulesジョブの出力がfalseの場合に、CreateBranchジョブで作成されたブランチを削除します。
-  # DeleteBranch:
-  #   needs: UpdateSubmodules
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 1
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
+  DeleteBranch:
+    needs: UpdateSubmodules
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  #     - name: Delete branch
-  #       if: ${{ !contains(github.event.head_commit.message, 'Automatically update submodules') }}
-  #       run: git push origin --delete release/github_${{ github.run_id }}
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Delete branch
+        if: ${{ needs.DEBUG.output.COMMIT_MESSAGE}} != 'Automatically update submodules'
+        run: git push origin --delete release/github_${{ github.run_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # このジョブは、リポジトリをチェックアウトし、指定されたブランチに切り替え、
   # コミットが存在する場合にプルリクエストを作成します。
