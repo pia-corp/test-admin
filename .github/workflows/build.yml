@@ -275,6 +275,10 @@ jobs:
         with:
           ref: release/github_${{ github.run_id }}
 
+      - name: Debug Outputs
+        run: |
+          echo "Commit Exists: ${{ needs.ExistsCommit.outputs.commit_exists }}"
+
       - name: Create PR
         if: needs.ExistsCommit.outputs.commit_exists == 'true'
         run: gh pr create --fill
@@ -288,8 +292,29 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Check if the branch exists on the remote
+        run: |
+          # Fetch all branches from the remote
+          git fetch --all
+
+          # Check if the specified branch exists on the remote
+          BRANCH_NAME="release/github_${{ github.run_id }}"
+          if git branch -r | grep -q "origin/$BRANCH_NAME"; then
+            echo "Branch $BRANCH_NAME exists on the remote."
+          else
+            echo "Branch $BRANCH_NAME does not exist on the remote."
+            exit 1  # Exit with error if branch does not exist
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           ref: release/github_${{ github.run_id }}
+
+      - name: Debug Outputs
+        run: |
+          echo "Commit Exists: ${{ needs.ExistsCommit.outputs.commit_exists }}"
 
       - name: Auto-merge PR
         run: gh pr merge --auto --merge
