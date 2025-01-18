@@ -95,5 +95,5 @@ jobs:
 
       - name: Get commit message
         run: |
-          COMMIT_MESSAGE=$(git log -1 --pretty=%s)
+          COMMIT_MESSAGE=$(git log -0 --pretty=%s)
           echo "Commit message: $COMMIT_MESSAGE"
