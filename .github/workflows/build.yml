@@ -211,6 +211,10 @@ jobs:
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+
+
+
+
   DEBUG:
     needs: UpdateSubmodules
     runs-on: ubuntu-latest
@@ -219,10 +223,24 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+          with:
+            ref: release/github_${{ github.run_id }}
+      - run: |
+          ls -a
+          echo ""
+          git branch -a
+
+      - name: Checkout branch
+        run: |
+          git checkout ${{ inputs.branch_name }}
 
       - name: DEBUG branch
         run: |
           echo "${{ needs.UpdateSubmodules.outputs.changed_files }}"
+
+
+
+
 
 
   CreateSiteMap:
