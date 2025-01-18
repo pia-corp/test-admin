@@ -194,7 +194,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Update submodules
-        uses: ./.github/workflows/update_submodules.yml
+        uses: .github/workflows/update_submodules.yml
         with:
           repository: ${{ inputs.repository }}
           repository_no_register: ${{ inputs.repository_no_register }}
@@ -203,7 +203,7 @@ jobs:
           GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
       - name: Create sitemap
-        uses: ./.github/workflows/create_sitemap.yml
+        uses: .github/workflows/create_sitemap.yml
         with:
           repository: ${{ inputs.repository }}
           repository_no_register: ${{ inputs.repository_no_register }}
