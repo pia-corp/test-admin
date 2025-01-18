@@ -210,6 +210,8 @@ jobs:
       branch_name: release/github_${{ github.run_id }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    outputs:
+      changed_files: ${{ steps.check_changes.outputs.changed_files }}
 
 
   DEBUG:
