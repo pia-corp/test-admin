@@ -271,9 +271,20 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  UploadReservation:
-    needs: [CreateSiteMap, DeleteBranch]
-    if: success(needs.CreateSiteMap) || success(needs.DeleteBranch) && inputs.reservation == true
+  UploadReservation_c:
+    needs: [CreateSiteMap]
+    if: inputs.reservation == true
+    uses: ./.github/workflows/reservation.yml
+    with:
+      repository: ${{ inputs.repository }}
+      month: ${{ inputs.month }}
+      day: ${{ inputs.day }}
+      hour: ${{ inputs.hour }}
+      minutes: ${{ inputs.minutes }}
+
+  UploadReservation_d:
+    needs: [DeleteBranch]
+    if: inputs.reservation == true
     uses: ./.github/workflows/reservation.yml
     with:
       repository: ${{ inputs.repository }}
