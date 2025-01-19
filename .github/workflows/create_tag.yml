@@ -27,6 +27,12 @@ jobs:
         id: pre_tag
         run: |
           echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ env.REPOSITORY }}/releases/latest | jq -r .tag_name)" >> $GITHUB_ENV
+          echo "pre_tag=$pre_tag" >> $GITHUB_ENV
+
+      - name: Display PRE TAG
+        run: |
+          echo "Extracted Job ID: ${{ env.pre_tag }}"
+
 
       # タグを生成する 「{YYYY.MM.DD}-{当日リリース回数}」
       - name: Generate tag
@@ -47,6 +53,11 @@ jobs:
           echo "pr_description=$(curl -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             'https://api.github.com/repos/${{ env.REPOSITORY }}/pulls/${{ github.event.pull_request.number}}' \
             | jq .body | awk '{if ($0 == "null") print ""; else print}')" >> $GITHUB_OUTPUT
+          echo "pr_description=$pr_description" >> $GITHUB_ENV
+
+      - name: Display PRE DESCRIPTION
+        run: |
+          echo "PRE DESCRIPTION: ${{ env.pr_description }}"
 
       # 前回リリースからの差分をもとに、変更点を取得する
       - name: Generate release note changes
@@ -64,6 +75,10 @@ jobs:
             }' | jq .body
           )" >> $GITHUB_OUTPUT
 
+      - name: Display RELEASE NOTE CHANGES
+        run: |
+          echo "RELEASE NOTE CHANGES: ${{ steps.changes.outputs.changes }}"
+
       # リリースノートの本文を作成する
       - name: Create release note body
         id: release_note_body
@@ -72,6 +87,12 @@ jobs:
             ${{ steps.pr_description.outputs.pr_description }} \
             ${{ steps.changes.outputs.changes }} \
             | sed 's/\\"//g' | sed 's/["“]//g')" >> $GITHUB_OUTPUT
+          echo "release_note_body=$release_note_body" >> $GITHUB_ENV
+
+      - name: Display RELEASE NOTE CHANGES
+        run: |
+          echo "RELEASE NOTE BODY: ${{ env.release_note_body }}"
+
 
       # タグを切り、リリースノートを作成する
       # PRのラベルに応じてカテゴライズする場合は、使用先のリポジトリで下記を定義する
