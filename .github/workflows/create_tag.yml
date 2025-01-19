@@ -9,7 +9,7 @@ on:
 jobs:
   create-release-tag:
     # releaseがマージされたときのみ実行
-    if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
+    # if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     env:
