@@ -1,8 +1,37 @@
-name: 手動ファイルアップロード
+name: 02.手動ファイルアップロード
 
 on:
   workflow_dispatch:
     inputs:
+      repository:
+        type: choice
+        description: "対象ブランド"
+        required: true
+        options:
+          - "topards.jp"
+          - "feliamo.jp"
+          - "molak.jp"
+          - "ns-collection.jp"
+          - "lilmoon.jp"
+          - "minette-lens.jp"
+          - "mirage-c.jp"
+          - "mimuco.jp"
+          - "harne.jp"
+          - "louer.jp"
+          - "lumieu.jp"
+          - "puuuuchu.jp"
+          - "melady.jp"
+          - "melloew.jp"
+          - "faloom.jp"
+          - "mimicharme.jp"
+          - "lensbe.jp"
+          - "clainel.jp"
+          - "chapun.jp"
+          - "resay.jp"
+          - "michou.jp"
+      repository_no_register:
+        description: "未登録のブランドリポジトリ"
+        default: ""
       sync:
         type: choice
         description: "File synchronization"

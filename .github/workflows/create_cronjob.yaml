@@ -1,10 +1,10 @@
-name: Cron-job Create
+name: 03.公開予約の設定作成
 
 on:
   workflow_dispatch:
     inputs:
       job_title:
-        description: "Cron Job Title"
+        description: "登録するリポジトリ名"
         required: true
 
 jobs:
