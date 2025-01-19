@@ -229,8 +229,9 @@ jobs:
     needs: UpdateStatus
     runs-on: ubuntu-latest
     timeout-minutes: 1
+    if: ${{ needs.DEBUG.outputs.COMMIT_MESSAGE && needs.DEBUG.outputs.COMMIT_MESSAGE != 'Automatically update submodules' }}
+
     steps:
-      if: ${{ needs.DEBUG.outputs.COMMIT_MESSAGE && needs.DEBUG.outputs.COMMIT_MESSAGE != 'Automatically update submodules' }}
       - name: Checkout repository
         uses: actions/checkout@v4
 
