@@ -46,6 +46,10 @@ jobs:
           echo "Job ID: $JOB_ID"
           echo "job_id=$JOB_ID" >> $GITHUB_ENV
 
+      - name: Display Job ID
+        run: |
+          echo "Extracted Job ID: ${{ env.job_id }}"
+
       - name: Register Cron job
         env:
           month: ${{ inputs.month }}
