@@ -30,7 +30,7 @@ on:
           - "resay.jp"
           - "michou.jp"
       repository_no_register:
-        description: "未登録のブランドリポジトリ"
+        description: "任意のブランドリポジトリ"
         default: ""
       reservation:
         type: boolean
@@ -230,11 +230,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
+      if: ${{ needs.DEBUG.outputs.COMMIT_MESSAGE && needs.DEBUG.outputs.COMMIT_MESSAGE != 'Automatically update submodules' }}
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Delete branch
-        if: ${{ needs.DEBUG.outputs.COMMIT_MESSAGE && needs.DEBUG.outputs.COMMIT_MESSAGE != 'Automatically update submodules' }}
         run: git push origin --delete release/github_${{ github.run_id }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

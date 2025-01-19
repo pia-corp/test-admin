@@ -1,4 +1,4 @@
-name: 03.公開予約の設定作成
+name: 03.公開予約アイテムの新規作成
 
 on:
   workflow_dispatch:

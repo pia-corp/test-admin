@@ -1,4 +1,4 @@
-name: サイトマップ生成
+name: Create sitemap
 
 on:
   workflow_call:
