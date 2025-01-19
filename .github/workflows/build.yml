@@ -278,7 +278,7 @@ jobs:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
     secrets:
-      GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN }}
 
 
   UploadReservation_c:
