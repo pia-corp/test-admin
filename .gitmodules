@@ -10,3 +10,6 @@
 [submodule "melloew.jp"]
 	path = melloew.jp
 	url = https://github.com/pia-corp/melloew.jp
+[submodule "lilmoon.jp"]
+	path = lilmoon.jp
+	url = https://github.com/pia-corp/lilmoon.jp
