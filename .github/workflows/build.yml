@@ -211,6 +211,7 @@ jobs:
         run: |
           COMMIT_MESSAGE=$(git log -1 --pretty=%s | xargs)
           echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+          echo "$COMMIT_MESSAGE"
 
   CreateSiteMap:
     needs: UpdateStatus
