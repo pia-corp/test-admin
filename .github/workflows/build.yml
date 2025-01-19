@@ -278,7 +278,7 @@ jobs:
       repository_no_register: ${{ inputs.repository_no_register }}
 
   UploadReservation_c:
-    needs: [CreateSiteMap]
+    needs: CreateSiteMap
     if: inputs.reservation == true
     uses: ./.github/workflows/reservation.yml
     with:
@@ -291,7 +291,7 @@ jobs:
       CRON_JOB_TOKEN_VALUE: ${{ secrets.CRON_JOB_TOKEN }}
 
   UploadReservation_d:
-    needs: [DeleteBranch]
+    needs: DeleteBranch
     if: inputs.reservation == true
     uses: ./.github/workflows/reservation.yml
     with:
