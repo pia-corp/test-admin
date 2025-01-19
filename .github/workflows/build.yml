@@ -252,6 +252,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: release/github_${{ github.run_id }}
+          fetch-depth: 1
 
       - name: check PR
         id: check_pr
