@@ -18,6 +18,7 @@ on:
 
 jobs:
   create-release-tag:
+    if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     timeout-minutes: 5
     # env:
@@ -25,7 +26,6 @@ jobs:
     #   TZ: "Asia/Tokyo"
 
     steps:
-      if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
       - name: Checkout the repository
         uses: actions/checkout@v4
 
