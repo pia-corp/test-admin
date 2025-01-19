@@ -18,9 +18,9 @@ on:
 
 jobs:
   create-release-tag:
+    if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
     env:
       REPOSITORY: ${{ inputs.repository_no_register && inputs.repository || inputs.repository }}
       TZ: "Asia/Tokyo"
