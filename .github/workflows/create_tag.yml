@@ -7,6 +7,10 @@ on:
         description: "Repository name"
         required: true
         type: string
+      repository_no_register:
+        description: "Alternative repository name if provided"
+        required: false
+        type: string
 
 jobs:
   CreateTag:
