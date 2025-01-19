@@ -211,7 +211,7 @@ jobs:
 
   CreateSiteMap:
     needs: UpdateStatus
-    if: ${{ needs.DEBUG.outputs.COMMIT_MESSAGE && needs.DEBUG.outputs.COMMIT_MESSAGE == 'Automatically update submodules' }}
+    if: ${{ needs.UpdateStatus.outputs.COMMIT_MESSAGE && needs.UpdateStatus.outputs.COMMIT_MESSAGE == 'Automatically update submodules' }}
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
@@ -226,7 +226,7 @@ jobs:
     needs: UpdateStatus
     runs-on: ubuntu-latest
     timeout-minutes: 1
-    if: ${{ needs.DEBUG.outputs.COMMIT_MESSAGE && needs.DEBUG.outputs.COMMIT_MESSAGE != 'Automatically update submodules' }}
+    if: ${{ needs.UpdateStatus.outputs.COMMIT_MESSAGE && needs.UpdateStatus.outputs.COMMIT_MESSAGE != 'Automatically update submodules' }}
 
     steps:
       - name: Checkout repository
