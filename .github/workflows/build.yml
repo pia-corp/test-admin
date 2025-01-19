@@ -264,12 +264,12 @@ jobs:
       - name: Create PR
         if: ${{ steps.check_pr.outputs.count == '' }}
         run: |
-          gh pr create --fill --base main --head release/github_${{ github.run_id }}
+          gh pr create --fill
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      - name: Sleep for 10 seconds
-        run: Start-Sleep -s 10
+      # gh pr create --fill --base main --head release/github_${{ github.run_id }}
+
 
       - name: Auto-merge PR
         run: gh pr merge --auto --merge
