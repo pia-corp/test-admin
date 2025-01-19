@@ -271,6 +271,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  CreateTag:
+    needs: CloseBranch
+    uses: ./.github/workflows/create_tag.yml
+    with:
+      repository: ${{ inputs.repository }}
+      repository_no_register: ${{ inputs.repository_no_register }}
+      branch_name: release/github_${{ github.run_id }}
+    secrets:
+      GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+
   UploadReservation_c:
     needs: [CreateSiteMap]
     if: inputs.reservation == true
