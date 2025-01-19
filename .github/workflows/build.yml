@@ -271,7 +271,7 @@ jobs:
       - name: Auto-merge PR
         run: gh pr merge --auto --merge
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
   # CreateTag:
   #   needs: CloseBranch
