@@ -142,6 +142,9 @@ permissions:
   contents: write
   pull-requests: write
 
+env:
+  REVIEWER: github-actions[bot]
+
 jobs:
   # このジョブは、ワークフローを実行するユーザーが許可されたリストに含まれているかどうかを確認します。
   # 許可されていない場合、ワークフローは警告を出して終了します。
@@ -249,9 +252,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: release/github_${{ github.run_id }}
+          fetch-depth: 0
+
+      - name: check PR
+        id: check_pr
+        run: |
+          echo "count=$(gh pr list -B release/github_${{ github.run_id }} -H ${{ github.ref_name }} --json 'id' -q '.[] | length')" >> $GITHUB_OUTPUT
 
       - name: Create PR
+        if: ${{ steps.check_pr.outputs.count == '' }}
         run: |
+          run: gh pr create --fill -B release/github_${{ github.run_id }} -r ${{ env.REVIEWER }}
           gh pr create --fill --base main --head release/github_${{ github.run_id }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
