@@ -1,0 +1,79 @@
+name: Cancel Reservation
+
+on:
+  workflow_call:
+    inputs:
+      repository:
+        description: "予約するリポジトリ"
+        required: true
+        type: string
+      month:
+        description: "月"
+        required: true
+        type: string
+      day:
+        description: "日"
+        required: true
+        type: string
+      hour:
+        description: "時"
+        required: true
+        type: string
+      minutes:
+        description: "分"
+        required: true
+        type: string
+    secrets:
+      CRON_JOB_TOKEN_VALUE:
+        description: "Cron Job API Token"
+        required: true
+
+jobs:
+  RESERVATION:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Get CronJob List
+        run: |
+          response=$(curl -X GET \
+              -H 'Content-Type: application/json' \
+              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}' \
+              https://api.cron-job.org/jobs)
+          echo "Data from API: $response"
+          echo "$response" > data.json
+
+      - name: Extract Job ID
+        id: extract_job_id
+        run: |
+          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ inputs.repository }}") | .jobId' data.json)
+          echo "Job ID: $JOB_ID"
+          echo "job_id=$JOB_ID" >> $GITHUB_ENV
+
+      - name: Display Job ID
+        run: |
+          echo "Extracted Job ID: ${{ env.job_id }}"
+
+      - name: Register Cron job
+        env:
+          month: ${{ inputs.month }}
+          day: ${{ inputs.day }}
+          hour: ${{ inputs.hour }}
+          minutes: ${{ inputs.minutes }}
+        run: |
+          echo "Registering the job with month=$month, day=$day, hour=$hour, minutes=$minutes..."
+          curl -X PATCH \
+            -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}" \
+            -d "{
+              \"job\": {
+                \"enabled\": true,
+                \"schedule\": {
+                  \"hours\": [$hour],
+                  \"mdays\": [$day],
+                  \"minutes\": [$minutes],
+                  \"months\": [$month]
+                }
+              }
+            }" \
+            https://api.cron-job.org/jobs/${{ env.job_id }}
