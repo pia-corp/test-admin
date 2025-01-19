@@ -22,12 +22,13 @@ jobs:
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get previous tag
         id: pre_tag
         run: |
           echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ env.REPOSITORY }}/releases/latest | jq -r .tag_name)" >> $GITHUB_ENV
-          echo "pre_tag=$pre_tag" >> $GITHUB_ENV
 
       - name: Display PRE TAG
         run: |
