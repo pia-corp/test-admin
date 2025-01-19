@@ -30,7 +30,7 @@ on:
           - "resay.jp"
           - "michou.jp"
       repository_no_register:
-        description: "未登録のブランドリポジトリ"
+        description: "任意のブランドリポジトリ"
         default: ""
       sync:
         type: choice
