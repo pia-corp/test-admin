@@ -273,12 +273,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  CreateTag:
-    needs: CloseBranch
-    uses: ./.github/workflows/create_tag.yml
-    with:
-      repository: ${{ inputs.repository }}
-      repository_no_register: ${{ inputs.repository_no_register }}
+  # CreateTag:
+  #   needs: CloseBranch
+  #   uses: ./.github/workflows/create_tag.yml
+  #   with:
+  #     repository: ${{ inputs.repository }}
+  #     repository_no_register: ${{ inputs.repository_no_register }}
 
   UploadReservation_c:
     needs: CreateSiteMap
