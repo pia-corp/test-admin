@@ -5,25 +5,12 @@ on:
     pull_request:
       types:
         - closed
-  # workflow_call:
-  #   inputs:
-  #     repository:
-  #       description: "予約するリポジトリ"
-  #       required: true
-  #       type: string
-  #     repository_no_register:
-  #       description: "Alternative repository name if provided"
-  #       required: false
-  #       type: string
 
 jobs:
   create-release-tag:
     if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # env:
-    #   REPOSITORY: ${{ inputs.repository_no_register && inputs.repository || inputs.repository }}
-    #   TZ: "Asia/Tokyo"
 
     steps:
       - name: Checkout the repository
@@ -34,8 +21,6 @@ jobs:
         id: pre_tag
         run: |
           echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)" >> $GITHUB_OUTPUT
-        # run: |
-        #   echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/pia-corp/${{ env.REPOSITORY }}/releases/latest | jq -r .tag_name)" >> $GITHUB_OUTPUT
 
       # タグを生成する 「{YYYY.MM.DD}-{当日リリース回数}」
       - name: Generate tag
@@ -57,11 +42,6 @@ jobs:
             'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number}}' \
             | jq .body | awk '{if ($0 == "null") print ""; else print}')" >> $GITHUB_OUTPUT
 
-        # run: |
-        #   echo "pr_description=$(curl -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-        #     'https://api.github.com/repos/pia-corp/${{ env.REPOSITORY }}/pulls/${{ github.event.pull_request.number}}' \
-        #     | jq .body | awk '{if ($0 == "null") print ""; else print}')" >> $GITHUB_OUTPUT
-
       # 前回リリースからの差分をもとに、変更点を取得する
       - name: Generate release note changes
         id: changes
@@ -77,18 +57,6 @@ jobs:
               "target_commitish": "main"
             }' | jq .body
           )" >> $GITHUB_OUTPUT
-        # run: |
-        #   echo "changes=$(
-        #   curl -X POST \
-        #     -H 'Accept: application/vnd.github.v3+json' \
-        #     -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
-        #     https://api.github.com/repos/pia-corp/${{ env.REPOSITORY }}/releases/generate-notes \
-        #     -d '{
-        #       "tag_name": "${{ steps.release_tag.outputs.release_tag }}",
-        #       "previous_tag_name": "${{ steps.pre_tag.outputs.pre_tag }}",
-        #       "target_commitish": "main"
-        #     }' | jq .body
-        #   )" >> $GITHUB_OUTPUT
 
       # リリースノートの本文を作成する
       - name: Create release note body
@@ -123,23 +91,3 @@ jobs:
             echo "Failed to create release"
             exit 1
           fi
-      # run: |
-      #   response=$(curl -X POST \
-      #     -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-      #     -d "{ \
-      #       \"tag_name\": \"${{ steps.release_tag.outputs.release_tag }}\", \
-      #       \"target_commitish\": \"main\", \
-      #       \"name\": \"${{ steps.release_tag.outputs.release_tag }}\", \
-      #       \"body\": \"${{ steps.release_note_body.outputs.release_note_body }}\" \
-      #     }" \
-      #     -w "%{http_code}" \
-      #     -o response_body.txt \
-      #     https://api.github.com/repos/pia-corp/${{ env.REPOSITORY }}/releases)
-      #     status_code=$(tail -n1 <<< "$response")
-      #     echo "Status Code: $status_code"
-      #     body=$(cat response_body.txt)
-      #     echo "Response Body: $body"
-      #     if [ $status_code -ne 201 ]; then
-      #       echo "Failed to create release"
-      #       exit 1
-      #     fi
