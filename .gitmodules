@@ -13,3 +13,6 @@
 [submodule "lilmoon.jp"]
 	path = lilmoon.jp
 	url = https://github.com/pia-corp/lilmoon.jp
+[submodule "minette-lens.jp"]
+	path = minette-lens.jp
+	url = https://github.com/pia-corp/minette-lens.jp
