@@ -201,10 +201,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: release/github_${{ github.run_id }}
-      - run: |
-          ls -a
-          echo ""
-          git branch -a
 
       - name: Get commit message
         id: get_commit_message
