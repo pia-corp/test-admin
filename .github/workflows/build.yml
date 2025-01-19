@@ -262,7 +262,7 @@ jobs:
       - name: Create PR
         if: ${{ steps.check_pr.outputs.count == '' }}
         run: |
-          gh pr create --fill --base main --head release/github_${{ github.run_id }} -r ${{ env.REVIEWER }}
+          gh pr create --fill --base main --head release/github_${{ github.run_id }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
