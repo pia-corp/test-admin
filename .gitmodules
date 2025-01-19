@@ -16,3 +16,6 @@
 [submodule "minette-lens.jp"]
 	path = minette-lens.jp
 	url = https://github.com/pia-corp/minette-lens.jp
+[submodule "mirage-c.jp"]
+	path = mirage-c.jp
+	url = https://github.com/pia-corp/mirage-c.jp
