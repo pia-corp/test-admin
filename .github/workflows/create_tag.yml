@@ -21,13 +21,13 @@ jobs:
     if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    env:
-      REPOSITORY: ${{ inputs.repository_no_register && inputs.repository || inputs.repository }}
-      TZ: "Asia/Tokyo"
-    # REPOSITORY: ${{ inputs.repository_no_register && inputs.repository || inputs.repository }}
+    # env:
+    #   REPOSITORY: ${{ inputs.repository_no_register && inputs.repository || inputs.repository }}
+    #   TZ: "Asia/Tokyo"
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout the repository
+        uses: actions/checkout@v4
 
       # 前回のリリースタグを取得する
       - name: Get previous tag
