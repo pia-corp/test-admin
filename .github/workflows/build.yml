@@ -240,14 +240,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # CreateTag:
-  #   needs: CreateSiteMap
-  #   uses: ./.github/workflows/create_tag.yml
-  #   with:
-  #     repository: ${{ inputs.repository }}
-  #     repository_no_register: ${{ inputs.repository_no_register }}
-
-
   # このジョブは、リポジトリをチェックアウトし、指定されたブランチに切り替え、
   # コミットが存在する場合にプルリクエストを作成します。
   CloseBranch:
@@ -277,6 +269,13 @@ jobs:
         run: gh pr merge --auto --merge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  CreateTag:
+    needs: CloseBranch
+    uses: ./.github/workflows/create_tag.yml
+    with:
+      repository: ${{ inputs.repository }}
+      repository_no_register: ${{ inputs.repository_no_register }}
 
   UploadReservation_c:
     needs: [CreateSiteMap]
