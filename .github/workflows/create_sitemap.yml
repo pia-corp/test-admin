@@ -81,6 +81,17 @@ jobs:
             url="https://${{ env.REPOSITORY }}/$relative_path"
             lastmod=$(stat -c %y "$file" | TZ=Asia/Tokyo git log -1 --format="%ci" -- "$file")
 
+
+            # Git の変更日時を取得（ISO 8601 フォーマットに変換）
+            lastmod=$(git log -1 --format="%ci" -- "$file" 2>/dev/null || echo "")
+
+            if [ -z "$lastmod" ]; then
+              lastmod=$(stat -c %y "$file" | sed 's/ /T/')
+            fi
+
+            echo "Processing file: $file"
+            echo "Last modification time: $lastmod"
+
             echo '  <url>' >> out/${{ env.REPOSITORY }}/sitemap.xml
             echo "    <loc>$url</loc>" >> out/${{ env.REPOSITORY }}/sitemap.xml
             echo "    <lastmod>$lastmod</lastmod>" >> out/${{ env.REPOSITORY }}/sitemap.xml
