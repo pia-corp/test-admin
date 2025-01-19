@@ -3,7 +3,7 @@ name: Create tag
 on:
   workflow_call:
     inputs:
-      repository_name:
+      repository:
         description: "Repository name"
         required: true
         type: string
