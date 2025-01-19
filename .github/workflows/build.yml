@@ -257,6 +257,8 @@ jobs:
         id: check_pr
         run: |
           echo "count=$(gh pr list -B release/github_${{ github.run_id }} -H ${{ github.ref_name }} --json 'id' -q '.[] | length')" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create PR
         if: ${{ steps.check_pr.outputs.count == '' }}
