@@ -18,9 +18,6 @@ jobs:
     timeout-minutes: 5
     env:
       REPOSITORY: ${{ inputs.repository_no_register && inputs.repository || inputs.repository }}
-
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       TZ: "Asia/Tokyo"
 
     steps:
