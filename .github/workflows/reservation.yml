@@ -1,106 +1,24 @@
 name: アップロード予約
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       month:
-        type: choice
+        description: "month"
         required: true
-        description: 月
-        options:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
-          - 10
-          - 11
-          - 12
+        type: string
       day:
-        type: choice
+        description: "day"
         required: true
-        description: 日
-        options:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
-          - 10
-          - 11
-          - 12
-          - 13
-          - 14
-          - 15
-          - 16
-          - 17
-          - 18
-          - 19
-          - 20
-          - 21
-          - 22
-          - 23
-          - 24
-          - 25
-          - 26
-          - 27
-          - 28
-          - 29
-          - 30
-          - 31
+        type: string
       hour:
-        type: choice
+        description: "hour"
         required: true
-        description: 時間
-        options:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
-          - 10
-          - 11
-          - 12
-          - 13
-          - 14
-          - 15
-          - 16
-          - 17
-          - 18
-          - 19
-          - 20
-          - 21
-          - 22
-          - 23
+        type: string
       minutes:
-        type: choice
+        description: "minutes"
         required: true
-        description: 分
-        options:
-          - 00
-          - 05
-          - 10
-          - 15
-          - 20
-          - 25
-          - 30
-          - 35
-          - 40
-          - 45
-          - 50
-          - 55
+        type: string
 
 jobs:
   RESERVATION:
@@ -108,24 +26,12 @@ jobs:
     timeout-minutes: 3
 
     steps:
-      - name: Check if the user is authorized
-        env:
-          USER_LOGIN: ${{ github.actor }}
-          CODE_OWNERS: ${{ vars.CODE_OWNERS }}
-        run: |
-          echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
-          if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
-            echo "ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
-            exit 1
-          fi
-          echo "ユーザー $USER_LOGIN は認証されました。続行します..."
-
       - name: Register Cron job
         env:
-          month: ${{ github.event.inputs.month }}
-          day: ${{ github.event.inputs.day }}
-          hour: ${{ github.event.inputs.hour }}
-          minutes: ${{ github.event.inputs.minutes }}
+          month: ${{ inputs.month }}
+          day: ${{ inputs.day }}
+          hour: ${{ inputs.hour }}
+          minutes: ${{ inputs.minutes }}
         run: |
           echo "Registering the job with month=$month, day=$day, hour=$hour, minutes=$minutes..."
           curl -X PATCH \

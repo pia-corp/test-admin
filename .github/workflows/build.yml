@@ -218,10 +218,6 @@ jobs:
           COMMIT_MESSAGE=$(git log -1 --pretty=%s | xargs)
           echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
 
-
-
-
-
   CreateSiteMap:
     needs: DEBUG
     if: ${{ needs.DEBUG.outputs.COMMIT_MESSAGE && needs.DEBUG.outputs.COMMIT_MESSAGE == 'Automatically update submodules' }}
@@ -263,34 +259,15 @@ jobs:
           ref: release/github_${{ github.run_id }}
 
       - name: Create PR
-        if: steps.commit_status.outputs.changed_files == 'true'
         run: |
           gh pr create --fill
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Auto-merge PR
-        if: steps.commit_status.outputs.changed_files == 'true'
         run: gh pr merge --auto --merge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-
-      # - name: Create PR if commit exists
-      #   run: |
-      #     gh pr create --fill
-      #     PR_NUMBER=$(gh pr list --state open --head develop --base main --json number --jq '.[].number')
-      #     if [ -n "$PR_NUMBER" ]; then
-      #       gh pr merge $PR_NUMBER --merge --auto
-      #     else
-      #       echo "::error:: Mergeするプルリクエストが見つかりません。"
-      #       exit 1
-      #     fi
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
 
 
   # UploadReservation:
