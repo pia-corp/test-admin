@@ -14,12 +14,23 @@ jobs:
     steps:
       - name: api test
         run: |
-          curl -X GET \
+          response=$(curl -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              https://api.cron-job.org/jobs
+              https://api.cron-job.org/jobs)
+          echo "Data from API: $response"
+          echo "$response" > data.json
 
+      - name: Extract Job ID
+        id: extract_job_id
+        run: |
+          JOB_ID=$(jq -r '.jobs[] | select(.title == "feliamo") | .jobId' data.json)
+          echo "Job ID: $JOB_ID"
+          echo "job_id=$JOB_ID" >> $GITHUB_ENV
 
+      - name: Display Job ID
+        run: |
+          echo "Extracted Job ID: ${{ env.job_id }}"
 
 
 
