@@ -268,12 +268,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set required check
-        run: gh api \
-          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-          -X POST /repos/${{ github.repository }}/statuses/${{ github.sha }} \
-          -f state=success \
-          -f context="Dummy Required Check"
+      - name: Sleep for 10 seconds
+        run: Start-Sleep -s 10
 
       - name: Auto-merge PR
         run: gh pr merge --auto --merge
