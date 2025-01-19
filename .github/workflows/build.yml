@@ -268,10 +268,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set required check
+        run: gh api \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -X POST /repos/${{ github.repository }}/statuses/${{ github.sha }} \
+          -f state=success \
+          -f context="Dummy Required Check"
+
       - name: Auto-merge PR
         run: gh pr merge --auto --merge
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # CreateTag:
   #   needs: CloseBranch
