@@ -23,6 +23,10 @@ on:
         description: "分"
         required: true
         type: string
+    secrets:
+      CRON_JOB_TOKEN:
+        description: "Cron Job API Token"
+        required: true
 
 jobs:
   RESERVATION:
