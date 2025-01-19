@@ -24,7 +24,7 @@ on:
         required: true
         type: string
     secrets:
-      CRON_JOB_TOKEN:
+      CRON_JOB_TOKEN_VALUE:
         description: "Cron Job API Token"
         required: true
 
@@ -38,7 +38,7 @@ jobs:
         run: |
           response=$(curl -X GET \
               -H 'Content-Type: application/json' \
-              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
+              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}' \
               https://api.cron-job.org/jobs)
           echo "Data from API: $response"
           echo "$response" > data.json
@@ -64,7 +64,7 @@ jobs:
           echo "Registering the job with month=$month, day=$day, hour=$hour, minutes=$minutes..."
           curl -X PATCH \
             -H 'Content-Type: application/json' \
-            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}" \
             -d "{
               \"job\": {
                 \"enabled\": true,

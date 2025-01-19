@@ -282,7 +282,7 @@ jobs:
       hour: ${{ inputs.hour }}
       minutes: ${{ inputs.minutes }}
     secrets:
-      CRON_JOB_TOKEN: ${{ secrets.CRON_JOB_TOKEN }}
+      CRON_JOB_TOKEN_VALUE: ${{ secrets.CRON_JOB_TOKEN }}
 
   UploadReservation_d:
     needs: [DeleteBranch]
@@ -295,4 +295,4 @@ jobs:
       hour: ${{ inputs.hour }}
       minutes: ${{ inputs.minutes }}
     secrets:
-      CRON_JOB_TOKEN: ${{ secrets.CRON_JOB_TOKEN }}
+      CRON_JOB_TOKEN_VALUE: ${{ secrets.CRON_JOB_TOKEN }}
