@@ -273,7 +273,12 @@ jobs:
 
   UploadReservation:
     needs: [CreateSiteMap, DeleteBranch]
-    if: ${{ inputs.reservation }} == true
+    if: >
+      ${{
+        (needs.CreateSiteMap.result == 'success' ||
+        needs.DeleteBranch.result == 'success') &&
+        inputs.reservation == true
+      }}
     uses: ./.github/workflows/reservation.yml
     with:
       repository: ${{ inputs.repository }}
