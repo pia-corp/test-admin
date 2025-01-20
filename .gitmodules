@@ -19,3 +19,6 @@
 [submodule "mirage-c.jp"]
 	path = mirage-c.jp
 	url = https://github.com/pia-corp/mirage-c.jp
+[submodule "mimuco.jp"]
+	path = mimuco.jp
+	url = https://github.com/pia-corp/mimuco.jp
