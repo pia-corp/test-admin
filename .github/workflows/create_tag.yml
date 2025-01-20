@@ -2,12 +2,14 @@ name: Create tag
 
 on:
   pull_request:
+    branches:
+      - main
     types:
       - closed
 
 jobs:
   create-release-tag:
-    if: startsWith(github.head_ref, 'release/') && github.event.pull_request.merged == true
+    if: contains(github.head_ref, 'release/') && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     env:
