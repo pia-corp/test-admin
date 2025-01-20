@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="34" height="34" viewBox="0 0 34 34">
+  <defs>
+    <clipPath id="clip-path">
+      <circle id="楕円形_145" data-name="楕円形 145" cx="17" cy="17" r="17" transform="translate(993 0.447)" fill="none" stroke="#7f6361" stroke-width="1"/>
+    </clipPath>
+  </defs>
+  <g id="マスクグループ_517" data-name="マスクグループ 517" transform="translate(-993 -0.447)" clip-path="url(#clip-path)">
+    <g id="グループ_1267" data-name="グループ 1267" transform="translate(1000.151 9.797)">
+      <path id="パス_4903" data-name="パス 4903" d="M116.671,100.851h7.6a.756.756,0,0,0,.726-.535l1.906-6.18a.759.759,0,0,0-.726-.983H111.695l-.634-1.848a.437.437,0,0,0-.29-.277l-1.636-.482a.437.437,0,1,0-.247.838l1.42.418.658,1.918,1.937,6.808.605,2.441a.437.437,0,0,0,.424.332H125.3a.437.437,0,1,0,0-.874H114.273l-.39-1.575h2.788Zm-3.739-3.413h2.374l.775,2.539h-2.426Zm3.288,0H118.5v2.539h-1.507Zm3.156,2.539V97.438h2.34l-.816,2.539Zm0-3.413V94.026h3.437L122,96.564Zm-.874,0h-2.549l-.775-2.539H118.5Zm5.68,3.413h-2.364l.816-2.539h2.331Zm1.053-3.413h-2.32l.8-2.492a.422.422,0,0,0,.01-.046h2.292Zm-10.969-2.539.775,2.539h-2.356l-.722-2.539Z" transform="translate(-108.574 -90.527)" fill="#7f6361"/>
+      <circle id="楕円形_3" data-name="楕円形 3" cx="1.302" cy="1.302" r="1.302" transform="translate(4.934 13.968) rotate(-13.282)" fill="#7f6361"/>
+      <circle id="楕円形_4" data-name="楕円形 4" cx="1.302" cy="1.302" r="1.302" transform="translate(13.685 13.634)" fill="#7f6361"/>
+    </g>
+  </g>
+</svg>
