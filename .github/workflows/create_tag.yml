@@ -25,7 +25,7 @@ jobs:
       - name: Get previous tag
         id: pre_tag
         run: |
-          echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ env.REPOSITORY }}/releases/latest | jq -r .tag_name)" >> $GITHUB_OUTPUT
+          echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/pia-corp/${{ env.REPOSITORY }}/releases/latest | jq -r .tag_name)" >> $GITHUB_OUTPUT
 
       # タグを生成する 「{YYYY.MM.DD}-{当日リリース回数}」
       - name: Generate tag
@@ -44,7 +44,7 @@ jobs:
         id: pr_description
         run: |
           echo "pr_description=$(curl -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            'https://api.github.com/repos/${{ env.REPOSITORY }}/pulls/${{ github.event.pull_request.number}}' \
+            'https://api.github.com/repos/pia-corp/${{ env.REPOSITORY }}/pulls/${{ github.event.pull_request.number}}' \
             | jq .body | awk '{if ($0 == "null") print ""; else print}')" >> $GITHUB_OUTPUT
 
       # 前回リリースからの差分をもとに、変更点を取得する
@@ -55,7 +55,7 @@ jobs:
           curl -X POST \
             -H 'Accept: application/vnd.github.v3+json' \
             -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
-            https://api.github.com/repos/${{ env.REPOSITORY }}/releases/generate-notes \
+            https://api.github.com/repos/pia-corp/${{ env.REPOSITORY }}/releases/generate-notes \
             -d '{
               "tag_name": "${{ steps.release_tag.outputs.release_tag }}",
               "previous_tag_name": "${{ steps.pre_tag.outputs.pre_tag }}",
@@ -87,7 +87,7 @@ jobs:
             }" \
             -w "%{http_code}" \
             -o response_body.txt \
-            https://api.github.com/repos/${{ env.REPOSITORY }}/releases)
+            https://api.github.com/repos/pia-corp/${{ env.REPOSITORY }}/releases)
             status_code=$(tail -n1 <<< "$response")
             echo "Status Code: $status_code"
             body=$(cat response_body.txt)
