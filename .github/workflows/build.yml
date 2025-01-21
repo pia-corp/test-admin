@@ -236,8 +236,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Delete branch
-        run: git push origin --delete release/github_${{ github.run_id }}
-        exit-code: 0
+        run: |
+          git push origin --delete release/github_${{ github.run_id }}
+          exit 1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
