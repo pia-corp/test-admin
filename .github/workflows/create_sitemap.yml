@@ -52,10 +52,10 @@ jobs:
         run: |
           mkdir -p out
           mkdir -p out/${{ env.REPOSITORY }}
-          if [ -d "./${{ env.REPOSITORY }}/public" ]; then
-            cp -R ./${{ env.REPOSITORY }}/public/* out/${{ env.REPOSITORY }}/
+          if [ -d "./public/${{ env.REPOSITORY }}/public" ]; then
+            cp -R ./public/${{ env.REPOSITORY }}/public/* out/${{ env.REPOSITORY }}/
           else
-            echo "Error: ./${{ env.REPOSITORY }}/public directory does not exist."
+            echo "Error: ./public/${{ env.REPOSITORY }}/public directory does not exist."
             exit 1
           fi
 
@@ -66,18 +66,18 @@ jobs:
 
       - name: Create sitemap
         run: |
-          if [ ! -d "./${{ env.REPOSITORY }}/public" ]; then
-            echo "エラー: ./${{ env.REPOSITORY }}/public ディレクトリが存在しません。"
+          if [ ! -d "./public/${{ env.REPOSITORY }}/public" ]; then
+            echo "エラー: ./public/${{ env.REPOSITORY }}/public ディレクトリが存在しません。"
             exit 1
           fi
 
-          files=$(find ./${{ env.REPOSITORY }}/public -type f -name '*.html')
+          files=$(find ./public/${{ env.REPOSITORY }}/public -type f -name '*.html')
 
           echo '<?xml version="1.0" encoding="UTF-8"?>' > out/${{ env.REPOSITORY }}/sitemap.xml
           echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> out/${{ env.REPOSITORY }}/sitemap.xml
 
           for file in $files; do
-            relative_path=${file#./${{ env.REPOSITORY }}/pinlic/}
+            relative_path=${file#./public/${{ env.REPOSITORY }}/public/}
             url="https://${{ env.REPOSITORY }}/$relative_path"
             lastmod=$(date -r "$file" +"%Y-%m-%dT%H:%M:%S.%3NZ" 2>/dev/null || echo "")
             # lastmod=$(stat -c %y "$file" | TZ=Asia/Tokyo git log -1 --format="%ci" -- "$file")
