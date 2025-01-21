@@ -271,9 +271,7 @@ jobs:
       # gh pr create --fill --base main --head release/github_${{ github.run_id }}
 
       - name: Merge Pull Request
-        if: ${{ github.event.pull_request.mergeable && github.event.pull_request.draft == false }}
         run: |
-          gh pr checks ${{ github.event.pull_request.html_url }} --wait
           gh pr merge ${{ github.event.pull_request.html_url }} --merge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
