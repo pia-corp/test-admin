@@ -2,21 +2,17 @@ name: Create tag
 
 on:
   workflow_run:
-    workflows: ["01.納品ファイルの取得と公開予約"]
+    workflows: ["CloseBranch"]
     types:
       - completed
 
 jobs:
   create-release-tag:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} && contains(github.event.pull_request.head.ref, 'release/')
     runs-on: ubuntu-latest
 
     steps:
-      - name: DEBUG
-        run: |
-          echo "github.head_ref: ${{ github.head_ref }}"
-
       - uses: actions/checkout@v4
-        if: contains(github.event.pull_request.head.ref, 'release/')
 
       # 前回のリリースタグを取得する
       - name: Get previous tag
