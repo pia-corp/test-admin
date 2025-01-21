@@ -268,20 +268,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-      # gh pr create --fill --base main --head release/github_${{ github.run_id }}
-
       - name: Merge Pull Request
         run: |
-          gh pr merge ${{ github.event.pull_request.html_url }} --merge
+          gh pr merge --merge
+          gh pr list
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # CreateTag:
-  #   needs: CloseBranch
-  #   uses: ./.github/workflows/create_tag.yml
-  #   with:
-  #     repository: ${{ inputs.repository }}
-  #     repository_no_register: ${{ inputs.repository_no_register }}
 
   UploadReservation_c:
     needs: CreateSiteMap
