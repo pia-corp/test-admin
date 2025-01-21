@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="430" height="164" viewBox="0 0 430 164">
+  <defs>
+    <clipPath id="clip-path">
+      <rect id="長方形_65" data-name="長方形 65" width="430" height="164" transform="translate(77.92 1218.643)" fill="none"/>
+    </clipPath>
+    <filter id="パス_14" x="-129.554" y="-21" width="647.569" height="896.486" filterUnits="userSpaceOnUse">
+      <feOffset dx="6" dy="-3" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feFlood flood-color="#7f6b6b" flood-opacity="0.302"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="グループ_52" data-name="グループ 52" transform="translate(-77.92 -1218.643)" clip-path="url(#clip-path)">
+    <g transform="matrix(1, 0, 0, 1, 77.92, 1218.64)" filter="url(#パス_14)">
+      <path id="パス_14-2" data-name="パス 14" d="M-143.3,1398.752c81.441-9.273,163.313,9.348,245.109,16.74a898.1,898.1,0,0,0,245.607-11.647c37.824-7.134,75.309-16.789,114.336-17.795l-26.782,860.486-584.787-2.068Z" transform="translate(32.27 -1386.05)" fill="#f7e4e8"/>
+    </g>
+  </g>
+</svg>
