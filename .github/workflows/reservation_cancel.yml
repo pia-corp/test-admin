@@ -1,32 +1,41 @@
-name: Cancel Reservation
+name: 04.予約キャンセル
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       repository:
-        description: "予約するリポジトリ"
+        type: choice
+        description: "対象ブランド"
         required: true
-        type: string
-      month:
-        description: "月"
-        required: true
-        type: string
-      day:
-        description: "日"
-        required: true
-        type: string
-      hour:
-        description: "時"
-        required: true
-        type: string
-      minutes:
-        description: "分"
-        required: true
-        type: string
-    secrets:
-      CRON_JOB_TOKEN_VALUE:
-        description: "Cron Job API Token"
-        required: true
+        options:
+          - "topards.jp"
+          - "feliamo.jp"
+          - "molak.jp"
+          - "ns-collection.jp"
+          - "lilmoon.jp"
+          - "minette-lens.jp"
+          - "mirage-c.jp"
+          - "mimuco.jp"
+          - "harne.jp"
+          - "louer.jp"
+          - "lumieu.jp"
+          - "puuuuchu.jp"
+          - "melady.jp"
+          - "melloew.jp"
+          - "faloom.jp"
+          - "mimicharme.jp"
+          - "lensbe.jp"
+          - "clainel.jp"
+          - "chapun.jp"
+          - "resay.jp"
+          - "michou.jp"
+      repository_no_register:
+        description: "任意のブランドリポジトリ"
+        default: ""
+      reservation:
+        type: boolean
+        description: 予約キャンセル
+        default: true
 
 jobs:
   RESERVATION:

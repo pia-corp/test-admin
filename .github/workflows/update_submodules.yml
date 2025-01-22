@@ -4,15 +4,15 @@ on:
   workflow_call:
     inputs:
       repository:
-        description: "Repository name"
+        description: "対象ブランド"
         required: true
         type: string
       repository_no_register:
-        description: "Alternative repository name if provided"
+        description: "Alt任意のブランドリポジトリ"
         required: false
         type: string
       branch_name:
-        description: "Branch name to commit changes"
+        description: "ブランチのパス"
         required: true
         type: string
     secrets:
@@ -31,18 +31,18 @@ jobs:
       REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
 
     steps:
-      - name: Checkout the repository
+      - name: リポジトリをチェックアウト(過去の履歴をすべて取得)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set Git configuration
+      - name: Gitの設定を行う
         run: |
           git config --global user.name ${{ vars.USERNAME }}
           git config --global user.email ${{ vars.MAILADDRESS }}
           git config --global url."https://${{ secrets.GITHUB_TOKEN_VALUE }}@github.com/".insteadOf "https://github.com/"
 
-      - name: Check if submodule exists
+      - name: サブモジュールの存在を確認
         run: |
           if git config --file .gitmodules --name-only --get-regexp path | grep -q "^submodule\.$REPOSITORY\.path$"; then
             echo "Submodule exists"
@@ -52,15 +52,15 @@ jobs:
             echo "submodule_exists=false" >> $GITHUB_ENV
           fi
 
-      - name: Add submodule if not exists
+      - name: サブモジュールが存在しない場合は追加
         if: env.submodule_exists == 'false'
         run: |
           git submodule add https://github.com/pia-corp/${{ env.REPOSITORY }} ${{ env.REPOSITORY }}
-          git submodule update --init --remote public/${{ env.REPOSITORY }}
+          git submodule update --init --remote ${{ env.REPOSITORY }}
 
-      - name: Update submodules
+      - name: サブモジュールを更新
         if: env.submodule_exists == 'true'
-        run: git submodule update --init --remote public/${{env.REPOSITORY}}
+        run: git submodule update --init --remote ${{env.REPOSITORY}}
         env:
           GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN_VALUE }}
 
