@@ -41,7 +41,6 @@ on:
         required: false
         description: 月
         options:
-          - 0
           - 1
           - 2
           - 3
@@ -59,7 +58,6 @@ on:
         required: false
         description: 日
         options:
-          - 0
           - 1
           - 2
           - 3
@@ -142,48 +140,49 @@ permissions:
   contents: write
   pull-requests: write
 
-env:
-  REVIEWER: github-actions[bot]
-
 jobs:
   # このジョブは、ワークフローを実行するユーザーが許可されたリストに含まれているかどうかを確認します。
-  # 許可されていない場合、ワークフローは警告を出して終了します。
-  # 許可されている場合、ワークフローは続行されます。
   Auth:
     runs-on: ubuntu-latest
     timeout-minutes: 1
 
     steps:
-      - name: Check if the user is authorized
+      - name: ユーザーの認証を確認
         env:
           USER_LOGIN: ${{ github.actor }}
           CODE_OWNERS: ${{ vars.CODE_OWNERS }}
         run: |
           echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
           if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
-            echo "ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
             echo "::warning:: ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
             exit 1
           fi
-          echo "ユーザー $USER_LOGIN は認証されました。続行します..."
+          echo "::notice file={name},line={line},endLine={endLine},title={title}::{message}%0Aユーザー $USER_LOGIN は認証されました。続行します..."
+
+
 
   # このジョブは、新しいリリースブランチを作成し、リモートリポジトリにプッシュするためのものです。
   # 'Auth' ジョブが完了した後に実行されます。
   # ジョブの出力として、作成されたリリースブランチの名前を提供します。
   CreateBranch:
-    needs: Auth
+    needs: [Auth]
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Push new branch
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: リリース用の新しいブランチを作成
         run: |
           git checkout -b release/github_${{ github.run_id }}
+
+      - name: 新しいブランチをプッシュ
+        run: |
           git push -u origin release/github_${{ github.run_id }}
 
   UpdateSubmodules:
-    needs: CreateBranch
+    needs: [CreateBranch]
     uses: ./.github/workflows/update_submodules.yml
     with:
       repository: ${{ inputs.repository }}
@@ -192,8 +191,8 @@ jobs:
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
-  UpdateStatus:
-    needs: UpdateSubmodules
+  GetCommitMessage:
+    needs: [UpdateSubmodules]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -213,8 +212,9 @@ jobs:
           echo "$COMMIT_MESSAGE"
 
   CreateSiteMap:
-    needs: UpdateStatus
-    if: ${{ needs.UpdateStatus.outputs.COMMIT_MESSAGE && needs.UpdateStatus.outputs.COMMIT_MESSAGE == 'Automatically update submodules' }}
+    needs: [GetCommitMessage]
+    if: ${{ needs.GetCommitMessage.outputs.COMMIT_MESSAGE && needs.GetCommitMessage.outputs.COMMIT_MESSAGE == 'Automatically update submodules' }}
+
     uses: ./.github/workflows/create_sitemap.yml
     with:
       repository: ${{ inputs.repository }}
@@ -226,10 +226,10 @@ jobs:
   # このジョブは、指定されたブランチが存在しない場合にそのブランチをリモートリポジトリから削除するためのものです。
   # 具体的には、UpdateSubmodulesジョブの出力がfalseの場合に、CreateBranchジョブで作成されたブランチを削除します。
   DeleteBranch:
-    needs: UpdateStatus
+    needs: [GetCommitMessage]
     runs-on: ubuntu-latest
     timeout-minutes: 1
-    if: ${{ needs.UpdateStatus.outputs.COMMIT_MESSAGE && needs.UpdateStatus.outputs.COMMIT_MESSAGE != 'Automatically update submodules' }}
+    if: ${{ needs.GetCommitMessage.outputs.COMMIT_MESSAGE && needs.GetCommitMessage.outputs.COMMIT_MESSAGE != 'Automatically update submodules' }}
 
     steps:
       - name: Checkout repository
