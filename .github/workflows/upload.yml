@@ -32,9 +32,16 @@ on:
       repository_no_register:
         description: "任意のブランドリポジトリ"
         default: ""
+      verification:
+        type: choice
+        description: アップロード先
+        required: true
+        options:
+          - "本番環境"
+          - "検証環境"
       sync:
         type: choice
-        description: "File synchronization"
+        description: "ファイルのアップロード方法"
         required: true
         options:
           - "full"
@@ -48,7 +55,7 @@ jobs:
       contents: read
 
     steps:
-      - name: Checkout the repository
+      - name: リポジトリをチェックアウト(過去の履歴をすべて取得)
         uses: actions/checkout@v4.1.6
         with:
           fetch-depth: 0

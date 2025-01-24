@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       repository_no_register:
-        description: "Alt任意のブランドリポジトリ"
+        description: "任意のブランドリポジトリ"
         required: false
         type: string
       branch_name:
@@ -42,7 +42,7 @@ jobs:
           git config --global user.email ${{ vars.MAILADDRESS }}
           git config --global url."https://${{ secrets.GITHUB_TOKEN_VALUE }}@github.com/".insteadOf "https://github.com/"
 
-      - name: サブモジュールの存在を確認
+      - name: configファイルにsubmodulesが存在するか確認
         run: |
           if git config --file .gitmodules --name-only --get-regexp path | grep -q "^submodule\.$REPOSITORY\.path$"; then
             echo "Submodule exists"
@@ -52,11 +52,20 @@ jobs:
             echo "submodule_exists=false" >> $GITHUB_ENV
           fi
 
-      - name: サブモジュールが存在しない場合は追加
+      - name: クローン先を調べてリポジトリを追加
         if: env.submodule_exists == 'false'
         run: |
-          git submodule add https://github.com/pia-corp/${{ env.REPOSITORY }} ${{ env.REPOSITORY }}
-          git submodule update --init --remote ${{ env.REPOSITORY }}
+          repo_url="https://github.com/pia-corp/${{ env.REPOSITORY }}"
+
+          if curl --head --silent --fail "$repo_url" > /dev/null; then
+            echo "::notice:: リポジトリが見つかりました: $repo_url"
+            echo "repository_exists=true" >> $GITHUB_ENV
+            git submodule add "$repo_url" "${{ env.REPOSITORY }}"
+            git submodule update --init --remote "${{ env.REPOSITORY }}"
+          else
+            echo "::error:: リポジトリが見つかりません: $repo_url"
+            exit 1
+          fi
 
       - name: サブモジュールを更新
         if: env.submodule_exists == 'true'
@@ -64,7 +73,7 @@ jobs:
         env:
           GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN_VALUE }}
 
-      - name: Checkout branch
+      - name: 指定したブランチをチェックアウト
         run: |
           git checkout ${{ inputs.branch_name }}
 
@@ -72,8 +81,15 @@ jobs:
         run: |
           git add .
           if ! git diff-index --quiet HEAD; then
-            git commit -m "Automatically update submodules"
+            if submodule_exists == 'true'; then
+              git commit -m "Automatically update submodules"
+              echo "::notice:: サブモジュールの更新を実施"
+            else
+              git commit -m "Automatically add submodules"
+              echo "::notice:: サブモジュールの追加を実施"
+            fi
             git push -u origin ${{ inputs.branch_name }}
           else
             echo "No changes in submodules"
+            echo "::notice:: サブモジュールの更新情報は存在しません"
           fi

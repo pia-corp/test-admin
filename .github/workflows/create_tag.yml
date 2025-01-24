@@ -12,16 +12,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
 
-      # 前回のリリースタグを取得する
-      - name: Get previous tag
+      - name: 前回のリリースタグを取得する
         id: pre_tag
         run: |
           echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)" >> $GITHUB_OUTPUT
 
-      # タグを生成する 「{YYYY.MM.DD}-{当日リリース回数}」
-      - name: Generate tag
+      - name: タグを生成する 「{YYYY.MM.DD}-{当日リリース回数}」
         id: release_tag
         run: |
           today=$(date +'%Y.%m.%d')
@@ -32,16 +31,14 @@ jobs:
           fi
           echo "release_tag=$today-$(($pre_release_count + 1))" >> $GITHUB_OUTPUT
 
-      # PRのDescriptionを取得しマークダウン形式に変換する
-      - name: Get pr description
+      - name: PRのDescriptionを取得しマークダウン形式に変換する
         id: pr_description
         run: |
           echo "pr_description=$(curl -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number}}' \
             | jq .body | awk '{if ($0 == "null") print ""; else print}')" >> $GITHUB_OUTPUT
 
-      # 前回リリースからの差分をもとに、変更点を取得する
-      - name: Generate release note changes
+      - name: 前回リリースからの差分をもとに、変更点を取得する
         id: changes
         run: |
           echo "changes=$(
@@ -56,8 +53,7 @@ jobs:
             }' | jq .body
           )" >> $GITHUB_OUTPUT
 
-      # リリースノートの本文を作成する
-      - name: Create release note body
+      - name: リリースノートの本文を作成する
         id: release_note_body
         run: |
           echo "release_note_body=$(echo \
@@ -65,10 +61,7 @@ jobs:
             ${{ steps.changes.outputs.changes }} \
             | sed 's/\\"//g' | sed 's/["“]//g')" >> $GITHUB_OUTPUT
 
-      # タグを切り、リリースノートを作成する
-      # PRのラベルに応じてカテゴライズする場合は、使用先のリポジトリで下記を定義する
-      # https://docs.github.com/ja/repositories/releasing-projects-on-github/automatically-generated-release-notes#configuring-automatically-generated-release-notes
-      - name: Create Release
+      - name: タグを切り、リリースノートを作成する
         run: |
           response=$(curl -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
