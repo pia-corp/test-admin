@@ -157,8 +157,26 @@ jobs:
             echo "::warning:: ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
             exit 1
           fi
-          echo "::notice file={name},line={line},endLine={endLine},title={title}::{message}%0Aユーザー $USER_LOGIN は認証されました。続行します..."
+          echo "::notice:: ユーザー $USER_LOGIN は認証されました。続行します..."
 
+          # 予約設定の状態を判定
+          if [ "${{ inputs.reservation }}" == "true" ]; then
+            res="✅"
+          else
+            res="❌"
+          fi
+
+          # GitHubステップサマリーに情報を追加
+          {
+            echo "# 入力された変数"
+            echo "| リポジトリ | 予約設定 | 月 |"
+            echo "| -- | -- | -- |"
+            if [ -n "${{ inputs.repository_no_register }}" ]; then
+              echo "| ${{ inputs.repository_no_register }} | $res | ${{ inputs.month }}月${{ inputs.day }}日${{ inputs.hour }}時${{ inputs.minutes }}分 |"
+            else
+              echo "| ${{ inputs.repository }} | $res | ${{ inputs.month }}月${{ inputs.day }}日${{ inputs.hour }}時${{ inputs.minutes }}分 |"
+            fi
+          } >> $GITHUB_STEP_SUMMARY
 
 
   # このジョブは、新しいリリースブランチを作成し、リモートリポジトリにプッシュするためのものです。
@@ -283,6 +301,7 @@ jobs:
     uses: ./.github/workflows/reservation.yml
     with:
       repository: ${{ inputs.repository }}
+      repository_no_register: ${{ inputs.repository_no_register }}
       month: ${{ inputs.month }}
       day: ${{ inputs.day }}
       hour: ${{ inputs.hour }}
@@ -296,6 +315,7 @@ jobs:
     uses: ./.github/workflows/reservation.yml
     with:
       repository: ${{ inputs.repository }}
+      repository_no_register: ${{ inputs.repository_no_register }}
       month: ${{ inputs.month }}
       day: ${{ inputs.day }}
       hour: ${{ inputs.hour }}

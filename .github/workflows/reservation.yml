@@ -4,8 +4,12 @@ on:
   workflow_call:
     inputs:
       repository:
-        description: "予約するリポジトリ"
+        description: "対象ブランド"
         required: true
+        type: string
+      repository_no_register:
+        description: "任意のブランドリポジトリ"
+        required: false
         type: string
       month:
         description: "月"
@@ -34,7 +38,7 @@ jobs:
     timeout-minutes: 3
 
     steps:
-      - name: Get CronJob List
+      - name: CronJobリストを取得
         run: |
           response=$(curl -X GET \
               -H 'Content-Type: application/json' \
@@ -43,7 +47,7 @@ jobs:
           echo "Data from API: $response"
           echo "$response" > data.json
 
-      - name: Extract Job ID
+      - name: ジョブIDを抽出
         id: extract_job_id
         run: |
           JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ inputs.repository }}") | .jobId' data.json)
@@ -52,16 +56,15 @@ jobs:
 
       - name: Display Job ID
         run: |
-          echo "Extracted Job ID: ${{ env.job_id }}"
+          echo "::notice:: Job ID: ${{ env.job_id }}"
 
-      - name: Register Cron job
+      - name: CronJobの登録
         env:
           month: ${{ inputs.month }}
           day: ${{ inputs.day }}
           hour: ${{ inputs.hour }}
           minutes: ${{ inputs.minutes }}
         run: |
-          echo "Registering the job with month=$month, day=$day, hour=$hour, minutes=$minutes..."
           curl -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}" \
