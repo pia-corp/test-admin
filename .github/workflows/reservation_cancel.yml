@@ -41,6 +41,8 @@ jobs:
   RESERVATION:
     runs-on: ubuntu-latest
     timeout-minutes: 3
+    env:
+      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
 
     steps:
       - name: CronJobリストを取得
@@ -55,7 +57,7 @@ jobs:
       - name: ジョブIDを抽出
         id: extract_job_id
         run: |
-          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ inputs.repository }}") | .jobId' data.json)
+          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json)
           echo "Job ID: $JOB_ID"
           echo "job_id=$JOB_ID" >> $GITHUB_ENV
 

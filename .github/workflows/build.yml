@@ -169,7 +169,7 @@ jobs:
           # GitHubステップサマリーに情報を追加
           {
             echo "# 入力された変数"
-            echo "| リポジトリ | 予約設定 | 月 |"
+            echo "| リポジトリ | 予約設定 | 日時 |"
             echo "| -- | -- | -- |"
             if [ -n "${{ inputs.repository_no_register }}" ]; then
               echo "| ${{ inputs.repository_no_register }} | $res | ${{ inputs.month }}月${{ inputs.day }}日${{ inputs.hour }}時${{ inputs.minutes }}分 |"
@@ -256,7 +256,7 @@ jobs:
       - name: Delete branch
         run: |
           git push origin --delete release/github_${{ github.run_id }}
-          exit 1
+          echo "::notice:: ブランチを削除しました。release/github_${{ github.run_id }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -296,21 +296,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   UploadReservation_c:
-    needs: CreateSiteMap
-    if: inputs.reservation == true
-    uses: ./.github/workflows/reservation.yml
-    with:
-      repository: ${{ inputs.repository }}
-      repository_no_register: ${{ inputs.repository_no_register }}
-      month: ${{ inputs.month }}
-      day: ${{ inputs.day }}
-      hour: ${{ inputs.hour }}
-      minutes: ${{ inputs.minutes }}
-    secrets:
-      CRON_JOB_TOKEN_VALUE: ${{ secrets.CRON_JOB_TOKEN }}
-
-  UploadReservation_d:
-    needs: DeleteBranch
+    if: ${{ ! failure() }}
+    needs: [CreateSiteMap, DeleteBranch]
     if: inputs.reservation == true
     uses: ./.github/workflows/reservation.yml
     with:
