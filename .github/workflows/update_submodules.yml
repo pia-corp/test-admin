@@ -57,13 +57,26 @@ jobs:
         run: |
           repo_url="https://github.com/pia-corp/${{ env.REPOSITORY }}"
 
+          # env.REPOSITORY の妥当性チェック
+          if [ -z "${{ env.REPOSITORY }}" ]; then
+            echo "::error:: env.REPOSITORY が設定されていません。処理を終了します。"
+            exit 1
+          fi
+
+          # リポジトリが存在するか確認
           if curl --head --silent --fail "$repo_url" > /dev/null; then
             echo "::notice:: リポジトリが見つかりました: $repo_url"
             echo "repository_exists=true" >> $GITHUB_ENV
-            git submodule add "$repo_url" "${{ env.REPOSITORY }}"
-            git submodule update --init --remote "${{ env.REPOSITORY }}"
+
+            # サブモジュールの重複チェック
+            if [ -d "${{ env.REPOSITORY }}" ]; then
+              echo "::notice:: サブモジュールが既に存在しています: $repo_url"
+            else
+              git submodule add "$repo_url" "${{ env.REPOSITORY }}"
+              git submodule update --init --remote "${{ env.REPOSITORY }}"
+            fi
           else
-            echo "::error:: リポジトリが見つかりません: $repo_url"
+            echo "::error:: リポジトリが見つかりません: $repo_url (URLが無効か、リポジトリが存在しません)"
             exit 1
           fi
 
