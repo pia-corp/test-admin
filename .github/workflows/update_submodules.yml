@@ -55,7 +55,7 @@ jobs:
       - name: クローン先を調べてリポジトリを追加
         if: env.submodule_exists == 'false'
         run: |
-          repo_url="https://github.com/pia-corp/${{ env.REPOSITORY }}"
+          repo_url="https://${{ secrets.GITHUB_TOKEN }}@github.com/pia-corp/${{ env.REPOSITORY }}"
 
           # env.REPOSITORY の妥当性チェック
           if [ -z "${{ env.REPOSITORY }}" ]; then
