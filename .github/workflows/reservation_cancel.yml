@@ -61,10 +61,6 @@ jobs:
           echo "Job ID: $JOB_ID"
           echo "job_id=$JOB_ID" >> $GITHUB_ENV
 
-      - name: Display Job ID
-        run: |
-          echo "::notice:: Job ID: ${{ env.job_id }}"
-
       - name: CronJobのキャンセル
         env:
           month: ${{ inputs.month }}
@@ -81,3 +77,31 @@ jobs:
               }
             }" \
             https://api.cron-job.org/jobs/${{ env.job_id }}
+
+      - name: ジョブ情報を抽出
+        run: |
+          # jq を使って lumieu.jp のデータを抽出
+          Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
+          Hours=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json)
+          MDays=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json)
+          Minutes=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json)
+          Months=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json)
+          timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json)
+
+          # 抽出した値を表示
+          echo "Enabled: $Enabled" >> $GITHUB_ENV
+          echo "Hours: $hours" >> $GITHUB_ENV
+          echo "MDays: $mdays" >> $GITHUB_ENV
+          echo "Minutes: $minutes" >> $GITHUB_ENV
+          echo "Months: $months" >> $GITHUB_ENV
+          echo "Timezone: $timezone" >> $GITHUB_ENV
+
+      - name: 結果の表示
+        run: |
+          # GitHubステップサマリーに情報を追加
+          {
+            echo "# 予約キャンセルした日時"
+            echo "| リポジトリ | 予約日時 | ステータス |"
+            echo "| -- | -- | -- |"
+            echo "| ${{ env.REPOSITORY }} | ${{ env.Timezone }} ${{ env.Months }}月${{ env.MDays }}日${{ env.Hours }}時${{ env.Minutes }}分 | ${{ env.ENABLED }} |"
+          } >> $GITHUB_STEP_SUMMARY

@@ -90,20 +90,20 @@ jobs:
       - name: ジョブ情報を抽出
         run: |
           # jq を使って lumieu.jp のデータを抽出
-          enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
-          hours=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json)
-          mdays=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json)
-          minutes=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json)
-          months=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json)
+          Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
+          Hours=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json)
+          MDays=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json)
+          Minutes=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json)
+          Months=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json)
           timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json)
 
           # 抽出した値を表示
-          echo "Enabled: $enabled"
-          echo "Hours: $hours"
-          echo "MDays: $mdays"
-          echo "Minutes: $minutes"
-          echo "Months: $months"
-          echo "Timezone: $timezone"
+          echo "Enabled: $Enabled" >> $GITHUB_ENV
+          echo "Hours: $hours" >> $GITHUB_ENV
+          echo "MDays: $mdays" >> $GITHUB_ENV
+          echo "Minutes: $minutes" >> $GITHUB_ENV
+          echo "Months: $months" >> $GITHUB_ENV
+          echo "Timezone: $timezone" >> $GITHUB_ENV
 
       - name: 結果の表示
         run: |
@@ -112,5 +112,5 @@ jobs:
             echo "# 予約した日時"
             echo "| リポジトリ | 予約日時 | ステータス |"
             echo "| -- | -- | -- |"
-            echo "| ${{ env.REPOSITORY }} | ${{ inputs.month }}月${{ inputs.day }}日${{ inputs.hour }}時${{ inputs.minutes }}分 | ${{ env.ENABLED }} |"
+            echo "| ${{ env.REPOSITORY }} | ${{ env.Timezone }} ${{ env.Months }}月${{ env.MDays }}日${{ env.Hours }}時${{ env.Minutes }}分 | ${{ env.ENABLED }} |"
           } >> $GITHUB_STEP_SUMMARY

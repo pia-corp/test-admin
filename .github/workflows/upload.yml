@@ -32,13 +32,13 @@ on:
       repository_no_register:
         description: "任意のブランドリポジトリ"
         default: ""
-      verification:
+      target:
         type: choice
         description: アップロード先
         required: true
         options:
-          - "本番環境"
           - "検証環境"
+          - "本番環境"
       sync:
         type: choice
         description: "ファイルのアップロード方法"
@@ -50,56 +50,61 @@ on:
 jobs:
   Upload:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    env:
+      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
     permissions:
       contents: read
 
     steps:
       - name: リポジトリをチェックアウト(過去の履歴をすべて取得)
-        uses: actions/checkout@v4.1.6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Error handling for invalid protocol
+      - name: 無効なプロトコルのエラーハンドリング
         if: ${{ vars.PROTOCOL != 'ftp' && vars.PROTOCOL != 'sftp' }}
         run: |
-          echo "::error file=プロトコルの指定が不正です。"
+          echo "::error:: プロトコルの指定が不正です。環境変数を確認してください。"
           exit 1
 
+      - name: 本番環境か検証環境
+        run: |
+          if (target == '検証環境') {
+            echo "HOST=${{ vars.DEVELOPMENT_HOST }}" >> $GITHUB_ENV
+            echo "PORT=${{ vars.DEVELOPMENT_PORT }}" >> $GITHUB_ENV
+            echo "USER_NAME=${{ vars.DEVELOPMENT_USER_NAME }}" >> $GITHUB_ENV
+            echo "PASSWORD=${{ secrets.DEVELOPMENT_PASSWORD }}" >> $GITHUB_ENV
+            echo "PORT=${{ vars.DEVELOPMENT_REMOTE_PATH }}" >> $GITHUB_ENV
+          } else {
+            echo "HOST=${{ vars.PRODUCTION_HOST }}" >> $GITHUB_ENV
+            echo "PORT=${{ vars.PRODUCTION_PORT }}" >> $GITHUB_ENV
+            echo "USER_NAME=${{ vars.PRODUCTION_USER_NAME }}" >> $GITHUB_ENV
+            echo "PASSWORD=${{ secrets.PRODUCTION_PASSWORD }}" >> $GITHUB_ENV
+          }
+
       - name: Deploy via SFTP
-        uses: milanmk/actions-file-deployer@1.15
+        if: ${{ inputs.target == '本番環境' }}
+        uses: milanmk/actions-file-deployer@1
         with:
           remote-protocol: 'sftp'
-          remote-host: ${{ vars.HOST }}
-          remote-port: ${{ vars.PORT }}
-          remote-user: ${{ vars.USER_NAME }}
-          remote-password: ${{ secrets.PASSWORD }}
-          local-path: ${{ vars.LOCAL_PATH }}
-          remote-path: ${{ vars.REMOTE_PATH }}
-          sync: ${{ vars.UPLOAD_TYPE }}
+          remote-host: ${{ env.HOST }}
+          remote-port: ${{ env.PORT }}
+          remote-user: ${{ env.USER_NAME }}
+          remote-password: ${{ env.PASSWORD }}
+          local-path: ${{ vars.LOCAL_PATH }}/${{ env.REPOSITORY }}
+          remote-path: ${{ env.REPOSITORY }}
+          sync: ${{ inputs.sync }}
           debug: true
 
       - name: Deploy via FTP
-        if: ${{ vars.PROTOCOL == 'ftp' }}
-        uses: SamKirkland/FTP-Deploy-Action@4.2.0
+        if: ${{ inputs.target == '検証環境' }}
+        uses: SamKirkland/FTP-Deploy-Action@4
         with:
-          server: ${{ vars.HOST }}
-          username: ${{ vars.USER_NAME }}
-          password: ${{ secrets.PASSWORD }}
-          port:  ${{ vars.PORT }}
-          local-dir: ${{ vars.LOCAL_PATH }}
-          server-dir: ${{ vars.REMOTE_PATH }}
+          server: ${{ env.HOST }}
+          username: ${{ env.USER_NAME }}
+          password: ${{ env.PASSWORD }}
+          port:  ${{ env.PORT }}
+          local-dir: ${{ vars.LOCAL_PATH }}/${{ env.REPOSITORY }}
+          server-dir: ${{ env.DEVELOPMENT_REMOTE_PATH }}/${{ env.REPOSITORY }}
           ARGS: --delete --parallel=15
-
-  Cron:
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-
-    steps:
-      - name: Cancellation Cron job
-        run: |
-          curl -X PATCH \
-          -H 'Content-Type: application/json' \
-          -H 'Authorization: Bearer ${{ secrets.CRON_TOKEN }}' \
-          -d '{"job":{"enabled":false}}' \
-          https://api.cron-job.org/jobs/${{ vars.CRON_ID }}
