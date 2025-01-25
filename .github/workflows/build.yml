@@ -231,7 +231,7 @@ jobs:
 
   CreateSiteMap:
     needs: [GetCommitMessage]
-    if: ${{ needs.GetCommitMessage.outputs.COMMIT_MESSAGE && needs.GetCommitMessage.outputs.COMMIT_MESSAGE == 'Automatically update submodules' || needs.GetCommitMessage.outputs.COMMIT_MESSAGE == 'Automatically add submodules' }}
+    if: ${{ needs.GetCommitMessage.outputs.COMMIT_MESSAGE && (needs.GetCommitMessage.outputs.COMMIT_MESSAGE == 'Automatically update submodules' || needs.GetCommitMessage.outputs.COMMIT_MESSAGE == 'Automatically add submodules') }}
 
     uses: ./.github/workflows/create_sitemap.yml
     with:
@@ -247,7 +247,7 @@ jobs:
     needs: [GetCommitMessage]
     runs-on: ubuntu-latest
     timeout-minutes: 1
-    if: ${{ needs.GetCommitMessage.outputs.COMMIT_MESSAGE && needs.GetCommitMessage.outputs.COMMIT_MESSAGE != 'Automatically update submodules' || needs.GetCommitMessage.outputs.COMMIT_MESSAGE != 'Automatically add submodules' }}
+    if: ${{ needs.GetCommitMessage.outputs.COMMIT_MESSAGE && (needs.GetCommitMessage.outputs.COMMIT_MESSAGE != 'Automatically update submodules' || needs.GetCommitMessage.outputs.COMMIT_MESSAGE != 'Automatically add submodules') }}
 
     steps:
       - name: Checkout repository
