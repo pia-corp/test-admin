@@ -66,13 +66,8 @@ jobs:
             echo "::notice:: リポジトリが見つかりました: $repo_url"
             echo "repository_exists=true" >> $GITHUB_ENV
 
-            # サブモジュールの重複チェック
-            if [ -d "${{ env.REPOSITORY }}" ]; then
-              echo "::notice:: サブモジュールが既に存在しています: $repo_url"
-            else
-              git submodule add "$repo_url" "${{ env.REPOSITORY }}"
-              git submodule update --init --remote "${{ env.REPOSITORY }}"
-            fi
+            git submodule add "$repo_url" "${{ env.REPOSITORY }}"
+            git submodule update --init --remote "${{ env.REPOSITORY }}"
 
           elif [ "$STATUS" -eq 404 ]; then
             echo "::error:: リポジトリが見つかりません: $repo_url (URLが無効か、リポジトリが存在しません)"
