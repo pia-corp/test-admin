@@ -295,7 +295,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  UploadReservation_c:
+  UploadReservation:
     if: ${{ ! failure() && inputs.reservation == true }}
     needs: [CreateSiteMap, DeleteBranch]
     uses: ./.github/workflows/reservation.yml

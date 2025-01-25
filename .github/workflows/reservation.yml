@@ -55,10 +55,6 @@ jobs:
           echo "Job ID: $JOB_ID"
           echo "job_id=$JOB_ID" >> $GITHUB_ENV
 
-      - name: Display Job ID
-        run: |
-          echo "::notice:: Job ID: ${{ env.job_id }}"
-
       - name: CronJobの登録
         env:
           month: ${{ inputs.month }}
@@ -66,7 +62,7 @@ jobs:
           hour: ${{ inputs.hour }}
           minutes: ${{ inputs.minutes }}
         run: |
-          response=$(curl -X PATCH \
+          curl -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}" \
             -d "{
@@ -80,9 +76,41 @@ jobs:
                 }
               }
             }" \
-            https://api.cron-job.org/jobs/${{ env.job_id }})
-            echo "response=$response" >> $GITHUB_ENV
-            echo "CronJob API response: $response"
+            https://api.cron-job.org/jobs/${{ env.job_id }}
+
+      - name: CronJobリストを取得
+        run: |
+          response=$(curl -X GET \
+              -H 'Content-Type: application/json' \
+              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}' \
+              https://api.cron-job.org/jobs)
+          echo "Data from API: $response"
+          echo "$response" > data.json
+
+      - name: ジョブ情報を抽出
+        run: |
+          # Parse API data and extract relevant fields for "lumieu.jp"
+          TITLE="${{ env.REPOSITORY }}"
+
+          # Extract data using jq
+          LUMIEU_DATA=$(echo "$API_DATA" | jq -c '.jobs[] | select(.title == env.TITLE)')
+
+          # Extract specific fields from the JSON object
+          ENABLED=$(echo "$LUMIEU_DATA" | jq '.enabled')
+          HOURS=$(echo "$LUMIEU_DATA" | jq '.schedule.hours[]')
+          MDAYS=$(echo "$LUMIEU_DATA" | jq '.schedule.mdays[]')
+          MINUTES=$(echo "$LUMIEU_DATA" | jq '.schedule.minutes[]')
+          MONTHS=$(echo "$LUMIEU_DATA" | jq '.schedule.months[]')
+          TIMEZONE=$(echo "$LUMIEU_DATA" | jq -r '.schedule.timezone')
+
+          # Output extracted data for verification
+          echo "Enabled: $ENABLED"
+          echo "Hours: $HOURS"
+          echo "Mdays: $MDAYS"
+          echo "Minutes: $MINUTES"
+          echo "Months: $MONTHS"
+          echo "Timezone: $TIMEZONE"
+
 
       - name: 結果の表示
         run: |
@@ -91,5 +119,5 @@ jobs:
             echo "# 予約した日時"
             echo "| リポジトリ | 予約日時 | ステータス |"
             echo "| -- | -- | -- |"
-            echo "| ${{ env.REPOSITORY }} | ${{ inputs.month }}月${{ inputs.day }}日${{ inputs.hour }}時${{ inputs.minutes }}分 | ${{ env.response }} |"
+            echo "| ${{ env.REPOSITORY }} | ${{ inputs.month }}月${{ inputs.day }}日${{ inputs.hour }}時${{ inputs.minutes }}分 | ${{ env.ENABLED }} |"
           } >> $GITHUB_STEP_SUMMARY
