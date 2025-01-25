@@ -38,8 +38,8 @@ jobs:
 
       - name: Gitの設定を行う
         run: |
-          git config --global user.name ${{ vars.USERNAME }}
-          git config --global user.email ${{ vars.MAILADDRESS }}
+          git config --global user.name ${{ vars.GIT_USERNAME }}
+          git config --global user.email ${{ vars.GIT_MAILADDRESS }}
           git config --global url."https://${{ secrets.GITHUB_TOKEN_VALUE }}@github.com/".insteadOf "https://github.com/"
 
       - name: configファイルにsubmodulesが存在するか確認

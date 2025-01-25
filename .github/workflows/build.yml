@@ -150,7 +150,7 @@ jobs:
       - name: ユーザーの認証を確認
         env:
           USER_LOGIN: ${{ github.actor }}
-          CODE_OWNERS: ${{ vars.CODE_OWNERS }}
+          CODE_OWNERS: ${{ vars.GIT_CODE_OWNERS }}
         run: |
           echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
           if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
@@ -207,7 +207,7 @@ jobs:
       repository_no_register: ${{ inputs.repository_no_register }}
       branch_name: release/github_${{ github.run_id }}
     secrets:
-      GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      GITHUB_TOKEN_VALUE: ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}
 
   GetCommitMessage:
     needs: [UpdateSubmodules]
@@ -239,7 +239,7 @@ jobs:
       repository_no_register: ${{ inputs.repository_no_register }}
       branch_name: release/github_${{ github.run_id }}
     secrets:
-      GITHUB_TOKEN_VALUE: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      GITHUB_TOKEN_VALUE: ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}
 
   # このジョブは、指定されたブランチが存在しない場合にそのブランチをリモートリポジトリから削除するためのものです。
   # 具体的には、UpdateSubmodulesジョブの出力がfalseの場合に、CreateBranchジョブで作成されたブランチを削除します。
@@ -286,7 +286,7 @@ jobs:
         run: |
           gh pr create --fill
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}
 
       - name: Merge Pull Request
         run: |
