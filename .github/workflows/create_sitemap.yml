@@ -51,7 +51,7 @@ jobs:
       - name: 公開用のフォルダを再生成
         run: |
           # outフォルダを強制削除 (存在しない場合もエラーにならないようにする)
-          rm -rf out
+          rm -rf out/${{ env.REPOSITORY }}
 
           # outフォルダを作成
           mkdir -p out
