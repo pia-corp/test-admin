@@ -50,7 +50,6 @@ jobs:
           echo "$response" > data.json
 
       - name: ジョブIDを抽出
-        id: extract_job_id
         run: |
           JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json)
           echo "Job ID: $JOB_ID"
@@ -67,7 +66,7 @@ jobs:
           hour: ${{ inputs.hour }}
           minutes: ${{ inputs.minutes }}
         run: |
-          curl -X PATCH \
+          response = (curl -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}" \
             -d "{
@@ -81,7 +80,8 @@ jobs:
                 }
               }
             }" \
-            https://api.cron-job.org/jobs/${{ env.job_id }}
+            https://api.cron-job.org/jobs/${{ env.job_id }})
+            echo "response=$response" >> $GITHUB_ENV
             echo "CronJob API response: $response"
 
       - name: 結果の表示
@@ -91,5 +91,5 @@ jobs:
             echo "# 予約した日時"
             echo "| リポジトリ | 予約日時 | ステータス |"
             echo "| -- | -- | -- |"
-            echo "| ${{ env.REPOSITORY }} | ${{ inputs.month }}月${{ inputs.day }}日${{ inputs.hour }}時${{ inputs.minutes }}分 | $response |"
+            echo "| ${{ env.REPOSITORY }} | ${{ inputs.month }}月${{ inputs.day }}日${{ inputs.hour }}時${{ inputs.minutes }}分 | ${{ env.response }} |"
           } >> $GITHUB_STEP_SUMMARY
