@@ -62,29 +62,7 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/pia-corp/${{ env.REPOSITORY }})
 
-          echo "$STATUS"
-
-
           if [ "$STATUS" -eq 200 ]; then
-            echo "The repository https://github.com/pia-corp/molak.jp exists."
-          elif [ "$STATUS" -eq 404 ]; then
-            echo "The repository https://github.com/pia-corp/molak.jp does not exist."
-          else
-            echo "Unexpected status code: $STATUS"
-            exit 1
-          fi
-
-          repo_url="https://github.com/pia-corp/${{ env.REPOSITORY }}"
-          auth_header="Authorization: token ${{ secrets.GITHUB_TOKEN_VALUE }}"
-
-          # env.REPOSITORY の妥当性チェック
-          if [ -z "${{ env.REPOSITORY }}" ]; then
-            echo "::error:: env.REPOSITORY が設定されていません。処理を終了します。"
-            exit 1
-          fi
-
-          # リポジトリの存在確認
-          if curl --head --silent --fail -H "$auth_header" "$repo_url" > /dev/null; then
             echo "::notice:: リポジトリが見つかりました: $repo_url"
             echo "repository_exists=true" >> $GITHUB_ENV
 
@@ -95,8 +73,12 @@ jobs:
               git submodule add "$repo_url" "${{ env.REPOSITORY }}"
               git submodule update --init --remote "${{ env.REPOSITORY }}"
             fi
-          else
+
+          elif [ "$STATUS" -eq 404 ]; then
             echo "::error:: リポジトリが見つかりません: $repo_url (URLが無効か、リポジトリが存在しません)"
+          else
+            echo "Unexpected status code: $STATUS"
+            echo "::error:: 予期せぬエラーです: $repo_url $STATUS"
             exit 1
           fi
 
