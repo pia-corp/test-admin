@@ -89,28 +89,21 @@ jobs:
 
       - name: ジョブ情報を抽出
         run: |
-          # Parse API data and extract relevant fields for "lumieu.jp"
-          TITLE="${{ env.REPOSITORY }}"
+          # jq を使って lumieu.jp のデータを抽出
+          enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
+          hours=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json)
+          mdays=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json)
+          minutes=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json)
+          months=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json)
+          timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json)
 
-          # Extract data using jq
-          LUMIEU_DATA=$(echo "$API_DATA" | jq -c '.jobs[] | select(.title == env.TITLE)')
-
-          # Extract specific fields from the JSON object
-          ENABLED=$(echo "$LUMIEU_DATA" | jq '.enabled')
-          HOURS=$(echo "$LUMIEU_DATA" | jq '.schedule.hours[]')
-          MDAYS=$(echo "$LUMIEU_DATA" | jq '.schedule.mdays[]')
-          MINUTES=$(echo "$LUMIEU_DATA" | jq '.schedule.minutes[]')
-          MONTHS=$(echo "$LUMIEU_DATA" | jq '.schedule.months[]')
-          TIMEZONE=$(echo "$LUMIEU_DATA" | jq -r '.schedule.timezone')
-
-          # Output extracted data for verification
-          echo "Enabled: $ENABLED"
-          echo "Hours: $HOURS"
-          echo "Mdays: $MDAYS"
-          echo "Minutes: $MINUTES"
-          echo "Months: $MONTHS"
-          echo "Timezone: $TIMEZONE"
-
+          # 抽出した値を表示
+          echo "Enabled: $enabled"
+          echo "Hours: $hours"
+          echo "MDays: $mdays"
+          echo "Minutes: $minutes"
+          echo "Months: $months"
+          echo "Timezone: $timezone"
 
       - name: 結果の表示
         run: |
