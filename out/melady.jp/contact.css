@@ -1,0 +1,349 @@
+:root {
+  --normal-pink: #f7e0e4;
+  --darker-pink: #e18c9f;
+  --btn-pink: #e18c9f;
+  --normal-text: #634a32;
+}
+
+/* 
+
+contact
+
+*/
+body {
+}
+
+#contact {
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.contact {
+  /*  padding: 10vw 0; */
+  background-color: #f4e7e1;
+}
+
+.container {
+  font-size: clamp(16px, calc(16px + ((100vw - 480px) * ((18 - 16) / (1920 - 480)))), 18px);
+  /*  padding: 50px 0; */
+  width: calc(100% - 30px);
+  margin: 0 auto 60px auto;
+}
+
+@media screen and (min-width: 768px) {
+  .container {
+    margin: 0 auto 80px auto;
+  }
+}
+
+#o_pages h2.title {
+  font-family: 'Zen Maru Gothic', sans-serif;
+}
+@media screen and (min-width: 1024px) {
+  .container {
+    /*   padding: 5.2083333333vw 0; */
+    width: 80%;
+    max-width: 1440px;
+  }
+}
+
+.contactExplain {
+  text-align: center;
+  font-size: clamp(16px, calc(12px + ((100vw - 480px) * ((18 - 12) / (1920 - 480)))), 18px);
+  margin-top: 25px;
+  line-height: 1.5;
+}
+
+.contact-ttl {
+  font-size: clamp(18px, calc(12px + ((100vw - 480px) * ((18 - 12) / (1920 - 480)))), 18px);
+  margin-bottom: 1em;
+  font-weight: bold;
+}
+
+.contact-ttl span {
+  background-color: var(--darker-pink);
+  color: #ffffff;
+  font-size: clamp(10px, calc(10px + ((100vw - 480px) * ((14 - 10) / (1920 - 480)))), 14px);
+  padding: 0.2em 0.4em;
+}
+
+/* .contact .main {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+*/
+
+.formInner {
+  background: white;
+  padding: 4vw;
+  margin: 4vw 0 0;
+  border-radius: 30px;
+}
+
+.formRadio {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.contact-submit-box {
+  text-align: center;
+  text-align: -webkit-center;
+  margin-top: 4vw;
+}
+
+.btnkakunin,
+.btnsend,
+.btnback {
+  display: block;
+  color: #ffffff;
+  padding: 2vw 13vw;
+  border-radius: 6px;
+  width: 100%;
+}
+
+.btnsend,
+.btnkakunin {
+  background-color: var(--btn-pink);
+  border: 1px solid var(--btn-pink);
+}
+
+.btnback {
+  background-color: #dedede;
+  border: 1px solid #dedede;
+}
+
+.backZone {
+  margin-top: 10px;
+}
+
+#contact-field {
+  font-size: 16px;
+}
+
+.textForm {
+  border: 1px solid var(--dark-brown);
+  width: 100%;
+  margin-top: 6px;
+  appearance: none;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  line-height: 1.5;
+  background: white;
+  border: 1px solid #c9c9c9;
+  padding: 5px;
+  border-radius: 4px;
+}
+
+.contact-content {
+  margin-top: 1.2em;
+}
+
+input[type='radio'] {
+  width: 1rem;
+  height: 1rem;
+  margin: 6px 0;
+}
+
+input[type='radio'] {
+  appearance: none;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  display: inline-block;
+  position: relative;
+  margin: 6px 6px 6px 0;
+  border-radius: 50%;
+  border: 1px solid #c9c9c9;
+  background: white;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+input[type='radio']:checked::after {
+  content: '';
+  display: block;
+  border-radius: 50%;
+  background: var(--normal-pink);
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+.formRadio {
+  margin-top: 1.2em;
+}
+
+.formRadio li {
+  margin-left: 20px;
+}
+
+.aplivacy {
+  color: red;
+  text-decoration: underline;
+}
+
+.c-form_checkbox-set {
+  text-align: center;
+  margin: 6vw 0;
+}
+
+.main_kakunin .contact-head {
+  text-align: center;
+  font-size: 12px;
+}
+
+.formKakuninKoumoku {
+  background: white;
+  padding: 4vw;
+  margin: 4vw 0 0;
+}
+
+.formKakuninKoumoku p,
+.formKakuninKoumoku div {
+  font-size: 13px;
+}
+
+.afterSendContact {
+  font-size: 12px;
+  background: white;
+  padding: 4vw;
+  margin: 4vw 0 0;
+}
+#agree {
+  width: 1rem;
+  height: 1rem;
+  margin-top: -0.2rem;
+  appearance: auto;
+}
+.agreeZone {
+  flex-direction: column;
+  justify-content: center;
+  align-items: center !important;
+}
+@media screen and (min-width: 768px) {
+  .formInner {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: 50px auto 0;
+  }
+  .contact-content {
+    display: flex;
+    align-items: baseline;
+  }
+  .contact-ttl {
+    font-size: 16px;
+    font-weight: 500;
+    width: 65%;
+    color: #8a6e69;
+  }
+  .contact-content-pp .contact-ttl {
+    width: 100%;
+  }
+  .formRadio {
+    margin: 0;
+  }
+  .contact-content-pp {
+    flex-direction: column;
+    text-align: center;
+    margin-top: 50px;
+  }
+  .main_kakunin .contact-head {
+    font-size: 14px;
+  }
+  .form__inner {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .btnkakunin,
+  .btnsend,
+  .btnback {
+    width: 350px;
+    padding: 20px 3vw;
+  }
+  .contact-submit-box {
+    margin-top: 20px;
+  }
+  .c-form_checkbox-set {
+    margin: 3vw 0 0;
+    align-self: center;
+  }
+  .formKakuninKoumoku p,
+  .formKakuninKoumoku div {
+    font-size: 14px;
+  }
+  .formKakuninKoumoku {
+    margin: 0;
+  }
+  .formKakuninKoumokuInner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 1200px;
+    background-color: #ffffff;
+    margin: 50px auto 0;
+  }
+  .afterSendContact {
+    font-size: 14px;
+    margin: 4vw auto 0;
+    max-width: 1200px;
+  }
+}
+@media screen and (min-width: 1024px) {
+  .contact-ttl {
+    width: 35%;
+  }
+  .agreeZone {
+    margin-top: 2.5em;
+  }
+  .agreeZone .contact-ttl {
+    text-align: center;
+    width: 100%;
+    font-size: 14px;
+  }
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+input[type='text']:focus,
+textarea:focus {
+  outline: solid 1px var(--normal-pink);
+}
+
+input[type='checkbox'] {
+  accent-color: var(--normal-pink);
+}
+
+@media screen and (min-width: 1024px) {
+  .contact-content div {
+    width: 65%;
+  }
+}
+
+p.contact-head {
+  text-align: center;
+  font-size: clamp(16px, calc(12px + ((100vw - 480px) * ((18 - 12) / (1920 - 480)))), 18px);
+  margin-top: 25px;
+  line-height: 1.5;
+}
+
+.formInner.confirm p:not(.pplivacy) {
+  color: #8a6e69;
+  font-weight: bold;
+}
+
+.contact-ttl.pplivacy {
+  font-weight: normal;
+  font-size: clamp(12px, calc(15px + ((100vw - 480px) * ((15 - 12) / (1920 - 480)))), 15px);
+  color: #707070;
+}
+
+textarea,
+input {
+  font-family: 'Noto Sans JP', sans-serif;
+}

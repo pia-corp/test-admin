@@ -1,0 +1,45 @@
+<header>
+  <div id="headmenu_sticky" class="h-nav">
+    <div class="headmenu">
+      <a href="https://www.melady.jp/">
+        <h1 id="header-logo" class="logo"><img src="{root}images/head-logo.svg" alt="meladyロゴ" width="108" height="45"></h1>
+      </a>
+      <nav>
+        <ul class="header_list">
+          <li class="header_item">
+            <a href="https://twitter.com/meladyofficial" target="_blank">
+              <img src="{root}images/icon_x.svg" width="25" height="20" alt="Twitter">
+            </a>
+          </li>
+          <li class="header_item">
+            <a href="https://www.instagram.com/melady.official/" target="_blank">
+              <img src="{root}images/icon_instagram.svg" width="25" height="25" alt="instagram">
+            </a>
+          </li>
+          <li class="header_item">
+            <a class="l-header_link js-modal-open" data-modal="#lineup">Lineup</a>
+          </li>
+          <li class="header_item">
+            <a class="l-header_link js-modal-open" data-modal="#shop">Online Shop</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var h1Elements = document.querySelectorAll('h1');
+    if (h1Elements.length >= 2) {
+      var firstH1 = h1Elements[0];
+      var newDiv = document.createElement('div');
+      newDiv.innerHTML = firstH1.innerHTML;
+      // もしh1に属性があれば、それらをdivにコピー
+      for (var i = 0; i < firstH1.attributes.length; i++) {
+        var attr = firstH1.attributes[i];
+        newDiv.setAttribute(attr.name, attr.value);
+      }
+      firstH1.parentNode.replaceChild(newDiv, firstH1);
+    }
+  });
+</script>

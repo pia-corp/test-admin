@@ -1,0 +1,188 @@
+<section id="section-lineuplink">
+  <div class="section-lineuplink__inner w-1000">
+    <!-- ラインナップタイトル -->
+    <div class="section-lineuplink__inner__ttl">
+      <h2>
+        <picture>
+          <img src="{root}images/renewal/top/ttl-lineiplink.png" alt="Lineup">
+        </picture>
+      </h2>
+    </div>
+    <ul class="eng-txt">
+      <li>
+        <a href="{root}product/meladybrown.html">
+          <picture>
+            <source media="(max-width:640px)" srcset="{root}images/renewal/link-btn-01_sp.png">
+            <img src="{root}images/renewal/link-btn-01.png" alt="Lineup">
+          </picture>
+        </a>
+      </li>
+      <li>
+        <a href="{root}product/idolring.html">
+          <picture>
+            <source media="(max-width:640px)" srcset="{root}images/renewal/link-btn-02_sp.png">
+            <img src="{root}images/renewal/link-btn-02.png" alt="Lineup">
+          </picture>
+        </a>
+      </li>
+      <li>
+        <a href="{root}product/liarpink.html">
+          <picture>
+            <source media="(max-width:640px)" srcset="{root}images/renewal/link-btn-03_sp.png">
+            <img src="{root}images/renewal/link-btn-03.png" alt="Lineup">
+          </picture>
+        </a>
+      </li>
+      <li>
+        <a href="{root}product/ladyblack.html">
+          <picture>
+            <source media="(max-width:640px)" srcset="{root}images/renewal/link-btn-04_sp.png">
+            <img src="{root}images/renewal/link-btn-04.png" alt="Lineup">
+          </picture>
+        </a>
+      </li>
+    </ul>
+  </div>
+</section>
+<div id="shop" class="c-modal_wrap">
+  <div class="c-modal_bg js-modal-close"></div>
+  <div class="c-modal">
+    <div class="onlineModal is-modal">
+      <div class="onlineModalTitle">ONLINE SHOP</div>
+      <ul class="onlineModalList">
+        <li><a href="https://www.lilyanna.jp/c/brand/melady" target="_blank">公式通販サイト</a></li>
+        <li><a href="https://item.rakuten.co.jp/lilyanna/melady-1day-2set/" target="_blank">楽天市場</a></li>
+        <li><a href="https://www.amazon.co.jp/s?k=melady&me=A3IDK4I1SFXGI8&__mk_ja_JP=%E3%82%AB%E3%82%BF%E3%82%AB%E3%83%8A&ref=nb_sb_noss" target="_blank">Amazon</a></li>
+        <li><a href="https://www.qoo10.jp/g/1060014719" target="_blank">Qoo10</a></li>
+        <li><a href="https://store.shopping.yahoo.co.jp/lilyanna/md110-2.html" target="_blank">Yahoo!ショッピング</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="c-modal_close js-modal-close"></div>
+</div>
+<div id="lineup" class="c-modal_wrap">
+  <div class="c-modal_bg js-modal-close"></div>
+  <div class="c-modal">
+    <div class="lup-modal-wrap">
+      <h2><img src="{root}images/modal-lineup-h2.svg" alt="Line Up"></h2>
+      <div class="lup-modal-cont">
+        <div class="">
+          <a href="{root}product/meladybrown.html">
+            <picture>
+              <img src="{root}images/renewal/modal-lineup-01.png" alt="ヒロインブラウン" width="144" height="225">
+            </picture>
+          </a>
+        </div>
+        <div class="">
+          <a href="{root}product/idolring.html">
+            <picture>
+              <img src="{root}images/renewal/modal-lineup-02.png" alt="アイドルリング" width="144" height="225">
+            </picture>
+          </a>
+        </div>
+        <div class="">
+          <a href="{root}product/liarpink.html">
+            <picture>
+              <img src="{root}images/renewal/modal-lineup-03.png" alt="ライアーピンク" width="144" height="225">
+            </picture>
+          </a>
+        </div>
+        <div class="">
+          <a href="{root}product/ladyblack.html">
+            <picture>
+              <img src="{root}images/renewal/modal-lineup-04.png" alt="レディブラック" width="144" height="225">
+            </picture>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="c-modal_close js-modal-close"></div>
+</div>
+<section class="section-pankuzu" id="breadcrumb">
+  <div class="section-pankuzu__inner w-1000">
+    <a href="https://www.melady.jp/">HOME</a> > <span id="pageName">デフォルトテキスト</span>
+  </div>
+</section>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // URLのパス部分を取得
+    var path = window.location.pathname;
+    // URLパスに基づいて条件分岐
+    if (path.includes('/product/ladyblack')) {
+      document.getElementById('pageName').textContent = 'レディブラック';
+    } else if (path.includes('/product/meladybrown')) {
+      document.getElementById('pageName').textContent = 'ミレディブラウン';
+    } else if (path.includes('/product/idolring')) {
+      document.getElementById('pageName').textContent = 'アイドルリング';
+    } else if (path.includes('/product/liarpink')) {
+      document.getElementById('pageName').textContent = 'ライアーピンク';
+    } else if (path.includes('/contact')) {
+      pageName.textContent = 'お問い合せ';
+    } else if (path.includes('/privacy')) {
+      pageName.textContent = '個人情報保護方針';
+    } else if (path.includes('/company')) {
+      pageName.textContent = '会社概要';
+    } else if (path.includes('/info')) {
+      pageName.textContent = 'お知らせ';
+    }
+  });
+</script>
+<footer>
+  <img src="{root}images/head-logo.svg" loading="lazy" class="foot-logo" width="130" height="55" alt="meladyロゴ">
+  <div class="footer-link">
+    <a href="{root}company.html">会社概要</a> / <a href="{root}privacy.html">個人情報保護方針</a> / <a href="https://www.melady.jp/contact/">お問い合わせ</a>
+  </div>
+</footer>
+<script>
+  $('.fade').on('inview', function (event, isInView) {
+    if (isInView) {
+      if (isInView) {
+        $(this).addClass('fade-in');
+      }
+    }
+  });
+</script>
+<script>
+  document.querySelectorAll('.accordionButton').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var list = this.nextElementSibling;
+      document.querySelectorAll('.accordionList').forEach(function (otherList) {
+        if (otherList !== list) {
+          otherList.classList.remove('open');
+        }
+      });
+      list.classList.toggle('open');
+    });
+  });
+</script>
+<script>
+  (function (d) {
+    var config = {
+        kitId: 'zgo5yrv',
+        scriptTimeout: 3000,
+        async: true,
+      },
+      h = d.documentElement,
+      t = setTimeout(function () {
+        h.className = h.className.replace(/\bwf-loading\b/g, '') + ' wf-inactive';
+      }, config.scriptTimeout),
+      tk = d.createElement('script'),
+      f = false,
+      s = d.getElementsByTagName('script')[0],
+      a;
+    h.className += ' wf-loading';
+    tk.src = 'https://use.typekit.net/' + config.kitId + '.js';
+    tk.async = true;
+    tk.onload = tk.onreadystatechange = function () {
+      a = this.readyState;
+      if (f || (a && a != 'complete' && a != 'loaded')) return;
+      f = true;
+      clearTimeout(t);
+      try {
+        Typekit.load(config);
+      } catch (e) {}
+    };
+    s.parentNode.insertBefore(tk, s);
+  })(document);
+</script>

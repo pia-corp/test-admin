@@ -1,0 +1,263 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja" dir="ltr">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="author" content="PIA.">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width">
+    <title>お問い合わせ │【公式】melady（ミレディ）大谷映美里（みりにゃ）プロデュースカラコン</title>
+    <meta name="description" content="いつだって、わたしがヒロイン♡がコンセプトのアイドルグループ＝LOVE（イコラブ）大谷映美里（みりにゃ）プロデュースカラコンmelady（ミレディ）公式ブランドサイトのお問い合わせページです。">
+    <meta name="theme-color" content="#E5B9C6">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#E5B9C6">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#E5B9C6">
+    <link rel="canonical" href="https://www.melady.jp/contact/index.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="お問い合わせ │【公式】melady（ミレディ）大谷映美里（みりにゃ）プロデュースカラコン">
+    <meta property="og:description" content="いつだって、わたしがヒロイン♡がコンセプトのアイドルグループ＝LOVE（イコラブ）大谷映美里（みりにゃ）プロデュースカラコンmelady（ミレディ）公式ブランドサイトのお問い合わせページです。">
+    <meta property="og:site_name" content="melady（ミレディ）">
+    <meta property="og:url" content="https://www.melady.jp/contact/index.html">
+    <meta property="og:image" content="https://www.melady.jp/images/ogp_img.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="../icon.png">
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script src="../js/common.js"></script>
+    <link rel="stylesheet" href="../css/style_renewal202407.css">
+    <link href="../css/contact.css" rel="stylesheet" media="all">
+    <!-- beautify ignore:start -->
+    {literal}
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({
+          'gtm.start': new Date().getTime(),
+          event: 'gtm.js',
+        });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-53C3FMRX');
+    </script>
+    <script>
+        (function(w, d, s, l, i) {
+            w[l] = w[l] || [];
+            w[l].push({
+                'gtm.start': new Date().getTime(),
+                event: 'gtm.js'
+            });
+            var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s),
+                dl = l != 'dataLayer' ? '&l=' + l : '';
+            j.async = true;
+            j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+            f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-WD2QTHHH');
+    </script>
+    {/literal}
+    <!-- beautify ignore:end -->
+  </head>
+  <body class="o_page_wrap">
+    <main>
+      <script>
+        include_header('../');
+      </script>
+      <div id="o_pages">
+        <div class="main">
+          <!-- beautify ignore:start -->
+{* VVV 入力時 VVV *}
+{if $viewArray.view_mode eq 'view_input'}
+{ if $viewArray.exists_mail_send_error}
+          <div>お問い合わせの送信に失敗しました。しばらくしてから再送をお願いいたします。</div>
+{ /if}
+{* VVV 送信完了時は非表示 VVV *}
+{if !$viewArray.is_mail_send_completed}
+          <!-- beautify ignore:end -->
+          <div id="contact-field">
+            <h2 class="title">お問い合わせ</h2>
+            <div class="contact-content w-1000">
+              <p class="contact-head">下記の情報のご入力をお願いいたします。<br> 必須の項目は必ず入力してください。</p>
+              <div class="contact-content">
+                <p class="contact-ttl">お問い合わせ用件&emsp;<span>必須</span></p>
+              </div>
+              <form action="index.html" method="post" enctype="multipart/form-data" accept-charset="utf-8">
+                <!-- beautify ignore:start -->
+{ if $viewArray.input_check_errorArray.inquiry_type ne ''}
+                <div>{$viewArray.input_check_errorArray.inquiry_type}</div>
+{ /if}
+                <!-- beautify ignore:end -->
+                <ul class="formRadio">
+                  <li>
+                    <label>
+                      <input type="radio" name="form_data[inquiry_type]" value="0" {if $viewArray.form_dataArray.inquiry_type eq '0' } checked="checked" {/if}>商品について
+                    </label>
+                  </li>
+                  <li>
+                    <label>
+                      <input type="radio" name="form_data[inquiry_type]" value="1" {if $viewArray.form_dataArray.inquiry_type eq '1' } checked="checked" {/if}>卸売り・販売について
+                    </label>
+                  </li>
+                  <li>
+                    <label>
+                      <input type="radio" name="form_data[inquiry_type]" value="2" {if $viewArray.form_dataArray.inquiry_type eq '2' } checked="checked" {/if}>取材など
+                    </label>
+                  </li>
+                  <li>
+                    <label>
+                      <input type="radio" name="form_data[inquiry_type]" value="3" {if $viewArray.form_dataArray.inquiry_type eq '3' } checked="checked" {/if}>広報
+                    </label>
+                  </li>
+                  <li>
+                    <label>
+                      <input type="radio" name="form_data[inquiry_type]" value="4" {if $viewArray.form_dataArray.inquiry_type eq '4' } checked="checked" {/if}>その他
+                    </label>
+                  </li>
+                </ul>
+                <div class="contact-content">
+                  <p class="contact-ttl">氏名&emsp;<span>必須</span></p>
+                  <div>
+                    <input type="text" name="form_data[name]" value="{$viewArray.form_dataArray.name}" size="50" style="ime-mode: auto;" class="textForm">
+                  </div>
+                </div>
+                <!-- beautify ignore:start -->
+{ if $viewArray.input_check_errorArray.name ne ''}
+                <div>{$viewArray.input_check_errorArray.name}</div>
+{ /if}
+                <!-- beautify ignore:end -->
+                <div class="contact-content">
+                  <p class="contact-ttl">社名・店舗名</p>
+                  <div>
+                    <input type="text" name="form_data[company]" value="{$viewArray.form_dataArray.company}" size="50" style="ime-mode: auto;" class="textForm">
+                  </div>
+                </div>
+                <div class="contact-content">
+                  <p class="contact-ttl">電話番号</p>
+                  <div>
+                    <input type="text" name="form_data[telephone]" value="{$viewArray.form_dataArray.telephone}" size="50" style="ime-mode: auto;" class="textForm">
+                  </div>
+                </div>
+                <!-- beautify ignore:start -->
+{ if $viewArray.input_check_errorArray.telephone ne ''}
+                <div>{$viewArray.input_check_errorArray.telephone}</div>
+{ /if}
+                <!-- beautify ignore:end -->
+                <div class="contact-content">
+                  <p class="contact-ttl">メールアドレス&emsp;<span>必須</span></p>
+                  <div>
+                    <input type="text" name="form_data[email]" value="{$viewArray.form_dataArray.email}" size="50" style="ime-mode: auto;" class="textForm">
+                  </div>
+                </div>
+                <!-- beautify ignore:start -->
+{ if $viewArray.input_check_errorArray.email ne ''}
+                <div>{$viewArray.input_check_errorArray.email}</div>
+{ /if}
+                <!-- beautify ignore:end -->
+                <div class="contact-content">
+                  <p class="contact-ttl">お問い合わせ内容&emsp;<span>必須</span></p>
+                  <div>
+                    <textarea name="form_data[message]" cols="70" rows="7" style="ime-mode: auto;" class="textForm">{$viewArray.form_dataArray.message}</textarea>
+                  </div>
+                </div>
+                <!-- beautify ignore:start -->
+{ if $viewArray.input_check_errorArray.message ne ''}
+                <div>{$viewArray.input_check_errorArray.message}</div>
+{ /if}
+                <!-- beautify ignore:end -->
+                <div class="contact-content agreeZone">
+                  <p class="contact-ttl pplivacy">収集する個人情報は、お問い合わせに対し的確な回答を行うために利用します。<br>詳しくは「<a href="../privacy.html" class="aplivacy">プライバシーポリシー</a>」をご覧いただき、ご同意の上お問い合わせください。 </p> { if $viewArray.input_check_errorArray.privacy_policy ne ''} <div>{$viewArray.input_check_errorArray.privacy_policy}</div> { /if} <div style="text-align:center;">
+                    <input type="checkbox" id="agree" name="form_data[privacy_policy]" value="1" {if $viewArray.form_dataArray.privacy_policy eq '1' } checked="checked" {/if}>
+                    <label for="agree">同意します</label>
+                  </div>
+                  <p style="color:red; text-align: center;" id="agreeErr"></p>
+                </div>
+                <div class="contact-submit-box">
+                  <input type="hidden" name="{$viewArray.access_data_var_name}" value="{$viewArray.access_data_confirm}">
+                  <button type="submit" class="btnkakunin">入力内容を確認する</button>
+                </div>
+              </form>
+              <!-- beautify ignore:start -->
+{ /if} {* if !$viewArray.is_mail_send_completed *}
+{* AAA 送信完了時は非表示 AAA *}
+{* VVV 送信完了時 VVV *}
+{ if $viewArray.is_mail_send_completed}
+                <!-- beautify ignore:end --> {literal} <script>
+                "use strict";
+                history.pushState(null, null, location.href);
+                window.addEventListener('popstate', (e) => {
+                  history.go(1);
+                });
+              </script> {/literal} <div id="contact-field">
+                <h2 class="title">お問い合わせ内容の送信完了</h2>
+                <div class="contact-content w-1000">
+                  <p class="contact-head">お問い合わせ頂きありがとうございました。<br>入力いただいた内容は無事送信されました。</p>
+                  <div> 後日、弊社サポートセンターまたは弊社各製品担当よりお問い合わせの返信をさせて頂きますが、お問い合わせ内容や、混雑状況等によって前後する場合もございますので予めご了承ください。<br><br>1週間以内にご返信がない場合は、メールアドレスの入力ミス等が考えられます。その場合は大変お手数ですが、再度お問い合わせいただくか、下記の弊社サポートセンターまで一度お問い合わせいただきますようよろしくお願いいたします。<br>※迷惑メールフォルダに受信されている場合もございますので一度ご確認ください。<br><br>お問い合わせ<br>PIA株式会社サポートセンター<br>TEL：03-6417-0220<br>受付時間 : 9:00～17:00 (土日祝祭日、及び弊社指定休日を除く)<br>
+                  </div>
+                </div>
+              </div>
+              <!-- beautify ignore:start -->
+{ /if} {* if $viewArray.is_mail_send_completed *}
+{* AAA 送信完了時 AAA *}
+{/if} {* if $viewArray.view_mode eq 'view_input'}
+{* AAA 入力時 AAA *}
+{* VVV 確認時 VVV *}
+{if $viewArray.view_mode eq 'view_confirm'}
+                <!-- beautify ignore:end -->
+              <div id="contact-field">
+                <h2 class="title">お問い合わせ内容の確認</h2>
+                <div class="contact-content w-1000">
+                  <p class="contact-head"> 下記の内容でよろしければ、「送信」ボタンをクリックしてください。<br>修正が必要な場合は「戻る」ボタンをクリックして、再度入力してください。</p>
+                  <div class="formInner">
+                    <p>お問い合わせ項目</p>
+                    <div> {$viewArray.confirm_dataArray.inquiry_type} </div>
+                    <br>
+                    <p>氏名</p>
+                    <div> {$viewArray.confirm_dataArray.name} </div>
+                    <br>
+                    <p>社名・店舗名</p>
+                    <div> {if $viewArray.confirm_dataArray.company ne ''}{$viewArray.confirm_dataArray.company}{else}[入力なし]{/if} </div>
+                    <br>
+                    <p>電話番号</p>
+                    <div> {if $viewArray.confirm_dataArray.telephone ne ''}{$viewArray.confirm_dataArray.telephone}{else}[入力なし]{/if} </div>
+                    <br>
+                    <p>メールアドレス</p>
+                    <div> {$viewArray.confirm_dataArray.email} </div>
+                    <br>
+                    <p>お問い合わせ内容</p>
+                    <div> {$viewArray.confirm_dataArray.message} </div>
+                    <br><br>
+                    <form action="index.html" method="post">
+                      <input type="hidden" name="{$viewArray.access_data_var_name}" value="{$viewArray.access_data_mail_send}">
+                      <div class="contact-submit-box">
+                        <button type="submit" class="btnsend">送信</button>
+                      </div>
+                    </form>
+                    <form action="index.html" method="post">
+                      <input type="hidden" name="{$viewArray.access_data_var_name}" value="{$viewArray.access_data_back}">
+                      <div class="contact-submit-box">
+                        <button type="submit" class="btnback">戻る</button>
+                      </div>
+                    </form>
+                  </div>
+                  <!-- beautify ignore:start -->
+{/if} {* if $viewArray.view_mode eq 'view_confirm' *}
+{* AAA 確認時 AAA *}
+                  <!-- beautify ignore:end -->
+                </div>
+              </div>
+            </div>
+          </div><!-- formInner confirm -->
+        </div>
+        <script>
+          include_footer('../');
+        </script>
+    </main>
+    </div>
+  </body>
+</html>
