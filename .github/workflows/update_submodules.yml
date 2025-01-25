@@ -56,15 +56,16 @@ jobs:
         if: env.submodule_exists == 'false'
         run: |
           # GitHub APIでリポジトリの存在を確認
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          STATUS=$(curl -L \
             -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/pia-corp/molak.jp)
 
           if [ "$STATUS" -eq 200 ]; then
-            echo "The repository pia-corp/molak.jp exists."
+            echo "The repository https://github.com/pia-corp/molak.jp exists."
           elif [ "$STATUS" -eq 404 ]; then
-            echo "The repository pia-corp/molak.jp does not exist."
+            echo "The repository https://github.com/pia-corp/molak.jp does not exist."
           else
             echo "Unexpected status code: $STATUS"
             exit 1
