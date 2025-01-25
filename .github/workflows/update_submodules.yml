@@ -55,6 +55,21 @@ jobs:
       - name: クローン先を調べてリポジトリを追加
         if: env.submodule_exists == 'false'
         run: |
+          # GitHub APIでリポジトリの存在を確認
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/pia-corp/molak.jp)
+
+          if [ "$STATUS" -eq 200 ]; then
+            echo "The repository pia-corp/molak.jp exists."
+          elif [ "$STATUS" -eq 404 ]; then
+            echo "The repository pia-corp/molak.jp does not exist."
+          else
+            echo "Unexpected status code: $STATUS"
+            exit 1
+          fi
+
           repo_url="https://github.com/pia-corp/${{ env.REPOSITORY }}"
           auth_header="Authorization: token ${{ secrets.GITHUB_TOKEN_VALUE }}"
 
