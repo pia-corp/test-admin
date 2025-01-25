@@ -56,6 +56,7 @@ jobs:
         if: env.submodule_exists == 'false'
         run: |
           # GitHub APIでリポジトリの存在を確認
+          repo_url="https://github.com/pia-corp/${{ env.REPOSITORY }}"
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN_VALUE }}" \
