@@ -22,6 +22,3 @@
 [submodule "mimuco.jp"]
 	path = mimuco.jp
 	url = https://github.com/pia-corp/mimuco.jp
-[submodule "molak.jp"]
-	path = molak.jp
-	url = https://github.com/pia-corp/molak.jp
