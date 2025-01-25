@@ -66,7 +66,7 @@ jobs:
           hour: ${{ inputs.hour }}
           minutes: ${{ inputs.minutes }}
         run: |
-          response = (curl -X PATCH \
+          response=$(curl -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}" \
             -d "{
