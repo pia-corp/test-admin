@@ -1,4 +1,4 @@
-name: 02.手動ファイルアップロード
+name: 05.トークンの更新（CRON JOB）
 
 on:
   workflow_dispatch:
