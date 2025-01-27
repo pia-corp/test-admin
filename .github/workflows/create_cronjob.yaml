@@ -1,4 +1,4 @@
-name: 03.公開予約アイテムの新規作成
+name: 03.公開予約設定の新規作成
 
 on:
   workflow_dispatch:
@@ -13,16 +13,16 @@ jobs:
     timeout-minutes: 1
 
     steps:
-      - name: Set Title
+      - name: CRON JOBのタイトルを設定
         id: set_title
         run: |
-          if [ -z "${{ github.event.inputs.job_title }}" ]; then
-            echo "Error: 'job_title' input is required but not provided."
+          if [ -z "${{ inputs.job_title }}" ]; then
+            echo "::error:: '登録するリポジトリ名' が未入力です。"
             exit 1
           fi
-          echo "title=${{ github.event.inputs.job_title }}" >> $GITHUB_ENV
+          echo "title=${{ inputs.job_title }}" >> $GITHUB_ENV
 
-      - name: Check Existing Cron Job
+      - name: 任意のタイトルが既に存在するか確認
         id: check_cron
         run: |
           response=$(curl -s -X GET \
@@ -33,7 +33,7 @@ jobs:
           title_exists=$(echo "$response" | jq -r --arg title "${{ env.title }}" '.jobs[] | select(.url | contains($title)) | .url')
 
           if [ -n "$title_exists" ]; then
-            echo "Error: A cron job with the title '${{ env.title }}' already exists."
+            echo "::error:: タイトル '${{ env.title }}' のCRON JOBは既に存在します。"
             exit 1
           fi
 
@@ -68,31 +68,36 @@ jobs:
             }' https://api.cron-job.org/jobs)
 
           # Parse job ID from the response
-          job_id=$(echo "$response" | jq -r '.job.id')
-          if [ -z "$job_id" ]; then
-            echo "Error: Failed to fetch job ID."
-            exit 1
-          fi
+          # job_id=$(echo "$response" | jq -r '.job.id')
+          # if [ -z "$job_id" ]; then
+          #   echo "::error:: JOB IDの取得に失敗しました。"
+          #   exit 1
+          # fi
 
-          echo "job_id=$job_id" >> $GITHUB_ENV
+          # echo "job_id=$job_id" >> $GITHUB_ENV
 
-      - name: Update each Cron job
-        run: |
-          if [ -z "${{ env.job_id }}" ]; then
-            echo "Error: Job ID is not set."
-            exit 1
-          fi
+          {
+            echo "# 処理結果"
+            echo "${{ env.title }} の初期設定が完了しました。"
+          } >> $GITHUB_STEP_SUMMARY
 
-          echo "Updating job: ${{ env.job_id }}"
-          curl -s -X PATCH \
-            -H 'Content-Type: application/json' \
-            -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
-            -d '{
-              "job": {
-                "extendedData": {
-                  "headers": {
-                    "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}"
-                  }
-                }
-              }
-            }' https://api.cron-job.org/jobs/${{ env.job_id }}
+      # - name: Update each Cron job
+      #   run: |
+      #     if [ -z "${{ env.job_id }}" ]; then
+      #       echo "Error: Job ID is not set."
+      #       exit 1
+      #     fi
+
+      #     echo "Updating job: ${{ env.job_id }}"
+      #     curl -s -X PATCH \
+      #       -H 'Content-Type: application/json' \
+      #       -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
+      #       -d '{
+      #         "job": {
+      #           "extendedData": {
+      #             "headers": {
+      #               "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}"
+      #             }
+      #           }
+      #         }
+      #       }' https://api.cron-job.org/jobs/${{ env.job_id }}

@@ -39,6 +39,10 @@ on:
         options:
           - "検証環境"
           - "本番環境"
+      get_file:
+        type: boolean
+        description: "最新ファイル取得"
+        default: false
       sync:
         type: choice
         description: "ファイルのアップロード方法"
@@ -48,7 +52,43 @@ on:
           - "delta"
 
 jobs:
+  # このジョブは、ワークフローを実行するユーザーが許可されたリストに含まれているかどうかを確認します。
+  Auth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+      - name: ユーザーの認証を確認
+        env:
+          USER_LOGIN: ${{ github.actor }}
+          CODE_OWNERS: ${{ vars.GIT_CODE_OWNERS }}
+        run: |
+          echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
+          if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
+            echo "::warning:: ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
+            exit 1
+          fi
+          echo "::notice:: ユーザー $USER_LOGIN は認証されました。続行します..."
+
+          # 予約設定の状態を判定
+          if [ "${{ inputs.reservation }}" == "true" ]; then
+            res="✅"
+          else
+            res="❌"
+          fi
+
+          # GitHubステップサマリーに情報を追加
+          {
+            echo "# 概要"
+            echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードします。"
+            echo "このactionでは納品ファイル取得処理は実施しません。必要な場合は01のactionを実施してください。"
+            echo "| リポジトリ | アップロード先 |"
+            echo "| -- | -- |"
+            echo "| ${{ env.REPOSITORY }} | ${{ inputs.target }} |"
+          } >> $GITHUB_STEP_SUMMARY
+
   Upload:
+    needs: [Auth]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -97,6 +137,17 @@ jobs:
           sync: ${{ inputs.sync }}
           debug: true
 
+      - name: 結果
+        if: ${{ inputs.target == '本番環境' }}
+        run: |
+          {
+            echo "# 処理結果"
+            echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードしました。"
+            echo "| リポジトリ | アップロード先 |"
+            echo "| -- | -- |"
+            echo "| ${{ env.REPOSITORY }} | https://www.${{ env.REPOSITORY }} |"
+          } >> $GITHUB_STEP_SUMMARY
+
       - name: Deploy via FTP
         if: ${{ inputs.target == '検証環境' }}
         uses: SamKirkland/FTP-Deploy-Action@4
@@ -108,3 +159,14 @@ jobs:
           local-dir: ${{ vars.LOCAL_PATH }}/${{ env.REPOSITORY }}
           server-dir: ${{ env.DEVELOPMENT_REMOTE_PATH }}/${{ env.REPOSITORY }}
           ARGS: --delete --parallel=15
+
+      - name: 結果
+        if: ${{ inputs.target == '検証環境' }}
+        run: |
+          {
+            echo "# 処理結果"
+            echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードしました。"
+            echo "| リポジトリ | アップロード先 |"
+            echo "| -- | -- |"
+            echo "| ${{ env.REPOSITORY }} | http://piapiapia.xsrv.jp/test/${{ env.REPOSITORY }}/ |"
+          } >> $GITHUB_STEP_SUMMARY

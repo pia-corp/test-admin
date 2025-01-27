@@ -35,7 +35,7 @@ on:
       reservation:
         type: boolean
         description: 予約キャンセル実施の確認
-        default: true
+        default: false
 
 jobs:
   RESERVATION:

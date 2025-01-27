@@ -1,0 +1,88 @@
+name: 02.手動ファイルアップロード
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        type: choice
+        description: "対象ブランド"
+        required: true
+        options:
+          - "topards.jp"
+          - "feliamo.jp"
+          - "molak.jp"
+          - "ns-collection.jp"
+          - "lilmoon.jp"
+          - "minette-lens.jp"
+          - "mirage-c.jp"
+          - "mimuco.jp"
+          - "harne.jp"
+          - "louer.jp"
+          - "lumieu.jp"
+          - "puuuuchu.jp"
+          - "melady.jp"
+          - "melloew.jp"
+          - "faloom.jp"
+          - "mimicharme.jp"
+          - "lensbe.jp"
+          - "clainel.jp"
+          - "chapun.jp"
+          - "resay.jp"
+          - "michou.jp"
+      repository_no_register:
+        description: "任意のブランドリポジトリ"
+        default: ""
+      target:
+        type: choice
+        description: アップロード先
+        required: true
+        options:
+          - "検証環境"
+          - "本番環境"
+      get_file:
+        type: boolean
+        description: "最新ファイル取得"
+        default: false
+      sync:
+        type: choice
+        description: "ファイルのアップロード方法"
+        required: true
+        options:
+          - "full"
+          - "delta"
+
+jobs:
+  # このジョブは、ワークフローを実行するユーザーが許可されたリストに含まれているかどうかを確認します。
+  Auth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+      - name: ユーザーの認証を確認
+        env:
+          USER_LOGIN: ${{ github.actor }}
+          CODE_OWNERS: ${{ vars.GIT_CODE_OWNERS }}
+        run: |
+          echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
+          if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
+            echo "::warning:: ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
+            exit 1
+          fi
+          echo "::notice:: ユーザー $USER_LOGIN は認証されました。続行します..."
+
+          # 予約設定の状態を判定
+          if [ "${{ inputs.reservation }}" == "true" ]; then
+            res="✅"
+          else
+            res="❌"
+          fi
+
+          # GitHubステップサマリーに情報を追加
+          {
+            echo "# 概要"
+            echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードします。"
+            echo "このactionでは納品ファイル取得処理は実施しません。必要な場合は01のactionを実施してください。"
+            echo "| リポジトリ | アップロード先 |"
+            echo "| -- | -- |"
+            echo "| ${{ env.REPOSITORY }} | ${{ inputs.target }} |"
+          } >> $GITHUB_STEP_SUMMARY
