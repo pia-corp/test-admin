@@ -61,7 +61,6 @@ jobs:
                     "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}",
                   }
                 },
-                "body": "{'ref': 'main'}"
                 "requestMethod": 1
               }
             }' https://api.cron-job.org/jobs)
