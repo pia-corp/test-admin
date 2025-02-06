@@ -28,10 +28,12 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
             https://api.cron-job.org/jobs)
 
-          echo $response
+          echo "$response"
 
           # Check if the title already exists
           title_exists=$(echo "$response" | jq -r --arg title "${{ env.title }}" '.jobs[] | select(.url | contains($title)) | .url')
+
+          echo "$title_exists"
 
           if [ -n "$title_exists" ]; then
             echo "::error:: タイトル '${{ env.title }}' のCRON JOBは既に存在します。"
