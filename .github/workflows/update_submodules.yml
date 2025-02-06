@@ -102,5 +102,5 @@ jobs:
             git push -u origin ${{ inputs.branch_name }}
           else
             echo "No changes in submodules"
-            echo "::notice:: サブモジュールの更新情報は存在しません"
+            echo "::caution:: サブモジュールの更新情報は存在しません"
           fi

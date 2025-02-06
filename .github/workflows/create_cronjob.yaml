@@ -23,7 +23,6 @@ jobs:
           echo "title=${{ inputs.job_title }}" >> $GITHUB_ENV
 
       - name: 任意のタイトルが既に存在するか確認
-        id: check_cron
         run: |
           response=$(curl -s -X GET \
             -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
@@ -38,9 +37,8 @@ jobs:
           fi
 
       - name: Create Cron job and Fetch ID
-        id: create_cron
         run: |
-          response=$(curl -s -X PUT \
+          curl -s -X PUT \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
             -d '{
@@ -60,44 +58,15 @@ jobs:
                 },
                 "extendedData": {
                   "headers": {
-                    "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}"
+                    "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}",
+                    '{"ref": "main"}'
                   }
                 },
                 "requestMethod": 1
               }
-            }' https://api.cron-job.org/jobs)
-
-          # Parse job ID from the response
-          # job_id=$(echo "$response" | jq -r '.job.id')
-          # if [ -z "$job_id" ]; then
-          #   echo "::error:: JOB IDの取得に失敗しました。"
-          #   exit 1
-          # fi
-
-          # echo "job_id=$job_id" >> $GITHUB_ENV
+            }' https://api.cron-job.org/jobs
 
           {
             echo "# 処理結果"
             echo "${{ env.title }} の初期設定が完了しました。"
           } >> $GITHUB_STEP_SUMMARY
-
-      # - name: Update each Cron job
-      #   run: |
-      #     if [ -z "${{ env.job_id }}" ]; then
-      #       echo "Error: Job ID is not set."
-      #       exit 1
-      #     fi
-
-      #     echo "Updating job: ${{ env.job_id }}"
-      #     curl -s -X PATCH \
-      #       -H 'Content-Type: application/json' \
-      #       -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
-      #       -d '{
-      #         "job": {
-      #           "extendedData": {
-      #             "headers": {
-      #               "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}"
-      #             }
-      #           }
-      #         }
-      #       }' https://api.cron-job.org/jobs/${{ env.job_id }}
