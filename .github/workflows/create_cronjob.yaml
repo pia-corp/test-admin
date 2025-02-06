@@ -38,7 +38,7 @@ jobs:
 
       - name: Create Cron job and Fetch ID
         run: |
-          curl -s -X PUT \
+          response=$(curl -s -X PUT \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d '{
@@ -64,7 +64,9 @@ jobs:
                 },
                 "requestMethod": 1
               }
-            }' https://api.cron-job.org/jobs
+            }' https://api.cron-job.org/jobs)
+
+            echo "Data from API: $response"
 
       - name: 任意のタイトルが既に存在するか確認
         run: |
