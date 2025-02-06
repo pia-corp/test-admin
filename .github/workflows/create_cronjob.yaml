@@ -28,6 +28,8 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
             https://api.cron-job.org/jobs)
 
+          echo $response
+
           # Check if the title already exists
           title_exists=$(echo "$response" | jq -r --arg title "${{ env.title }}" '.jobs[] | select(.url | contains($title)) | .url')
 
