@@ -25,7 +25,7 @@ jobs:
       - name: 任意のタイトルが既に存在するか確認
         run: |
           response=$(curl -s -X GET \
-            -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             https://api.cron-job.org/jobs)
 
           echo "$response"
