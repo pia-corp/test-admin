@@ -59,7 +59,7 @@ jobs:
                 "extendedData": {
                   "headers": {
                     "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}",
-                    '{"ref": "main"}'
+                    "body": '{"ref": "main"}'
                   }
                 },
                 "requestMethod": 1
