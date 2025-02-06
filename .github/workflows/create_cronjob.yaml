@@ -60,12 +60,11 @@ jobs:
                   "headers": {
                     "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}",
                   },
-                  "body":  "main"
+                  "body": "main"
                 },
                 "requestMethod": 1
               }
             }' https://api.cron-job.org/jobs
-
 
       - name: 任意のタイトルが既に存在するか確認
         run: |
