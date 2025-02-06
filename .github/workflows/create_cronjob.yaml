@@ -60,7 +60,7 @@ jobs:
                   "headers": {
                     "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}"
                   },
-                  "body": "{\'ref\': \'main\'}"
+                  "body": "{\"ref\": \"main\"}"
                 },
                 "requestMethod": 1
               }
