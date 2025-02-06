@@ -109,7 +109,7 @@ jobs:
         run: |
           # GitHubステップサマリーに情報を追加
           {
-            echo "# 予約した日時"
+            echo "# 予約状況の更新結果"
             echo "| リポジトリ | 予約日時 | ステータス |"
             echo "| -- | -- | -- |"
             echo "| ${{ env.REPOSITORY }} | ${{ env.Timezone }} ${{ env.Months }}月${{ env.MDays }}日${{ env.Hours }}時${{ env.Minutes }}分 | ${{ env.ENABLED }} |"

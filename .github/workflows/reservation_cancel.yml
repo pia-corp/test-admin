@@ -1,4 +1,4 @@
-name: 04.予約キャンセル
+name: 04.公開予約キャンセル
 
 on:
   workflow_dispatch:
@@ -61,7 +61,15 @@ jobs:
           echo "Job ID: $JOB_ID"
           echo "job_id=$JOB_ID" >> $GITHUB_ENV
 
-      - name: CronJobのキャンセル
+      - name: 予約状況を抽出
+        run: |
+          # jq を使って lumieu.jp のデータを抽出
+          Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
+
+          # 抽出した値を表示
+          echo "ENABLED_BEFORE: $Enabled" >> $GITHUB_ENV
+
+      - name: CronJobのアイテムを更新
         env:
           month: ${{ inputs.month }}
           day: ${{ inputs.day }}
@@ -89,7 +97,7 @@ jobs:
           timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json)
 
           # 抽出した値を表示
-          echo "Enabled: $Enabled" >> $GITHUB_ENV
+          echo "ENABLED_AFTER: $Enabled" >> $GITHUB_ENV
           echo "Hours: $hours" >> $GITHUB_ENV
           echo "MDays: $mdays" >> $GITHUB_ENV
           echo "Minutes: $minutes" >> $GITHUB_ENV
@@ -100,8 +108,10 @@ jobs:
         run: |
           # GitHubステップサマリーに情報を追加
           {
-            echo "# 予約キャンセルした日時"
+            echo "# 予約状況の更新結果"
             echo "| リポジトリ | 予約日時 | ステータス |"
             echo "| -- | -- | -- |"
-            echo "| ${{ env.REPOSITORY }} | ${{ env.Timezone }} ${{ env.Months }}月${{ env.MDays }}日${{ env.Hours }}時${{ env.Minutes }}分 | ${{ env.ENABLED }} |"
+            echo "| ${{ env.REPOSITORY }} | ${{ env.Timezone }} ${{ env.Months }}月${{ env.MDays }}日${{ env.Hours }}時${{ env.Minutes }}分 | ${{ env.ENABLED_BEFORE }} -> ${{ env.ENABLED_AFTER }} |"
+            echo "予約状況を直接確認する場合は以下のサイトへアクセスしてください。"
+            echo "https://cron-job.org/en/"
           } >> $GITHUB_STEP_SUMMARY
