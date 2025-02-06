@@ -28,12 +28,8 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             https://api.cron-job.org/jobs)
 
-          echo "$response"
-
           # Check if the title already exists
           title_exists=$(echo "$response" | jq -r --arg title "${{ env.title }}" '.jobs[] | select(.url | contains($title)) | .url')
-
-          echo "$title_exists"
 
           if [ -n "$title_exists" ]; then
             echo "::error:: タイトル '${{ env.title }}' のCRON JOBは既に存在します。"
@@ -70,7 +66,23 @@ jobs:
               }
             }' https://api.cron-job.org/jobs
 
-          {
-            echo "# 処理結果"
-            echo "${{ env.title }} の初期設定が完了しました。"
-          } >> $GITHUB_STEP_SUMMARY
+
+      - name: 任意のタイトルが既に存在するか確認
+        run: |
+          response=$(curl -s -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
+            https://api.cron-job.org/jobs)
+
+          # Check if the title already exists
+          title_exists=$(echo "$response" | jq -r --arg title "${{ env.title }}" '.jobs[] | select(.url | contains($title)) | .url')
+
+          echo "# 処理結果"
+          if [ -n "$title_exists" ]; then
+            {
+              echo "${{ env.title }} の初期設定が完了しました。"
+            } >> $GITHUB_STEP_SUMMARY
+          else
+            {
+              echo "${{ env.title }} が登録できませんでした。"
+            } >> $GITHUB_STEP_SUMMARY
+          fi
