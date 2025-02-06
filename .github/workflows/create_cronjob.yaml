@@ -59,9 +59,9 @@ jobs:
                 "extendedData": {
                   "headers": {
                     "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}",
-                  },
-                  "requestbody": "{'ref': 'main'}"
+                  }
                 },
+                "body": "{'ref': 'main'}"
                 "requestMethod": 1
               }
             }' https://api.cron-job.org/jobs)
