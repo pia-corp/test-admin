@@ -44,7 +44,7 @@ jobs:
         run: |
           curl -s -X PUT \
             -H 'Content-Type: application/json' \
-            -H "Authorization: Bearer ${{ secrets.CRON_TOKEN }}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d '{
               "job": {
                 "url": "https://api.github.com/repos/pia-corp/${{ env.title }}/actions/workflows/upload.yml/dispatches",
