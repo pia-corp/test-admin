@@ -1,0 +1,33 @@
+name: 06.公開予約設定の確認
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_title:
+        description: "確認するリポジトリ名"
+        required: false
+
+jobs:
+  Cron:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+
+    steps:
+      - name: 登録情報の取得
+        run: |
+          response=$(curl -s -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
+            https://api.cron-job.org/jobs)
+
+          # jobIdとtitleを配列として格納
+          jobIds=($(echo "$response" | jq -r '.jobs[].jobId'))
+          titles=($(echo "$response" | jq -r '.jobs[].title'))
+
+          echo "# 処理結果"
+          {
+            echo "| タイトル | ID |"
+            echo "| -- | -- |"
+            for i in "${!jobIds[@]}"; do
+              echo "| $titles | $jobIds |"
+            done
+          } >> $GITHUB_STEP_SUMMARY
