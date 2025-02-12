@@ -9,7 +9,7 @@ on:
 
 jobs:
   Cron:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 1
 
     steps:
@@ -23,12 +23,23 @@ jobs:
           jobIds=($(echo "$response" | jq -r '.jobs[].jobId'))
           titles=($(echo "$response" | jq -r '.jobs[].title'))
           enabled=($(echo "$response" | jq -r '.jobs[].enabled'))
+          hours=($(echo "$response" | jq -r '.jobs[].schedule.hours | join(",")'))
+          mdays=($(echo "$response" | jq -r '.jobs[].schedule.mdays | join(",")'))
+          minutes=($(echo "$response" | jq -r '.jobs[].schedule.minutes | join(",")'))
+          months=($(echo "$response" | jq -r '.jobs[].schedule.months | join(",")'))
+          timezones=($(echo "$response" | jq -r '.jobs[].schedule.timezone'))
 
           echo "# 処理結果"
           {
-            echo "| タイトル | ID | 予約状況 |"
-            echo "| --- | --- | --- |"
+            echo "| ID | タイトル | 予約状況 | 実行時間 |"
+            echo "| --- | --- | --- | --- |"
             for i in "${!jobIds[@]}"; do
-              echo "| ${titles[$i]} | ${jobIds[$i]} | ${enabled[$i]} |"
+              if [ "${hours[$i]}" = "-1" ]; then
+                schedule_display="${timezones[$i]} ${months[$i]}月${mdays[$i]}日 毎時${minutes[$i]}分"
+              else
+                schedule_display="${timezones[$i]} ${months[$i]}月${mdays[$i]}日${hours[$i]}時${minutes[$i]}分"
+              fi
+
+              echo "| ${jobIds[$i]} | ${titles[$i]} | ${enabled[$i]} | ${schedule_display} |"
             done
           } >> $GITHUB_STEP_SUMMARY
