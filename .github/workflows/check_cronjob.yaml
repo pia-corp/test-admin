@@ -22,12 +22,13 @@ jobs:
           # jobIdとtitleを配列として格納
           jobIds=($(echo "$response" | jq -r '.jobs[].jobId'))
           titles=($(echo "$response" | jq -r '.jobs[].title'))
+          enabled=($(echo "$response" | jq -r '.jobs[].enabled'))
 
           echo "# 処理結果"
           {
-            echo "| タイトル | ID |"
-            echo "| -- | -- |"
+            echo "| タイトル | ID | 予約状況 |"
+            echo "| --- | --- | --- |"
             for i in "${!jobIds[@]}"; do
-              echo "| $titles | $jobIds |"
+              echo "| ${titles[$i]} | ${jobIds[$i]} | ${enabled[$i]} |"
             done
           } >> $GITHUB_STEP_SUMMARY
