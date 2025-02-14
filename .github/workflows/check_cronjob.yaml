@@ -1,11 +1,7 @@
-name: 06.公開予約設定の確認
+name: 06.Cron設定と公開状況の確認
 
 on:
   workflow_dispatch:
-    inputs:
-      job_title:
-        description: "確認するリポジトリ名"
-        required: false
 
 jobs:
   Cron:
@@ -31,13 +27,13 @@ jobs:
 
           echo "# 処理結果"
           {
-            echo "| ID | タイトル | 予約状況 | 実行時間 |"
+            echo "| CRON ID | タイトル | 予約状況 | 実行時間 |"
             echo "| --- | --- | --- | --- |"
             for i in "${!jobIds[@]}"; do
-              if [ "${hours[$i]}" = "-1" ]; then
-                schedule_display="${timezones[$i]} ${months[$i]}月${mdays[$i]}日 毎時${minutes[$i]}分"
-              else
+              if [ "${enabled[$i]}" = true ]; then
                 schedule_display="${timezones[$i]} ${months[$i]}月${mdays[$i]}日${hours[$i]}時${minutes[$i]}分"
+              else
+                "--"
               fi
 
               echo "| ${jobIds[$i]} | ${titles[$i]} | ${enabled[$i]} | ${schedule_display} |"
