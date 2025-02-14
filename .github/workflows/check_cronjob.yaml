@@ -33,7 +33,7 @@ jobs:
               if [ "${enabled[$i]}" = "true" ]; then
                 schedule_display="${timezones[$i]} ${months[$i]}月${mdays[$i]}日${hours[$i]}時${minutes[$i]}分"
               else
-                "--"
+                schedule_display="--"
               fi
 
               echo "| ${jobIds[$i]} | ${titles[$i]} | ${enabled[$i]} | ${schedule_display} |"
