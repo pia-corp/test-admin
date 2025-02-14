@@ -30,7 +30,7 @@ jobs:
             echo "| CRON ID | タイトル | 予約状況 | 実行時間 |"
             echo "| --- | --- | --- | --- |"
             for i in "${!jobIds[@]}"; do
-              if [ "${enabled[$i]}" = true ]; then
+              if [ "${enabled[$i]}" = "true" ]; then
                 schedule_display="${timezones[$i]} ${months[$i]}月${mdays[$i]}日${hours[$i]}時${minutes[$i]}分"
               else
                 "--"
