@@ -9,10 +9,15 @@ jobs:
     timeout-minutes: 1
 
     steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
       - name: 登録情報の取得
+        env:
+          CRON_JOB_TOKEN: ${{ secrets.CRON_JOB_TOKEN }}
         run: |
           response=$(curl -s -X GET \
-            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
+            -H "Authorization: Bearer $CRON_JOB_TOKEN" \
             https://api.cron-job.org/jobs)
 
           # jobIdとtitleを配列として格納
@@ -27,7 +32,7 @@ jobs:
 
           echo "# 処理結果"
           {
-            echo "| CRON ID | タイトル | 予約状況 | 実行時間 |"
+            echo "| CRON ID | タイトル | 予約状況 | 予約時間 |"
             echo "| --- | --- | --- | --- |"
             for i in "${!jobIds[@]}"; do
               if [ "${enabled[$i]}" = "true" ]; then

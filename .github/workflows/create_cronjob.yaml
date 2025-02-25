@@ -1,4 +1,4 @@
-name: 03.公開予約設定の新規作成
+name: 03.公開予約設定の新規作成(初回のみ実行)
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   Cron:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 1
 
     steps:
@@ -68,7 +68,7 @@ jobs:
 
             echo "Data from API: $response"
 
-      - name: 任意のタイトルが既に存在するか確認
+      - name: 任意のタイトルが正常に登録されたか確認
         run: |
           response=$(curl -s -X GET \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \

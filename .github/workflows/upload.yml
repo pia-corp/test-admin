@@ -70,23 +70,6 @@ jobs:
           fi
           echo "::notice:: ユーザー $USER_LOGIN は認証されました。続行します..."
 
-          # 予約設定の状態を判定
-          if [ "${{ inputs.reservation }}" == "true" ]; then
-            res="✅"
-          else
-            res="❌"
-          fi
-
-          # GitHubステップサマリーに情報を追加
-          {
-            echo "# 概要"
-            echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードします。"
-            echo "このactionでは納品ファイル取得処理は実施しません。必要な場合は01のactionを実施してください。"
-            echo "| リポジトリ | アップロード先 |"
-            echo "| -- | -- |"
-            echo "| ${{ env.REPOSITORY }} | ${{ inputs.target }} |"
-          } >> $GITHUB_STEP_SUMMARY
-
   Upload:
     needs: [Auth]
     runs-on: ubuntu-latest
