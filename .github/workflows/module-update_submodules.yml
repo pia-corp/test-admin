@@ -1,0 +1,106 @@
+name: Update Submodules
+
+on:
+  workflow_call:
+    inputs:
+      repository:
+        description: "対象ブランド"
+        required: true
+        type: string
+      repository_no_register:
+        description: "任意のブランドリポジトリ"
+        required: false
+        type: string
+      branch_name:
+        description: "ブランチのパス"
+        required: true
+        type: string
+    secrets:
+      GITHUB_TOKEN_VALUE:
+        description: "GitHub Token"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
+
+    steps:
+      - name: リポジトリをチェックアウト(過去の履歴をすべて取得)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitの設定を行う
+        run: |
+          git config --global user.name ${{ vars.GIT_USERNAME }}
+          git config --global user.email ${{ vars.GIT_MAILADDRESS }}
+          git config --global url."https://${{ secrets.GITHUB_TOKEN_VALUE }}@github.com/".insteadOf "https://github.com/"
+
+      - name: configファイルにsubmodulesが存在するか確認
+        run: |
+          if git config --file .gitmodules --name-only --get-regexp path | grep -q "^submodule\.$REPOSITORY\.path$"; then
+            echo "Submodule exists"
+            echo "submodule_exists=true" >> $GITHUB_ENV
+          else
+            echo "::notice:: サブモジュールの更新情報は存在しません"
+            echo "submodule_exists=false" >> $GITHUB_ENV
+          fi
+
+      - name: クローン先を調べてリポジトリを追加
+        if: env.submodule_exists == 'false'
+        run: |
+          # GitHub APIでリポジトリの存在を確認
+          repo_url="https://github.com/pia-corp/${{ env.REPOSITORY }}"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN_VALUE }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/pia-corp/${{ env.REPOSITORY }})
+
+          if [ "$STATUS" -eq 200 ]; then
+            echo "::notice:: リポジトリが見つかりました: $repo_url"
+            echo "repository_exists=true" >> $GITHUB_ENV
+
+            git submodule add "$repo_url" "${{ env.REPOSITORY }}"
+            git submodule update --init --remote "${{ env.REPOSITORY }}"
+
+          elif [ "$STATUS" -eq 404 ]; then
+            echo "::error:: リポジトリが見つかりません: $repo_url (URLが無効か、リポジトリが存在しません)"
+          else
+            echo "Unexpected status code: $STATUS"
+            echo "::error:: 予期せぬエラーです: $repo_url $STATUS"
+            exit 1
+          fi
+
+      - name: サブモジュールを更新
+        if: env.submodule_exists == 'true'
+        run: git submodule update --init --remote ${{env.REPOSITORY}}
+        env:
+          GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN_VALUE }}
+
+      - name: 指定したブランチをチェックアウト
+        run: |
+          git checkout ${{ inputs.branch_name }}
+
+      - name: Commit changes HEAD（最新コミット）とステージングエリアの差分があるか確認します。
+        run: |
+          git add .
+          if ! git diff-index --quiet HEAD; then
+            if submodule_exists == 'true'; then
+              git commit -m "Automatically update submodules"
+              echo "::notice:: サブモジュールの更新を実施"
+            else
+              git commit -m "Automatically add submodules"
+              echo "::notice:: サブモジュールの追加を実施"
+            fi
+            git push -u origin ${{ inputs.branch_name }}
+          else
+            echo "No changes in submodules"
+            echo "::caution:: サブモジュールの更新情報は存在しません"
+          fi

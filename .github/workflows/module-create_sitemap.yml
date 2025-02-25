@@ -116,7 +116,7 @@ jobs:
         run: |
           git checkout ${{ inputs.branch_name }}
 
-      - name: Commit changes HEAD（最新コミット）とステージングエリアの差分があるか確認します。
+      - name: Commit changes HEAD（最新コミット）とステージングエリアの差分があるか確認し、差分があればコミットする
         run: |
           git add .
           if ! git diff-index --quiet HEAD; then

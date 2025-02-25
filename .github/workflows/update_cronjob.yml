@@ -1,0 +1,63 @@
+name: 05.トークンの更新（CRON JOB）
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository:
+        type: choice
+        description: "対象ブランド"
+        required: true
+        options:
+          - "topards.jp"
+          - "feliamo.jp"
+          - "molak.jp"
+          - "ns-collection.jp"
+          - "lilmoon.jp"
+          - "minette-lens.jp"
+          - "mirage-c.jp"
+          - "mimuco.jp"
+          - "harne.jp"
+          - "louer.jp"
+          - "lumieu.jp"
+          - "puuuuchu.jp"
+          - "melady.jp"
+          - "melloew.jp"
+          - "faloom.jp"
+          - "mimicharme.jp"
+          - "lensbe.jp"
+          - "clainel.jp"
+          - "chapun.jp"
+          - "resay.jp"
+          - "michou.jp"
+      repository_no_register:
+        description: "任意のブランドリポジトリ"
+        default: ""
+
+jobs:
+  Auth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+      - name: CronJobリストを取得
+        run: |
+          response=$(curl -X GET \
+              -H 'Content-Type: application/json' \
+              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}' \
+              https://api.cron-job.org/jobs)
+          echo "Data from API: $response"
+          echo "$response" > data.json
+
+      - name: ジョブIDを抽出
+        run: |
+          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json)
+          echo "Job ID: $JOB_ID"
+          echo "job_id=$JOB_ID" >> $GITHUB_ENV
+
+      - name: アクセストークンの更新
+        run: |
+          curl -s -X PATCH \
+            -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
+            -d '{"job":{"extendedData":{headers:{Authorization:"Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}"}}}}' \
+            https://api.cron-job.org/jobs/${{ env.job_id }}
