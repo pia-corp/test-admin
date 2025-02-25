@@ -276,8 +276,15 @@ jobs:
           ref: release/github_${{ github.run_id }}
           fetch-depth: 0
 
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0' # 適切なRubyのバージョンを指定
+          bundler-cache: true
+
       - name: Install htmltest
-        run: gem install htmltest
+        run: |
+          gem install htmltest
       - name: Run htmltest
         run: htmltest out/${{ env.REPOSITORY }}/*.html
 
