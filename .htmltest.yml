@@ -1,0 +1,4 @@
+EnforceHTTPS: true
+CacheExpires: "6h"
+IgnoreAltEmpty: true
+StripQueryString: false

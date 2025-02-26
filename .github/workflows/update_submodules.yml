@@ -84,6 +84,11 @@ jobs:
         env:
           GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN_VALUE }}
 
+      # - name: Run htmltest
+      #   uses: wjdp/htmltest-action@master
+      #   with:
+      #     path: out/${{ env.REPOSITORY }}
+
       - name: 指定したブランチをチェックアウト
         run: |
           git checkout ${{ inputs.branch_name }}
