@@ -66,18 +66,13 @@ jobs:
           Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
 
           # 抽出した値を表示
-          echo "ENABLED_BEFORE = $Enabled" >> $GITHUB_ENV
+          echo "ENABLED_BEFORE=$Enabled" >> $GITHUB_ENV
 
       - name: CronJobのアイテムを更新
-        env:
-          month: ${{ inputs.month }}
-          day: ${{ inputs.day }}
-          hour: ${{ inputs.hour }}
-          minutes: ${{ inputs.minutes }}
         run: |
           curl -X PATCH \
             -H 'Content-Type: application/json' \
-            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d "{
               \"job\": {
                 \"enabled\": false
@@ -89,7 +84,7 @@ jobs:
         run: |
           response=$(curl -X GET \
               -H 'Content-Type: application/json' \
-              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}' \
+              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
               https://api.cron-job.org/jobs)
           echo "Data from API: $response"
           echo "$response" > data.json
@@ -105,21 +100,22 @@ jobs:
           timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json)
 
           # 抽出した値を表示
-          echo "ENABLED_AFTER = $Enabled" >> $GITHUB_ENV
-          echo "Hours = $hours" >> $GITHUB_ENV
-          echo "MDays = $mdays" >> $GITHUB_ENV
-          echo "Minutes = $minutes" >> $GITHUB_ENV
-          echo "Months = $months" >> $GITHUB_ENV
-          echo "Timezone = $timezone" >> $GITHUB_ENV
+          echo "ENABLED_AFTER=$Enabled" >> $GITHUB_ENV
+          echo "Hours=$Hours" >> $GITHUB_ENV
+          echo "MDays=$MDays" >> $GITHUB_ENV
+          echo "Minutes=$Minutes" >> $GITHUB_ENV
+          echo "Months=$Months" >> $GITHUB_ENV
+          echo "Timezone=$timezone" >> $GITHUB_ENV
 
       - name: 結果の表示
         run: |
           # GitHubステップサマリーに情報を追加
           {
             echo "# 予約状況の更新結果"
-            echo "| リポジトリ | 予約日時 | ステータス |"
+            echo "| リポジトリ | 予約日時 | 予約ステータス |"
             echo "| -- | -- | -- |"
             echo "| ${{ env.REPOSITORY }} | ${{ env.Timezone }} ${{ env.Months }}月${{ env.MDays }}日${{ env.Hours }}時${{ env.Minutes }}分 | ${{ env.ENABLED_BEFORE }} -> ${{ env.ENABLED_AFTER }} |"
+            echo ""
             echo "予約状況を直接確認する場合は以下のサイトへアクセスしてください。"
             echo "https://cron-job.org/en/"
           } >> $GITHUB_STEP_SUMMARY
