@@ -39,13 +39,9 @@ on:
         options:
           - "検証環境"
           - "本番環境"
-      get_file:
-        type: boolean
-        description: "最新ファイル取得"
-        default: false
       sync:
         type: choice
-        description: "ファイルのアップロード方法"
+        description: "※検証環境はfullアップロードのみ"
         required: true
         options:
           - "full"
@@ -84,12 +80,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: 無効なプロトコルのエラーハンドリング
-        if: ${{ vars.PROTOCOL != 'ftp' && vars.PROTOCOL != 'sftp' }}
-        run: |
-          echo "::error:: プロトコルの指定が不正です。環境変数を確認してください。"
-          exit 1
 
       - name: 本番環境か検証環境
         run: |
