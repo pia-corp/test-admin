@@ -105,12 +105,12 @@ jobs:
           timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json)
 
           # 抽出した値を表示
-          echo "ENABLED_AFTER: $Enabled" >> $GITHUB_ENV
-          echo "Hours: $hours" >> $GITHUB_ENV
-          echo "MDays: $mdays" >> $GITHUB_ENV
-          echo "Minutes: $minutes" >> $GITHUB_ENV
-          echo "Months: $months" >> $GITHUB_ENV
-          echo "Timezone: $timezone" >> $GITHUB_ENV
+          echo "ENABLED_AFTER = $Enabled" >> $GITHUB_ENV
+          echo "Hours = $hours" >> $GITHUB_ENV
+          echo "MDays = $mdays" >> $GITHUB_ENV
+          echo "Minutes = $minutes" >> $GITHUB_ENV
+          echo "Months = $months" >> $GITHUB_ENV
+          echo "Timezone = $timezone" >> $GITHUB_ENV
 
       - name: 結果の表示
         run: |
