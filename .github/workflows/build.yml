@@ -1,4 +1,4 @@
-name: 01.納品ファイルの取得と公開予約
+name: 01.納品ファイルの取得
 
 on:
   workflow_dispatch:
@@ -32,109 +32,6 @@ on:
       repository_no_register:
         description: "任意のブランドリポジトリ"
         default: ""
-      reservation:
-        type: boolean
-        description: 予約設定
-        default: false
-      month:
-        type: choice
-        required: false
-        description: 月
-        options:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
-          - 10
-          - 11
-          - 12
-      day:
-        type: choice
-        required: false
-        description: 日
-        options:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
-          - 10
-          - 11
-          - 12
-          - 13
-          - 14
-          - 15
-          - 16
-          - 17
-          - 18
-          - 19
-          - 20
-          - 21
-          - 22
-          - 23
-          - 24
-          - 25
-          - 26
-          - 27
-          - 28
-          - 29
-          - 30
-          - 31
-      hour:
-        type: choice
-        required: false
-        description: 時間
-        options:
-          - 0
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
-          - 10
-          - 11
-          - 12
-          - 13
-          - 14
-          - 15
-          - 16
-          - 17
-          - 18
-          - 19
-          - 20
-          - 21
-          - 22
-          - 23
-      minutes:
-        type: choice
-        required: false
-        description: 分
-        options:
-          - 00
-          - 05
-          - 10
-          - 15
-          - 20
-          - 25
-          - 30
-          - 35
-          - 40
-          - 45
-          - 50
-          - 55
 
 permissions:
   contents: write
@@ -168,7 +65,6 @@ jobs:
 
           # GitHubステップサマリーに情報を追加
           {
-            echo "# 入力された変数"
             echo "| リポジトリ | 予約設定 | 日時 |"
             echo "| -- | -- | -- |"
             if [ -n "${{ inputs.repository_no_register }}" ]; then
@@ -296,17 +192,3 @@ jobs:
           gh pr list
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  UploadReservation:
-    if: ${{ ! failure() && inputs.reservation == true }}
-    needs: [CreateSiteMap, DeleteBranch]
-    uses: ./.github/workflows/reservation.yml
-    with:
-      repository: ${{ inputs.repository }}
-      repository_no_register: ${{ inputs.repository_no_register }}
-      month: ${{ inputs.month }}
-      day: ${{ inputs.day }}
-      hour: ${{ inputs.hour }}
-      minutes: ${{ inputs.minutes }}
-    secrets:
-      CRON_JOB_TOKEN_VALUE: ${{ secrets.CRON_JOB_TOKEN }}

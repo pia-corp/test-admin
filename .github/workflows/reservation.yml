@@ -1,7 +1,7 @@
-name: Reservation
+name: 03.公開予約
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       repository:
         description: "対象ブランド"
@@ -27,10 +27,6 @@ on:
         description: "分"
         required: true
         type: string
-    secrets:
-      CRON_JOB_TOKEN_VALUE:
-        description: "Cron Job API Token"
-        required: true
 
 jobs:
   RESERVATION:
@@ -44,7 +40,7 @@ jobs:
         run: |
           response=$(curl -X GET \
               -H 'Content-Type: application/json' \
-              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}' \
+              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
               https://api.cron-job.org/jobs)
           echo "Data from API: $response"
           echo "$response" > data.json
@@ -64,7 +60,7 @@ jobs:
         run: |
           curl -X PATCH \
             -H 'Content-Type: application/json' \
-            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d "{
               \"job\": {
                 \"enabled\": true,
@@ -82,14 +78,14 @@ jobs:
         run: |
           response=$(curl -X GET \
               -H 'Content-Type: application/json' \
-              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}' \
+              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
               https://api.cron-job.org/jobs)
           echo "Data from API: $response"
           echo "$response" > data.json
 
       - name: ジョブ情報を抽出
         run: |
-          # jq を使って lumieu.jp のデータを抽出
+          # jq を使って ドメイン のデータを抽出
           Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
           Hours=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json)
           MDays=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json)
@@ -98,7 +94,7 @@ jobs:
           timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json)
 
           # 抽出した値を表示
-          echo "Enabled: $Enabled" >> $GITHUB_ENV
+          echo "ENABLED: $Enabled" >> $GITHUB_ENV
           echo "Hours: $hours" >> $GITHUB_ENV
           echo "MDays: $mdays" >> $GITHUB_ENV
           echo "Minutes: $minutes" >> $GITHUB_ENV
@@ -113,4 +109,6 @@ jobs:
             echo "| リポジトリ | 予約日時 | ステータス |"
             echo "| -- | -- | -- |"
             echo "| ${{ env.REPOSITORY }} | ${{ env.Timezone }} ${{ env.Months }}月${{ env.MDays }}日${{ env.Hours }}時${{ env.Minutes }}分 | ${{ env.ENABLED }} |"
+            echo "予約状況を直接確認する場合は以下のサイトへアクセスしてください。"
+            echo "https://cron-job.org/en/"
           } >> $GITHUB_STEP_SUMMARY

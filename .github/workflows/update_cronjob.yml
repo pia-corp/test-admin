@@ -1,4 +1,4 @@
-name: 05.トークンの更新（CRON JOB）
+name: 06.トークンの更新（CRON JOB）
 
 on:
   workflow_dispatch:
@@ -41,10 +41,9 @@ jobs:
     steps:
       - name: CronJobリストを取得
         run: |
-          response=$(curl -X GET \
-              -H 'Content-Type: application/json' \
-              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}' \
-              https://api.cron-job.org/jobs)
+          response=$(curl -s -X GET \
+            -H "Authorization: Bearer $CRON_JOB_TOKEN" \
+            https://api.cron-job.org/jobs)
           echo "Data from API: $response"
           echo "$response" > data.json
 
