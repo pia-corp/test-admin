@@ -66,7 +66,7 @@ jobs:
           Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
 
           # 抽出した値を表示
-          echo "ENABLED_BEFORE: $Enabled" >> $GITHUB_ENV
+          echo "ENABLED_BEFORE = $Enabled" >> $GITHUB_ENV
 
       - name: CronJobのアイテムを更新
         env:
