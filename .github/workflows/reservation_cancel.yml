@@ -37,6 +37,9 @@ jobs:
   CANCEL_RESERVATION:
     runs-on: ubuntu-latest
     timeout-minutes: 3
+    permissions:
+      contents: read
+      actions: write
     env:
       REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
 
@@ -46,22 +49,19 @@ jobs:
           response=$(curl -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              https://api.cron-job.org/jobs)
+              https://api.cron-job.org/jobs) || { echo 'Failed to fetch CronJob list'; exit 1; }
           echo "Data from API: $response"
           echo "$response" > data.json
 
       - name: ジョブIDを抽出
         run: |
-          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json)
+          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json) || { echo 'Failed to extract Job ID'; exit 1; }
           echo "Job ID: $JOB_ID"
           echo "job_id=$JOB_ID" >> $GITHUB_ENV
 
       - name: 予約状況を抽出
         run: |
-          # jq を使って ドメイン のデータを抽出
-          Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
-
-          # 抽出した値を表示
+          Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json) || { echo 'Failed to extract reservation status'; exit 1; }
           echo "ENABLED_BEFORE=$Enabled" >> $GITHUB_ENV
 
       - name: CronJobのアイテムを更新
@@ -74,28 +74,26 @@ jobs:
                 \"enabled\": false
               }
             }" \
-            https://api.cron-job.org/jobs/${{ env.job_id }}
+            https://api.cron-job.org/jobs/${{ env.job_id }} || { echo 'Failed to update CronJob'; exit 1; }
 
       - name: CronJobリストを取得
         run: |
           response=$(curl -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              https://api.cron-job.org/jobs)
+              https://api.cron-job.org/jobs) || { echo 'Failed to fetch CronJob list'; exit 1; }
           echo "Data from API: $response"
           echo "$response" > data.json
 
       - name: ジョブ情報を抽出
         run: |
-          # jq を使って ドメイン のデータを抽出
-          Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
-          Hours=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json)
-          MDays=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json)
-          Minutes=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json)
-          Months=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json)
-          timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json)
+          Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json) || { echo 'Failed to extract reservation status'; exit 1; }
+          Hours=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json) || { echo 'Failed to extract hours'; exit 1; }
+          MDays=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json) || { echo 'Failed to extract days'; exit 1; }
+          Minutes=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json) || { echo 'Failed to extract minutes'; exit 1; }
+          Months=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json) || { echo 'Failed to extract months'; exit 1; }
+          timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json) || { echo 'Failed to extract timezone'; exit 1; }
 
-          # 抽出した値を表示
           echo "ENABLED_AFTER=$Enabled" >> $GITHUB_ENV
           echo "Hours=$Hours" >> $GITHUB_ENV
           echo "MDays=$MDays" >> $GITHUB_ENV
@@ -105,7 +103,6 @@ jobs:
 
       - name: 結果の表示
         run: |
-          # GitHubステップサマリーに情報を追加
           {
             echo "# 予約状況の更新結果"
             echo "| リポジトリ | 予約日時 | 予約ステータス |"
