@@ -1,9 +1,11 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
-      time: "14:00"
-      timezone: "Asia/Tokyo"
-    target-branch: "develop"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "automerge"
+    target-branch: "patch"
