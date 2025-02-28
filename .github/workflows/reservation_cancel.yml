@@ -38,7 +38,7 @@ on:
         default: false
 
 jobs:
-  RESERVATION:
+  CANCEL_RESERVATION:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
@@ -49,13 +49,12 @@ jobs:
         run: |
           response=$(curl -X GET \
               -H 'Content-Type: application/json' \
-              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}' \
+              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
               https://api.cron-job.org/jobs)
           echo "Data from API: $response"
           echo "$response" > data.json
 
       - name: ジョブIDを抽出
-        id: extract_job_id
         run: |
           JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json)
           echo "Job ID: $JOB_ID"
@@ -63,7 +62,7 @@ jobs:
 
       - name: 予約状況を抽出
         run: |
-          # jq を使って lumieu.jp のデータを抽出
+          # jq を使って ドメイン のデータを抽出
           Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
 
           # 抽出した値を表示
