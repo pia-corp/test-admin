@@ -1,26 +1,49 @@
-name: Dependabot auto-merge
+name: Dependabot Auto Merge & Release
+
 on:
   pull_request:
     branches:
-      - main
+      - patch  # patch ブランチへの PR を対象
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 permissions:
-  contents: write
   pull-requests: write
+  contents: write
 
 jobs:
-  dependabot:
+  auto-merge:
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]'
     steps:
-      - name: Dependabot metadata
-        id: metadata
-        uses: dependabot/fetch-metadata@v2
-        with:
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-      - name: Enable auto-merge for Dependabot PRs
-        if: steps.metadata.outputs.dependency-type == 'direct:development' && steps.metadata.outputs.update-type == 'version-update:semver-patch'
-        run: gh pr merge --auto --merge "$PR_URL"
-        env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Enable GitHub CLI authentication
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Approve Dependabot PR
+        if: github.actor == 'dependabot[bot]'
+        run: gh pr review --approve "$GITHUB_REF"
+
+      - name: Auto-merge Dependabot PR into patch
+        if: github.actor == 'dependabot[bot]'
+        run: gh pr merge --auto --squash "$GITHUB_REF"
+
+  merge-patch-to-main:
+    needs: auto-merge
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Enable GitHub CLI authentication
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Merge patch into main
+        run: |
+          git fetch origin
+          git checkout main
+          git merge --no-ff patch -m "Merge patch into main [automated]"
+          git push origin main
