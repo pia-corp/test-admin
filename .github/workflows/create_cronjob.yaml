@@ -1,4 +1,4 @@
-name: 03.公開予約設定の新規作成(初回のみ実行)
+name: 05.公開予約設定の新規作成(初回のみ実行)
 
 on:
   workflow_dispatch:
@@ -48,8 +48,8 @@ jobs:
                 "saveResponses": false,
                 "title": "${{ env.title }}",
                 "schedule": {
+                  "expiresAt": 0,
                   "timezone": "Asia/Tokyo",
-                  "expiresAt": 1,
                   "hours": [-1],
                   "mdays": [-1],
                   "minutes": [-1],

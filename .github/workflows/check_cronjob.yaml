@@ -1,4 +1,4 @@
-name: 06.Cron設定と公開状況の確認
+name: 07.Cron設定と公開状況の確認
 
 on:
   workflow_dispatch:
@@ -32,7 +32,7 @@ jobs:
 
           echo "# 処理結果"
           {
-            echo "| CRON ID | タイトル | 予約状況 | 予約時間 |"
+            echo "| CRON ID | ドメイン | 予約状況 | 予約時間 |"
             echo "| --- | --- | --- | --- |"
             for i in "${!jobIds[@]}"; do
               if [ "${enabled[$i]}" = "true" ]; then

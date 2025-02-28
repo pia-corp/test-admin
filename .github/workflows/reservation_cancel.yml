@@ -86,9 +86,18 @@ jobs:
             }" \
             https://api.cron-job.org/jobs/${{ env.job_id }}
 
+      - name: CronJobリストを取得
+        run: |
+          response=$(curl -X GET \
+              -H 'Content-Type: application/json' \
+              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN_VALUE }}' \
+              https://api.cron-job.org/jobs)
+          echo "Data from API: $response"
+          echo "$response" > data.json
+
       - name: ジョブ情報を抽出
         run: |
-          # jq を使って lumieu.jp のデータを抽出
+          # jq を使って ドメイン のデータを抽出
           Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
           Hours=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json)
           MDays=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json)
