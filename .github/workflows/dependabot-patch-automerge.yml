@@ -3,7 +3,7 @@ name: Dependabot Auto Merge to Main
 on:
   pull_request:
     branches:
-      - patch  # patch ブランチへの PR が作成されたとき
+      - dependabot  # dependabot ブランチへの PR が作成されたとき
     types:
       - opened
       - synchronize
@@ -20,7 +20,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create PR from patch to main
+      - name: Create PR from dependabot to main
         if: github.actor == 'dependabot[bot]'
         uses: actions/github-script@v4
         with:
@@ -28,10 +28,10 @@ jobs:
             const { data: pullRequest } = await github.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: "Merge dependabot updates from patch to main",
-              head: "patch",
+              title: "Merge dependabot updates from dependabot to main",
+              head: "dependabot",
               base: "main",
-              body: "Automated PR to merge updates from patch to main."
+              body: "Automated PR to merge updates from dependabot to main."
             });
             return pullRequest.html_url;
 
