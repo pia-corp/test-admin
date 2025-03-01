@@ -20,19 +20,41 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Enable GitHub CLI authentication
-        run: echo "${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}" | gh auth login --with-token
-
       - name: Create PR from patch to main
         if: github.actor == 'dependabot[bot]'
-        run: |
-          PR_URL=$(gh pr create --base main --head patch --title "Merge dependabot updates from patch to main" --body "Automated PR to merge updates from patch to main.")
-          echo "Created PR: $PR_URL"
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const { data: pullRequest } = await github.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: "Merge dependabot updates from patch to main",
+              head: "patch",
+              base: "main",
+              body: "Automated PR to merge updates from patch to main."
+            });
+            return pullRequest.html_url;
 
       - name: Auto-approve PR
         if: github.actor == 'dependabot[bot]'
-        run: gh pr review --approve "$GITHUB_REF"
+        uses: actions/github-script@v4
+        with:
+          script: |
+            await github.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              event: 'APPROVE'
+            });
 
       - name: Auto-merge PR
         if: github.actor == 'dependabot[bot]'
-        run: gh pr merge --auto --squash "$GITHUB_REF"
+        uses: actions/github-script@v4
+        with:
+          script: |
+            await github.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              merge_method: 'squash'
+            });
