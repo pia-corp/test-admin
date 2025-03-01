@@ -3,7 +3,7 @@ name: Dependabot Auto Merge to Main
 on:
   pull_request:
     branches:
-      - dependabot  # dependabot ブランチへの PR が作成されたとき
+      - main  # main ブランチへの PR が作成されたとき
     types:
       - opened
       - synchronize
@@ -40,10 +40,11 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
+            const pullRequest = context.payload.pull_request;
             await github.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
+              pull_number: pullRequest.number,
               event: 'APPROVE'
             });
 
@@ -52,9 +53,10 @@ jobs:
         uses: actions/github-script@v4
         with:
           script: |
+            const pullRequest = context.payload.pull_request;
             await github.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
+              pull_number: pullRequest.number,
               merge_method: 'squash'
             });
