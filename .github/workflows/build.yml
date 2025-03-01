@@ -97,7 +97,7 @@ jobs:
 
   UpdateSubmodules:
     needs: [CreateBranch]
-    uses: ./.github/workflows/update_submodules.yml
+    uses: ./.github/workflows/module-update_submodules.yml
     with:
       repository: ${{ inputs.repository }}
       repository_no_register: ${{ inputs.repository_no_register }}
