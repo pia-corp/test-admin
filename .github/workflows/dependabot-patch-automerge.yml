@@ -22,7 +22,7 @@ jobs:
 
       - name: Create PR from patch to main
         if: github.actor == 'dependabot[bot]'
-        uses: actions/github-script@v4
+        uses: actions/github-script@v7
         with:
           script: |
             const { data: pullRequest } = await github.pulls.create({
@@ -37,7 +37,7 @@ jobs:
 
       - name: Auto-approve PR
         if: github.actor == 'dependabot[bot]'
-        uses: actions/github-script@v4
+        uses: actions/github-script@v7
         with:
           script: |
             await github.pulls.createReview({
@@ -49,7 +49,7 @@ jobs:
 
       - name: Auto-merge PR
         if: github.actor == 'dependabot[bot]'
-        uses: actions/github-script@v4
+        uses: actions/github-script@v7
         with:
           script: |
             await github.pulls.merge({
