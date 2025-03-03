@@ -49,41 +49,6 @@ on:
           - "delta"
 
 jobs:
-  # このジョブは、ワークフローを実行するユーザーが許可されたリストに含まれているかどうかを確認します。
-  Auth:
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-
-    steps:
-      - name: Check user authorization
-        id: check_auth
-        run: |
-          AUTHORIZED_USERS="${{ vars.GIT_CODE_OWNERS }}"
-          CURRENT_USER="${{ github.actor }}"
-
-          if [[ $AUTHORIZED_USERS == *"$CURRENT_USER"* ]]; then
-            echo "User $CURRENT_USER is authorized"
-            echo "is_authorized=true" >> $GITHUB_OUTPUT
-          else
-            echo "User $CURRENT_USER is not authorized to run this workflow"
-            echo "is_authorized=false" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-
-      - name: Set repository
-        id: set_repo
-        run: |
-          if [ "${{ github.event.inputs.repository }}" == "other" ]; then
-            if [ -z "${{ github.event.inputs.repository_no_register }}" ]; then
-              echo "Error: Repository name is required when 'other' is selected"
-              exit 1
-            fi
-            REPO="${{ github.event.inputs.repository_no_register }}"
-          else
-            REPO="${{ github.event.inputs.repository }}"
-          fi
-          echo "selected_repo=$REPO" >> $GITHUB_OUTPUT
-
   upload:
     name: Upload Files
     needs: auth
