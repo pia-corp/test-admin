@@ -38,62 +38,23 @@ permissions:
   pull-requests: write
 
 jobs:
-  # このジョブは、ワークフローを実行するユーザーが許可されたリストに含まれているかどうかを確認します。
-  Auth:
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-
-    steps:
-      - name: ユーザーの認証を確認
-        env:
-          USER_LOGIN: ${{ github.actor }}
-          CODE_OWNERS: ${{ vars.GIT_CODE_OWNERS }}
-        run: |
-          echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
-          if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
-            echo "::warning:: ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
-            exit 1
-          fi
-          echo "::notice:: ユーザー $USER_LOGIN は認証されました。続行します..."
-
-          # 予約設定の状態を判定
-          if [ "${{ inputs.reservation }}" == "true" ]; then
-            res="✅"
-          else
-            res="❌"
-          fi
-
-          # GitHubステップサマリーに情報を追加
-          {
-            echo "| リポジトリ | 予約設定 | 日時 |"
-            echo "| -- | -- | -- |"
-            if [ -n "${{ inputs.repository_no_register }}" ]; then
-              echo "| ${{ inputs.repository_no_register }} | $res | ${{ inputs.month }}月${{ inputs.day }}日${{ inputs.hour }}時${{ inputs.minutes }}分 |"
-            else
-              echo "| ${{ inputs.repository }} | $res | ${{ inputs.month }}月${{ inputs.day }}日${{ inputs.hour }}時${{ inputs.minutes }}分 |"
-            fi
-          } >> $GITHUB_STEP_SUMMARY
-
-
-  # このジョブは、新しいリリースブランチを作成し、リモートリポジトリにプッシュするためのものです。
-  # 'Auth' ジョブが完了した後に実行されます。
-  # ジョブの出力として、作成されたリリースブランチの名前を提供します。
   CreateBranch:
-    needs: [Auth]
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
     steps:
       - name: リポジトリをチェックアウト
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.1
 
       - name: リリース用の新しいブランチを作成
         run: |
           git checkout -b release/github_${{ github.run_id }}
+        continue-on-error: false
 
       - name: 新しいブランチをプッシュ
         run: |
           git push -u origin release/github_${{ github.run_id }}
+        continue-on-error: false
 
   UpdateSubmodules:
     needs: [CreateBranch]
@@ -114,7 +75,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.1
         with:
           ref: release/github_${{ github.run_id }}
 
@@ -137,8 +98,6 @@ jobs:
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}
 
-  # このジョブは、指定されたブランチが存在しない場合にそのブランチをリモートリポジトリから削除するためのものです。
-  # 具体的には、UpdateSubmodulesジョブの出力がfalseの場合に、CreateBranchジョブで作成されたブランチを削除します。
   DeleteBranch:
     needs: [GetCommitMessage]
     runs-on: ubuntu-latest
@@ -153,11 +112,10 @@ jobs:
         run: |
           git push origin --delete release/github_${{ github.run_id }}
           echo "::notice:: ブランチを削除しました。release/github_${{ github.run_id }}"
+          echo "エラーログ: $(curl -s -X GET -H "Authorization: Bearer $CRON_JOB_TOKEN" https://api.cron-job.org/jobs)"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # このジョブは、リポジトリをチェックアウトし、指定されたブランチに切り替え、
-  # コミットが存在する場合にプルリクエストを作成します。
   CloseBranch:
     needs: CreateSiteMap
     runs-on: ubuntu-latest

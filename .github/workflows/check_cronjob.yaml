@@ -3,6 +3,9 @@ name: 07.Cron設定と公開状況の確認
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   Cron:
     runs-on: ubuntu-latest
@@ -18,7 +21,7 @@ jobs:
         run: |
           response=$(curl -s -X GET \
             -H "Authorization: Bearer $CRON_JOB_TOKEN" \
-            https://api.cron-job.org/jobs)
+            https://api.cron-job.org/jobs) || { echo "::error:: CRONジョブの取得に失敗しました。"; echo "エラーログ: $(curl -s -X GET -H "Authorization: Bearer $CRON_JOB_TOKEN" https://api.cron-job.org/jobs)"; exit 1; }
 
           # jobIdとtitleを配列として格納
           jobIds=($(echo "$response" | jq -r '.jobs[].jobId'))

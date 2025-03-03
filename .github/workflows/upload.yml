@@ -52,12 +52,14 @@ jobs:
   upload:
     name: Upload Files
     runs-on: ubuntu-latest
+    env:
+      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          repository: ${{ needs.auth.outputs.selected_repo }}
+          repository: REPOSITORY
           fetch-depth: 0
 
       - name: Set environment variables
@@ -67,7 +69,7 @@ jobs:
           echo "PORT=${{ vars.PORT }}" >> $GITHUB_ENV
           echo "USER_NAME=${{ vars.USER_NAME }}" >> $GITHUB_ENV
 
-          if [ "${{ github.event.inputs.target }}" == "検証環境" ]; then
+          if [ "${{ inputs.target }}" == "検証環境" ]; then
             echo "Setting up for development environment"
             echo "TARGET_PATH=${{ vars.DEVELOPMENT_REMOTE_PATH }}" >> $GITHUB_ENV
             echo "ENVIRONMENT=検証環境" >> $GITHUB_ENV
@@ -83,12 +85,12 @@ jobs:
           sudo apt-get install -y lftp
 
       - name: Upload to Production (SFTP)
-        if: github.event.inputs.target == '本番環境'
+        if: inputs.target == '本番環境'
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
 
-          if [ "${{ github.event.inputs.sync }}" == "full" ]; then
+          if [ "${{ inputs.sync }}" == "full" ]; then
             # Full sync - mirror the entire directory
             lftp -e "set sftp:auto-confirm yes; \
                     open -u ${{ env.USER_NAME }},${{ secrets.PASSWORD }} sftp://${{ env.HOST }}:${{ env.PORT }}; \
@@ -104,12 +106,12 @@ jobs:
 
           echo "ファイルを ${{ env.ENVIRONMENT }} へアップロードしました。" >> $GITHUB_STEP_SUMMARY
           echo "リポジトリ: ${{ needs.auth.outputs.selected_repo }}" >> $GITHUB_STEP_SUMMARY
-          echo "同期方法: ${{ github.event.inputs.sync }}" >> $GITHUB_STEP_SUMMARY
+          echo "同期方法: ${{ inputs.sync }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload to Development (FTP)
-        if: github.event.inputs.target == '本番環境'
+        if: inputs.target == '検証環境'
         run: |
-          if [ "${{ github.event.inputs.sync }}" == "full" ]; then
+          if [ "${{ inputs.sync }}" == "full" ]; then
             # Full sync - mirror the entire directory
             lftp -e "set ftp:ssl-allow no; \
                     open -u ${{ env.USER_NAME }},${{ secrets.PASSWORD }} ${{ env.HOST }}:${{ env.PORT }}; \
@@ -125,4 +127,4 @@ jobs:
 
           echo "ファイルを ${{ env.ENVIRONMENT }} へアップロードしました。" >> $GITHUB_STEP_SUMMARY
           echo "リポジトリ: ${{ needs.auth.outputs.selected_repo }}" >> $GITHUB_STEP_SUMMARY
-          echo "同期方法: ${{ github.event.inputs.sync }}" >> $GITHUB_STEP_SUMMARY
+          echo "同期方法: ${{ inputs.sync }}" >> $GITHUB_STEP_SUMMARY

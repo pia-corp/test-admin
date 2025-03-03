@@ -6,6 +6,9 @@ on:
     types:
       - completed
 
+permissions:
+  contents: write
+
 jobs:
   create-release-tag:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -18,7 +21,7 @@ jobs:
       - name: 前回のリリースタグを取得する
         id: pre_tag
         run: |
-          echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)" >> $GITHUB_OUTPUT
+          echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)" >> $GITHUB_OUTPUT || { echo "::error:: 前回のリリースタグの取得に失敗しました。"; echo "エラーログ: $(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest)"; exit 1; }
 
       - name: タグを生成する 「{YYYY.MM.DD}-{当日リリース回数}」
         id: release_tag
@@ -36,7 +39,7 @@ jobs:
         run: |
           echo "pr_description=$(curl -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number}}' \
-            | jq .body | awk '{if ($0 == "null") print ""; else print}')" >> $GITHUB_OUTPUT
+            | jq .body | awk '{if ($0 == "null") print ""; else print}')" >> $GITHUB_OUTPUT || { echo "::error:: PRのDescriptionの取得に失敗しました。"; echo "エラーログ: $(curl -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number}}')"; exit 1; }
 
       - name: 前回リリースからの差分をもとに、変更点を取得する
         id: changes
@@ -51,7 +54,7 @@ jobs:
               "previous_tag_name": "${{ steps.pre_tag.outputs.pre_tag }}",
               "target_commitish": "main"
             }' | jq .body
-          )" >> $GITHUB_OUTPUT
+          )" >> $GITHUB_OUTPUT || { echo "::error:: 変更点の取得に失敗しました。"; exit 1; }
 
       - name: リリースノートの本文を作成する
         id: release_note_body
@@ -79,6 +82,6 @@ jobs:
             body=$(cat response_body.txt)
             echo "Response Body: $body"
             if [ $status_code -ne 201 ]; then
-              echo "Failed to create release"
+              echo "::error:: リリースの作成に失敗しました。"
               exit 1
             fi

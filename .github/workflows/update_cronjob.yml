@@ -43,13 +43,13 @@ jobs:
         run: |
           response=$(curl -s -X GET \
             -H "Authorization: Bearer $CRON_JOB_TOKEN" \
-            https://api.cron-job.org/jobs)
+            https://api.cron-job.org/jobs) || { echo 'Failed to fetch CronJob list'; exit 1; }
           echo "Data from API: $response"
           echo "$response" > data.json
 
       - name: ジョブIDを抽出
         run: |
-          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json)
+          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json) || { echo 'Failed to extract Job ID'; exit 1; }
           echo "Job ID: $JOB_ID"
           echo "job_id=$JOB_ID" >> $GITHUB_ENV
 
@@ -59,4 +59,4 @@ jobs:
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d '{"job":{"extendedData":{headers:{Authorization:"Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}"}}}}' \
-            https://api.cron-job.org/jobs/${{ env.job_id }}
+            https://api.cron-job.org/jobs/${{ env.job_id }} || { echo 'Failed to update access token'; exit 1; }

@@ -145,13 +145,13 @@ jobs:
           response=$(curl -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              https://api.cron-job.org/jobs)
+              https://api.cron-job.org/jobs) || { echo 'Failed to fetch CronJob list'; echo "エラーログ: $(curl -X GET -H 'Content-Type: application/json' -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' https://api.cron-job.org/jobs)"; exit 1; }
           echo "Data from API: $response"
           echo "$response" > data.json
 
       - name: ジョブIDを抽出
         run: |
-          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json)
+          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json) || { echo 'Failed to extract Job ID'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json)"; exit 1; }
           echo "Job ID: $JOB_ID"
           echo "job_id=$JOB_ID" >> $GITHUB_ENV
 
@@ -176,26 +176,26 @@ jobs:
                 }
               }
             }" \
-            https://api.cron-job.org/jobs/${{ env.job_id }}
+            https://api.cron-job.org/jobs/${{ env.job_id }} || { echo 'Failed to register CronJob'; echo "エラーログ: $(curl -X PATCH -H 'Content-Type: application/json' -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" -d '{\"job\": {\"enabled\": true, \"schedule\": {\"hours\": [$hour], \"mdays\": [$day], \"minutes\": [$minutes], \"months\": [$month]}}}' https://api.cron-job.org/jobs/${{ env.job_id }})"; exit 1; }
 
       - name: CronJobリストを取得
         run: |
           response=$(curl -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              https://api.cron-job.org/jobs)
+              https://api.cron-job.org/jobs) || { echo 'Failed to fetch CronJob list'; echo "エラーログ: $(curl -X GET -H 'Content-Type: application/json' -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' https://api.cron-job.org/jobs)"; exit 1; }
           echo "Data from API: $response"
           echo "$response" > data.json
 
       - name: ジョブ情報を抽出
         run: |
           # jq を使って ドメイン のデータを抽出
-          Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)
-          Hours=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json)
-          MDays=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json)
-          Minutes=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json)
-          Months=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json)
-          timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json)
+          Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json) || { echo 'Failed to extract reservation status'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)"; exit 1; }
+          Hours=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json) || { echo 'Failed to extract hours'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json)"; exit 1; }
+          MDays=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json) || { echo 'Failed to extract days'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json)"; exit 1; }
+          Minutes=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json) || { echo 'Failed to extract minutes'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json)"; exit 1; }
+          Months=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json) || { echo 'Failed to extract months'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json)"; exit 1; }
+          timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json) || { echo 'Failed to extract timezone'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json)"; exit 1; }
 
           # 抽出した値を表示
           echo "ENABLED_AFTER=$Enabled" >> $GITHUB_ENV
