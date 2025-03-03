@@ -98,7 +98,7 @@ jobs:
 
       - name: Deploy via SFTP
         if: ${{ inputs.target == '本番環境' }}
-        uses: milanmk/actions-file-deployer@1
+        uses: milanmk/actions-file-deployer@1.15
         with:
           remote-protocol: 'sftp'
           remote-host: ${{ env.HOST }}
@@ -123,7 +123,7 @@ jobs:
 
       - name: Deploy via FTP
         if: ${{ inputs.target == '検証環境' }}
-        uses: SamKirkland/FTP-Deploy-Action@4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@4.3.4
         with:
           server: ${{ env.HOST }}
           username: ${{ env.USER_NAME }}
