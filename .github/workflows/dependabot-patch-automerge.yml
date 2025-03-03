@@ -1,49 +1,17 @@
-name: Dependabot Auto Merge to Main
-
-on:
-  pull_request:
-    branches:
-      - main  # main ブランチへの PR が作成されたとき
-    types:
-      - opened
-      - synchronize
-      - reopened
+name: Dependabot auto-merge
+on: pull_request_target
 
 permissions:
   pull-requests: write
   contents: write
 
 jobs:
-  auto-merge:
+  dependabot:
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]'
+    if: ${{ github.actor == 'dependabot[bot]' }}
     steps:
-      - name: Create PR from patch to main
-        run: |
-          PR_URL=$(gh pr create --base main --head patch --title "Merge dependabot updates from patch to main" --body "Automated PR to merge updates from patch to main.")
-          echo "Created PR: $PR_URL"
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Auto-approve PR
-        uses: actions/github-script@v6
-        with:
-          script: |
-            await github.rest.pulls.createReview({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              event: 'APPROVE'
-            });
-
-      - name: Auto-merge PR
-        uses: actions/github-script@v6
-        with:
-          script: |
-            await github.rest.pulls.merge({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              merge_method: 'squash'
-            });
+      - name: Enable auto-merge for Dependabot PRs
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
