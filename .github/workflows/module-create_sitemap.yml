@@ -53,8 +53,13 @@ jobs:
           git config --global user.email ${{ vars.GIT_MAILADDRESS }}
           git config --global url."https://${{ secrets.GITHUB_TOKEN_VALUE }}@github.com/".insteadOf "https://github.com/"
 
-      - name: sabmodulesを最新の状態に更新
-        run: git clone https://github.com/pia-corp/${{env.REPOSITORY}} --recursive || { echo "::error:: サブモジュールの更新に失敗しました。"; echo "エラーログ: $(git clone https://github.com/pia-corp/${{env.REPOSITORY}} --recursive)"; exit 1; }
+      - name: submodulesを最新の状態に更新
+        run: |
+          git clone https://github.com/pia-corp/${{env.REPOSITORY}} --recursive || {
+            echo "::error:: サブモジュールの更新に失敗しました。"
+            echo "エラーログ: $(git clone https://github.com/pia-corp/${{env.REPOSITORY}} --recursive)"
+            exit 1
+          }
         env:
           GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN_VALUE }}
 
