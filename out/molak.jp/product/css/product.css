@@ -852,7 +852,7 @@ COLOR LINE UP
   padding: 0 0 5.5% 9%;
   border-bottom: 1px solid #504f4f;
   font-family: 'Gilda Display', serif;
-  font-size: 4.1vw;
+  font-size: 3.7vw;
   letter-spacing: -0.015em;
 }
 
@@ -909,12 +909,12 @@ COLOR LINE UP
 
   .color-lineup-list h3 {
     padding: 0 0 15px 18px;
-    font-size: 20px;
+    font-size: 18px;
   }
 
   .color-lineup-list h3 span {
     margin-top: 10px;
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .color-lineup-detail {
@@ -1373,6 +1373,29 @@ DAZZLE GRAY
     /* background-position: center 30%; */
   }
 }
+
+/* =====================================
+TWINKLE BROWN
+===================================== */
+.twinkle_brown .product {
+  background-color: #FFDDE2;
+}
+.twinkle_brown .product-design h3 {
+  color: #71423F;
+}
+.twinkle_brown .review-link-btn{
+  background: #71423F;
+}
+/* =====================================
+PINK BOMB
+===================================== */
+.pink_bomb .product {
+  background-color: #FFDDE2;
+}
+.pink_bomb .product-design h3 {
+  color: #FB7CBA;
+}
+
 .other_block_list{
   display: flex;
   flex-wrap: wrap;

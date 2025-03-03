@@ -232,7 +232,14 @@ REVIEW DETAIL PAGE
 .review-text {
   margin-top: 4vw;
 }
-
+.review-text_img{
+  display: block;
+  margin-bottom: 15px;
+  transition: 0.3s;
+}
+.review-text_img:hover{
+  opacity: 0.7;
+}
 .review-text p {
   margin-bottom: 1.5em;
 }
@@ -989,11 +996,6 @@ REVIEW DETAIL PAGE
     margin-bottom: 20px;
     width: 100%;
   }
-
-  .review-safety-list-block:nth-of-type(2) .safety-list li:nth-of-type(3) {
-    margin-bottom: 0;
-  }
-
   .safety-list li img {
     margin-right: 5%;
     /* width: 46%; */

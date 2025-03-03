@@ -34,7 +34,7 @@ img {
 
 .sp-inner {
   /* background-color: #f6e6d7; */
-  background-image: url(../img/top/thema_202409/top-bg.svg);
+  background-image: url(../img/top/thema_202502/top-bg.svg);
   background-size: cover;
 }
 
@@ -166,6 +166,27 @@ HEADER
   z-index: 3;
 }
 
+.header-logo {
+  position: fixed;
+  top: 6.9vw;
+  left: 4vw;
+  width: 26.5vw;
+  z-index: 3;
+}
+.menu-list_sns{
+  display: flex;
+  position: fixed;
+  top: 7.8vw;
+  font-size: 14px;
+  line-height: 1em;
+  right: 51vw
+}
+.menu-list_sns > *{
+  width: 4vw;
+}
+.menu-list_sns > *:nth-child(1){
+  margin-right: 1vw;
+}
 .header-link-block {
   display: flex;
   align-items: center;
@@ -2184,7 +2205,7 @@ LINE UP
 
 /* .lineupBtmEyeAndLens-bbu::before {
 	position: absolute;
-	content: url(../img/top/thema_202409/lineup/newcolor-top-lineup-new-icon.svg);
+	content: url(../img/top/thema_202502/lineup/newcolor-top-lineup-new-icon.svg);
 	top: 9%;
 	left: 50%;
 	width: 50px;
@@ -2342,9 +2363,8 @@ SAKURA MIYAWAKI
   overflow: hidden
 }
 .miyawaki_inner{
-  padding: 40px 10px;
-  background: #FFF;
-  margin: 0 20px 0;
+  padding: 20px 0;
+  margin: 0 auto 0;
 }
 .miyawaki-logo {
   text-align: center;
@@ -2400,7 +2420,7 @@ SAKURA MIYAWAKI
   font-size: 12px;
   text-align: center;
   line-height: 1.8;
-  color: #7D7F81;
+  color: #845E5A;
   font-family: 'Noto Sans JP', sans-serif;
   font-weight: 500;
   letter-spacing: 0em;
@@ -2413,7 +2433,7 @@ SAKURA MIYAWAKI
 ---------------------------------*/
 @media (min-width: 769px) {
   .miyawaki-img {
-    width: 420px;
+    width: 520px;
   }
 
   .miyawaki-name {
@@ -2505,7 +2525,7 @@ CAUTION
   content: '';
   left: 0px;
   top: 6.2px;
-  background-image: url(../img/top/thema_202409/caution-checkmark.svg);
+  background-image: url(../img/top/thema_202502/caution-checkmark.svg);
   background-repeat: no-repeat;
   width: 21px;
   height: 100%;
@@ -3030,7 +3050,7 @@ DOLLISH BROWN, DOLLISH GRAY, BUBBLE BLUE
 .bubble_blue .product-spec-list dt {
   background: #c87290;
 }
-
+/*
 .dollish_gray .online-shop-list dd:first-of-type {
   background: #2d68a3;
 }
@@ -3038,56 +3058,104 @@ DOLLISH BROWN, DOLLISH GRAY, BUBBLE BLUE
 .bubble_blue .online-shop-list dd:first-of-type {
   background: #925aa1;
 }
+*/
 /* =====================================
-Add_202409
+Modify_202502
 ===================================== */
 .sp-inner {
-  background-image: url(../img/top/thema_202409/top-bg_ver__png.png);
+  background-image: url(../img/top/thema_202502/top-bg_ver__png.png);
   background-size: cover;
 }
-.note_bg{
-  background-image: url(../img/top/thema_202409/brownbunnyTop_bg.webp);
-  background-size: 100% auto;
+.topProductRelease{
+  margin: 0 auto;
+  padding: 40px 0 80px;
+  position: relative;
+}
+.topProductRelease:after{
+  content: "";
+  background: url(../img/top/thema_202502/ribbon_01.png) top center no-repeat;
+  background-size:100% auto;
   display: block;
   height: 100%;
   width: 100%;
   position: absolute;
   top: 0;
   left: 0;
-  z-index: -1;
-  box-shadow: 6px 6px 10px 0px rgba(235, 144, 225, 0.432);
+  z-index: -3
 }
-.blur{
-  background-image: url(../img/top/thema_202409/blur.png);
-  background-size: 100% auto;
+.topProductRelease:before{
+  content: "";
+  background: url(../img/top/thema_202502/ribbon_01.png) bottom center no-repeat;
+  background-size:100% auto;
   display: block;
-  height: 120px;
-  width: 120px;
-  z-index: 1;
+  height: 30%;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: -3
 }
-/* =====================================
-Add_202409(MODEL) / padding 15-20px minus
-===================================== */
-.topProductRelease{
-  margin: 20px;
-  padding: 40px 15px 10px;
+.topProductReleaseFooterInner{
   position: relative;
 }
-.topProductReleaseHeader{
-  margin-bottom: 15px;
+.topProductReleaseFooterInner_twinklebrown:after{
+  content: "";
+  background: url(../img/top/thema_202502/topProductReleaseFooterInner_twinklebrown.jpg) top center;
+  background-size: 50px;
+  display: block;
+  height: 70%;
+  width: 100%;
+  position: absolute;
+  top: 15%;
+  left: 0;
+  z-index: -2;
 }
-.topProductReleaseFooter > *,
-.topProductReleaseFooterInner > *{
-  margin-bottom: 5px;
+.topProductReleaseFooterInnerTtl{
+  width: calc( 100% - 30px );
+  margin: 0 auto;
+  display: block;
 }
-.topProductReleaseFooter > *:last-child,
-.topProductReleaseFooterInner > *:last-child{
-  margin-bottom: 0;
+.topProductReleaseFooterInner_twinklebrown .topProductReleaseFooterInnerTtl{
+  margin-top: -20px;
 }
-/*------*/
+.topProductReleaseFooterInner_twinklebrown .topProductReleaseFooterInnerTtl_content_01{
+  margin-top: -20px;
+  width: 95%;
+  z-index: -1;
+  position: relative;
+}
+.topProductReleaseFooterInner_twinklebrown .topProductReleaseFooterInnerTtl_content_02{
+  margin-top: -140px;
+}
+.topProductReleaseFooterInner_pinkbomb:after{
+  content: "";
+  background: url(../img/top/thema_202502/topProductReleaseFooterInner_pinkbomb.jpg) top center;
+  background-size: 50px;
+  display: block;
+  height: 70%;
+  width: 100%;
+  position: absolute;
+  top: 15%;
+  left: 0;
+  z-index: -2;
+}
+.topProductReleaseFooterInner_pinkbomb .topProductReleaseFooterInnerTtl{
+  margin-top: 0px;
+  z-index: 1;
+  position: relative
+}
+.topProductReleaseFooterInner_pinkbomb .topProductReleaseFooterInnerTtl_content_01{
+  margin: -70px 0 0 5%;
+  width: 95%;
+  z-index: 0;
+  position: relative;
+}
+.topProductReleaseFooterInner_pinkbomb .topProductReleaseFooterInnerTtl_content_02{
+  margin-top: -150px;
+}
 
 /* =====================================
-Add_202409(MODEL)
+Modify_202502
 ===================================== */
 .topNewColor{
   padding: 25px 0;
@@ -3107,10 +3175,11 @@ Add_202409(MODEL)
   padding: 0 20px;
 }
 /*OL*/
+/* AFTER
 .topProductRelease .note_bg:after{
   content: "";
   display: block;
-  background: url(../img/top/thema_202409/ribbon.png) center center;
+  background: url(../img/top/thema_202502/ribbon.png) center center;
   background-size: cover;
   position: absolute;
   top: -10px;
@@ -3122,7 +3191,7 @@ Add_202409(MODEL)
 .topProductRelease .note_bg:before{
   content: "";
   display: block;
-  background: url(../img/top/thema_202409/ribbon.png) center center;
+  background: url(../img/top/thema_202502/ribbon.png) center center;
   background-size: cover;
   position: absolute;
   top: 22%;
@@ -3132,7 +3201,7 @@ Add_202409(MODEL)
   z-index: 10;
   transform: scaleX(-1)
 }
-/*------*/
+*/
 .newcolorTitle {
   text-align: center;
 }
@@ -3204,13 +3273,12 @@ Add_202409(MODEL)
   max-width: 32px;
 }
 /* =====================================
-Add_202409(LINE UP)
+Modify_202502
 ===================================== */
 .newcolorTopLineupTtl{
   margin-bottom: 20px;
 }
 .newcolorTopLineup {
-  margin-top: 20px;
   overflow: hidden;
   padding: 0 20px 0;
 }
@@ -3230,8 +3298,6 @@ Add_202409(LINE UP)
 /*LINE UP BOX STYLE*/
 .newcolorTopLineupImg {
   margin-bottom: 8px;
-  border-radius: 4px;
-  border: 1px solid #7D7F81;
 }
 
 .newcolorTopLineupName {
@@ -3254,9 +3320,9 @@ Add_202409(LINE UP)
 }
 .newcolorTopLineupNewIcon {
   position: absolute;
-  top: -15px;
-  left: -22px;
-  width: 40%;
+  top: -10px;
+  left: -10px;
+  width: 30%;
 }
 /*
 .div2 .newcolorTopLineupName {
@@ -3339,57 +3405,162 @@ Add_202409(TOP YOUTUBE)
 }
 /*---*/
 /* =====================================
-Add_202409(TOP PRODUCTS)
+Modify_202502
 ===================================== */
 .topProductsContent{
-  padding: 40px 15px 0;
+  padding: 40px 0 0;
+}
+.topProductsContentInner{
+  padding-bottom: 30px;
+  overflow: hidden
 }
 .topProductsContentInner > *{
   position: relative;
   width: 100%;
   margin-bottom: 50px;
-  padding: 40px 0 20px;
+  padding: 40px 0 50px;
 }
+.topProductsContentInner > *:after{
+  content: "";
+  display: block;
+  height: 100%;
+  width: calc( 100% - 40px );
+  background: #FFF;
+  background-gradient: FFCAC6 ;
+  background-image: linear-gradient(#ffffff, #ffffff 25%, #ffdfdd 42%, #ffffff 81%);
+  position: absolute;
+  top: 0;
+  left: 20px;
+  z-index: -2;
+  border-radius: 20px;
+  border: 2px solid #FFB1AB
+}
+
+.topProductsContentInner > *:before{
+  content: "";
+  display: block;
+  height: 100%;
+  width: calc( 100% - 40px );
+  background: #FFB1AB;
+  position: absolute;
+  top: 10px;
+  left: 30px;
+  z-index: -2;
+  border-radius: 20px;
+}
+.topProductsContentInner > *:nth-child(2):after{
+  border: 2px solid #FA68B1
+}
+.topProductsContentInner > *:nth-child(2):before{
+  background: #FA68B1;
+}
+
 .topProductsContentInner > *:last-child{
   margin-bottom: 0;
 }
-.top_products_content_dreamgray_ttl,
-.top_products_content_uniformblack_ttl{
-  width: 60%;
+.top_products_content_twinklebrown_ttl,
+.top_products_content_pinkbomb_ttl{
+  width: 90%;
   margin: 0 auto;
   position: relative;
 }
-.top_products_content_dreamgray_ttl:after,
-.top_products_content_uniformblack_ttl:after{
+/* NEW ICON
+.top_products_content_twinklebrown_ttl:after,
+.top_products_content_pinkbomb_ttl:after{
   content: "";
   height: 70px;
   width: 70px;
   position: absolute;
   top: 10%;
   left: -80px;
-  background: url(../img/top/thema_202409/new-heart.webp) center center no-repeat;
+  background: url(../img/top/thema_202502/new-heart.webp) center center no-repeat;
   background-size: contain
 }
-.top_products_content_dreamgray{
+*/
+.top_products_content_twinklebrown{
   position: relative;
-  width: calc( 100% + 30px );
-  transform: translateX(-15px);
+  width: 100%;
+  margin: -80px auto 0;
+  z-index: -1;
+  position: relative
 }
-.top_products_content_dreamgray_content{
-  margin-top: -18%;
+.top_products_content_twinklebrown_footer,
+.top_products_content_pinkbomb_footer{
+  margin: 20px auto 0;
+  display: block;
+  position: relative
 }
-.top_products_content_dreamgray_footer{
-  width: calc( 100% - 15px );
-  transform: translateX(30px)
+.top_products_content_twinklebrown_footer:after,
+.top_products_content_pinkbomb_footer:after{
+  content: "";
+  display: block;
+  height: 100%;
+  width: 80%;
+  position: absolute;
+  top: 0;
+  left: 10%;
+  background: url(../img/top/thema_202502/square_bg.png) top center;
+  background-size: 100% auto;
+  z-index: -1;
 }
-.top_products_content_dreamgray_footer_txt{
-  width: 90%;
-  margin: -20px auto 0;
-  transform: translateX(8%);
+/*TWINKLE BROWN*/
+.top_products_content_twinklebrown_footer > *:nth-child(1){
+  width: calc( 100% - 20px );
+  display: block;
+  margin: 0 auto;
+}
+.top_products_content_twinklebrown_footer > *:nth-child(2){
+  margin-top: -80px;
+}
+.top_products_content_twinklebrown_footer_txt > *:nth-child(1){
+  width: calc( 100% - 90px );
+  margin: 0 auto 0;
+  display: block;
+}
+.top_products_content_twinklebrown_footer_txt > *:nth-child(2){
+  width: calc( 100% - 50px );
+  margin: 30px 0 0 50px;
+  mix-blend-mode: multiply
+}
+.top_products_content_twinklebrown_footer > *:nth-child(1){
+  width: calc( 100% - 20px );
+  display: block;
+  margin: 0 auto;
+}
+/*PINKBOMB*/
+.top_products_content_pinkbomb{
+  position: relative;
+  width: 100%;
+  margin-top: -80px;
+  z-index: -1;
+  position: relative
+}
+.top_products_content_pinkbomb_footer > *:nth-child(1){
+  width: calc( 100% - 20px );
+  display: block;
+  margin: 0 auto;
+}
+.top_products_content_pinkbomb_footer > *:nth-child(2){
+  margin-top: -80px;
+}
+.top_products_content_pinkbomb_footer_txt > *:nth-child(1){
+  width: calc( 100% - 90px );
+  margin: 0 auto 0;
+  display: block;
+}
+.top_products_content_pinkbomb_footer_txt > *:nth-child(2){
+  width: calc( 100% - 50px );
+  margin: 30px 0 0 50px;
+  mix-blend-mode: multiply
+}
+.top_products_content_pinkbomb_footer > *:nth-child(1){
+  width: calc( 100% - 20px );
+  display: block;
+  margin: 0 auto;
 }
 /*---*/
 /* =====================================
-Add_202409(COLOR CHART) / padding 15-20px minus
+Modify_202502
 ===================================== */
 body{
   overflow-x:hidden
@@ -3443,7 +3614,7 @@ body{
 .color_chart_right:after{
   content: "";
   display: block;
-  background: url(../img/top/thema_202409/colorchart/color_chart_bg.jpg) center center;
+  background: url(../img/top/thema_202502/colorchart/color_chart_bg.jpg) center center;
   background-size: 100%;
   position: absolute;
   top: 0;
@@ -3467,6 +3638,8 @@ body{
   background: #FFF;
   overflow: hidden;
   transition: 0.3s;
+  position: relative;
+  z-index: 2;
 }
 .color_chart_view_pop img:hover{
   opacity: 0.6
@@ -3633,15 +3806,13 @@ body.open,
   right: 8px;
 }
 .color_chart_view_pop_new_icon{
-  height: 70%;
-  width: 70%;
+  height: 45%;
+  width: 45%;
   position: absolute;
-  top: -7%;
-  left: -50%;
-  background: url(../img/top/thema_202409/new-heart.webp) center center no-repeat;
+  top: -15%;
+  right: -22%;
+  background: url(../img/top/thema_202502/new-heart.webp) center center no-repeat;
   background-size: contain;
-  top: -12%;
-  left: -30%;
 }
 /*
 .color_chart_view_pop_new_icon.color_chart_view_pop_new_icon_left{
@@ -3678,108 +3849,13 @@ body.open,
     bottom: -55px;
   }
 }
-/*---*/
-/* =====================================
-Add_202409(MODEL) / padding 15-20px minus
-===================================== */
-.topProductRelease{
-  margin: 20px;
-  padding: 40px 15px 10px;
-  position: relative;
-}
-/*---*/
-.pdtBrownbunnyBtm {
-  max-width: 94%;
-  margin-left: 0.5vw;
-  margin-top: 30px;
-}
-
-.pdtBrownbunnyBtmSub {
-  position: absolute;
-  right: 4px;
-  top: 60px;
-  width: 4%;
-}
 
 .oneDayFeatureTitle {
   max-width: 85%;
 }
-
-.feature-brownbunny-top {
-  padding: 0 6% 0;
-  /* background-color: #f6e6d7; */
-}
-
-.feature-brownbunny-top h3,
-.feature-brownbunny-top p {
-  font-family: 'M PLUS Rounded 1c', sans-serif;
-}
-
-.feature-brownbunny-top h3 {
-  font-weight: 800;
-  margin-bottom: 0.8vw;
-  font-size: min(20px, 3.8vw);
-  color: #f096aa;
-}
-
-.feature-brownbunny-top p {
-  font-size: min(3.1vw, 15px);
-  line-height: 1.5;
-}
-
-.feature-brownbunny-top ul li img {
-  width: min(24vw, 147px);
-  margin-right: 5%;
-}
-
-.feature-brownbunny-top li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 5%;
-  line-height: 1.3;
-  letter-spacing: -0.05em;
-}
-
-.feature-brownbunny-top li div {
-  width: 100%;
-}
-
 .oneDayLensSpecTitle {
   max-width: 85%;
 }
-
-.brownbunnySpecList {
-  display: grid;
-  grid-template: 1fr 1fr 1fr 1fr 1fr/1fr 1fr;
-  column-gap: 15px;
-  justify-items: stretch;
-  align-items: stretch;
-}
-
-.brownbunnySpecList {
-  font-family: 'M PLUS Rounded 1c', sans-serif;
-  padding: 0 6%;
-}
-
-.brownbunnySpecList > div {
-  text-align: center;
-  background-color: #ffffff;
-  border-radius: 8px;
-  height: min-content;
-}
-
-.brownbunnySpecList h3 {
-  background-color: #7D7F81;
-  border-radius: 8px 8px 0 0;
-  color: #ffffff;
-  padding: 3px 0;
-}
-
-.brownbunnySpecList > div > div {
-  padding: 10px 0;
-}
-
 .cell-5 {
   grid-column: 1/2;
   grid-row: 1/2;
@@ -3907,13 +3983,17 @@ Add_202409(MODEL) / padding 15-20px minus
 /* =====================================
 Add_202409(COLOR CHART)
 ===================================== */
-.colorChartBrownbunny {
+.color_chart_wrap {
   position: relative;
   padding: 40px 20px;
 }
-
-.colorChartBrownBunnyTitle {
-  margin-bottom: 30px;
+.color_chart_ttl {
+  margin-bottom: 10px;
+}
+.color_chart_ttl_txt{
+  max-width: 360px;
+  margin: 0 auto;
+  display: block
 }
 /*--*/
 .molakBtmLogo {
@@ -3963,7 +4043,7 @@ Add_202409(COLOR CHART)
   position: relative;
   display: block;
   width: 100%;
-  filter: drop-shadow(3px 3px 3px #a1a1a1);
+  filter: drop-shadow(3px 3px 3px #fa64af);
 }
 
 .pageMenuItemLine::before {
@@ -3972,7 +4052,7 @@ Add_202409(COLOR CHART)
   top: 0;
   width: 1px;
   height: 100%;
-  background-color: #EB90E1;
+  background-color: #fa64af;
 }
 
 .pageMenuItem {
@@ -3981,7 +4061,7 @@ Add_202409(COLOR CHART)
 
 .pageMenuItem a {
   padding: 15px 0;
-  background-color: #EB90E1;
+  background-color: #fa64af;
   color: #ffffff;
   font-size: 16px;
   font-weight: bold;
@@ -4021,6 +4101,66 @@ Add_202409(COLOR CHART)
 
   .alwaysFooterOnlineShop dl {
     width: 94%;
+  }
+  /* =====================================
+  PC
+  ===================================== */
+  
+  .topProductReleaseFooterInner_twinklebrown .topProductReleaseFooterInnerTtl{
+    margin-top: -40px;
+  }
+  .topProductReleaseFooterInner_twinklebrown .topProductReleaseFooterInnerTtl_content_01{
+    margin-top: -100px;
+  }
+  .topProductReleaseFooterInner_twinklebrown .topProductReleaseFooterInnerTtl_content_02{
+    margin-top: -195px;
+  }
+  .topProductReleaseFooterInner_pinkbomb .topProductReleaseFooterInnerTtl{
+    margin-top: -20px;
+  }
+  .topProductReleaseFooterInner_pinkbomb .topProductReleaseFooterInnerTtl_content_01{
+    margin: -90px 0 0 5%;
+  }
+  .topProductReleaseFooterInner_pinkbomb .topProductReleaseFooterInnerTtl_content_02{
+    margin-top: -180px;
+  }
+  .top_products_content_twinklebrown_footer > *:nth-child(2){
+    margin-top: -180px;
+  }
+  .top_products_content_pinkbomb_footer > *:nth-child(2){
+    margin-top: -160px;
+  }
+  .top_products_content_twinklebrown{
+    margin: -80px auto 0;
+  }
+  .top_products_content_twinklebrown_footer > *:nth-child(2){
+    margin-top: -80px;
+  }
+  .top_products_content_pinkbomb{
+    margin-top: -80px;
+  }
+  .top_products_content_pinkbomb_footer > *:nth-child(2){
+    margin-top: -80px;
+  }
+}
+@media (min-width: 1055px) {
+  .topProductReleaseFooterInner_twinklebrown .topProductReleaseFooterInnerTtl{
+    margin-top: -40px;
+  }
+  .topProductReleaseFooterInner_twinklebrown .topProductReleaseFooterInnerTtl_content_01{
+    margin-top: -130px;
+  }
+  .topProductReleaseFooterInner_twinklebrown .topProductReleaseFooterInnerTtl_content_02{
+    margin-top: -245px;
+  }
+  .topProductReleaseFooterInner_pinkbomb .topProductReleaseFooterInnerTtl{
+    margin-top: -20px;
+  }
+  .topProductReleaseFooterInner_pinkbomb .topProductReleaseFooterInnerTtl_content_01{
+    margin: -120px 0 0 5%;
+  }
+  .topProductReleaseFooterInner_pinkbomb .topProductReleaseFooterInnerTtl_content_02{
+    margin-top: -230px;
   }
 }
 
@@ -4105,22 +4245,6 @@ Add_202409(COLOR CHART)
     display: block;
     /* 768px以下でのみモーダルを表示可能にする */
   }
-  .top_products_content_dreamgray_ttl,
-  .top_products_content_uniformblack_ttl{
-    width: 55%;
-  }
-  .top_products_content_dreamgray_ttl:after,
-  .top_products_content_uniformblack_ttl:after{
-    content: "";
-    height: 50px;
-    width: 50px;
-    position: absolute;
-    top: 10%;
-    left: -30%;
-    background: url(../img/top/thema_202409/new-heart.webp) center center no-repeat;
-    background-size: contain
-  }
-  
   .newcolorTopLineupName {
     height: 32px;
     width: auto;

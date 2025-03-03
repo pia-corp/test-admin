@@ -21,6 +21,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/aos.css" />
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/thema_202502.css" />
+    <link rel="stylesheet" href="css/comingsoon.css" />
     <!-- Google Tag Manager -->
     <script>
       (function (w, d, s, l, i) {
@@ -91,6 +93,18 @@
                 <img src="img/logo.svg" alt="【公式】宮脇咲良プロデュースカラコンMOLAK（モラク）" />
               </a>
             </h1>
+            <ul class="menu-list_sns">
+              <li>
+                <a href="https://twitter.com/MOLAKofficial" target="_blank">
+                  <img src="img/top/icon_x.svg" alt="X" class="hover" />
+                </a>
+              </li>
+              <li>
+                <a href="https://www.instagram.com/molak_official/?hl=ja" target="_blank">
+                  <img src="img/top/icon_instagram.svg" alt="Instagram" class="hover" />
+                </a>
+              </li>
+            </ul>
             <div class="header-link-block">
               <button class="header-icon hover headerToShop js-header-btn">ご購入はこちら</button>
             </div>
@@ -101,6 +115,18 @@
                 <a href="index.html" class="header-logo">
                   <img src="img/logo.svg" alt="【公式】宮脇咲良プロデュースカラコンMOLAK（モラク）" />
                 </a>
+                <ul class="menu-list_sns">
+                  <li>
+                    <a href="https://twitter.com/MOLAKofficial" target="_blank">
+                      <img src="img/top/icon_x.svg" alt="X" class="hover" />
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://www.instagram.com/molak_official/?hl=ja" target="_blank">
+                      <img src="img/top/icon_instagram.svg" alt="Instagram" class="hover" />
+                    </a>
+                  </li>
+                </ul>
                 <div class="header-link-block">
                   <button class="header-icon hover headerToShop js-header-btn">ご購入はこちら</button>
                 </div>
@@ -321,7 +347,7 @@
       <div class="pc-inner sp-inner" data-aos="fade-in">
         <!-- MV -->
         <div class="mv">
-          <img src="img/top/mv_img.webp" class="mv-img aos-init aos-animate" data-aos="fade-up" alt="MOLAK初 DIA14.5mm新色登場">
+          <img src="img/top/mv_img.webp" class="mv-img" alt="MOLAK初 DIA14.5mm新色登場">
           <picture>
             <source media="(min-width:769px)" srcset="img/top/mv_bg_pc.webp">
             <source media="(max-width:768px)" srcset="img/top/mv_bg_sp.webp">
@@ -348,7 +374,7 @@
         </section>
         <!-- NEWS -->
         <section class="news">
-          <h2 class="h2-title aos-init aos-animate" data-aos="fade-up">NEWS</h2>
+          <h2 class="h2-title aos-init aos-animate thema_202502" data-aos="fade-up">NEWS</h2>
           <ul class="main_news news-list">
             <script type="text/javascript">
               fetch('https://molak.microcms.io/api/v1/news', {
@@ -364,12 +390,12 @@
                     let news_date = new Date(json.contents[i].day);
                     if (json.contents[i].url) {
                       if (json.contents[i].external == true) {
-                        body.innerHTML += '<li>' + '<span>' + news_date.getFullYear() + '.' + (news_date.getMonth() + 1) + '.' + news_date.getDate() + '</span><br>' + '<a href="' + json.contents[i].url + '" target="_blank">' + '<span class="news-title">' + json.contents[i].title + '</span>' + '</a>' + '</li>';
+                        body.innerHTML += '<li>' + '<span>' + news_date.getFullYear() + '.' + (news_date.getMonth() + 1) + '.' + news_date.getDate() + '</span><br>' + '<a href="' + json.contents[i].url + '" target="_blank">' + '<span class="news-title thema_202502">' + json.contents[i].title + '</span>' + '</a>' + '</li>';
                       } else {
-                        body.innerHTML += '<li>' + '<span>' + news_date.getFullYear() + '.' + (news_date.getMonth() + 1) + '.' + news_date.getDate() + '</span><br>' + '<a href="' + json.contents[i].url + '">' + '<span class="news-title">' + json.contents[i].title + '</span>' + '</a>' + '</li>';
+                        body.innerHTML += '<li>' + '<span>' + news_date.getFullYear() + '.' + (news_date.getMonth() + 1) + '.' + news_date.getDate() + '</span><br>' + '<a href="' + json.contents[i].url + '">' + '<span class="news-title thema_202502">' + json.contents[i].title + '</span>' + '</a>' + '</li>';
                       }
                     } else {
-                      body.innerHTML += '<li class=' + 'nolink' + '>' + '<span>' + news_date.getFullYear() + '.' + (news_date.getMonth() + 1) + '.' + news_date.getDate() + '</span><br>' + '<span class="news-title">' + json.contents[i].title + '</span>' + '</li>';
+                      body.innerHTML += '<li class=' + 'nolink' + '>' + '<span>' + news_date.getFullYear() + '.' + (news_date.getMonth() + 1) + '.' + news_date.getDate() + '</span><br>' + '<span class="news-title thema_202502">' + json.contents[i].title + '</span>' + '</li>';
                     }
                   }
                 }
@@ -379,13 +405,14 @@
         </section>
         <!-- / NEWS -->
         <div class="top_youtube aos-init aos-animate" data-aos="fade-up">
-          <iframe width="560" height="315" src="https://www.youtube.com/embed/tLHYjF7fT5w?si=sv0ozoCupzmtqTJs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          <iframe width="560" height="315" src="https://www.youtube.com/embed/F8mvSjnY-zs?si=VDPMRvMZFFN13504" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
         </div>
         <!-- NEW COLOR CHART (RELEASE 202409) -->
-        <section class="colorChartBrownbunny">
-          <h2 class="colorChartBrownBunnyTitle">
-            <img src="img/top/thema_202409/colorchart_ttl.svg" alt="カラーチャート" class="colorChartBrownBunnyTitleImg" />
+        <section class="color_chart_wrap">
+          <h2 class="color_chart_ttl">
+            <img src="img/top/thema_202502/colorchart_ttl.svg" alt="カラーチャート" />
           </h2>
+          <img src="img/top/thema_202502/colorchart/colorchart_txt.png" class="color_chart_ttl_txt" alt="気になるレンズをクリック">
           <div class="color_chart">
             <div class="color_chart_left"></div>
             <div class="color_chart_right">
@@ -398,40 +425,28 @@
                 <div class="color_chart_right_05"></div>
                 <div class="color_chart_right_06">
                   <div class="color_chart_view_pop color_chart_view_pop_small">
-                    <img data-gtm-click="TANGERINE_TEA" src="img/top/thema_202409/colorchart/tangerinetea.png" alt="">
+                    <img data-gtm-click="TANGERINE_TEA" src="img/top/thema_202502/colorchart/tangerinetea.png" alt="">
                     <span>タンジェリンティー</span>
                   </div>
                   <div class="color_chart_view_pop_content">
                     <div class="color_chart_view_pop_content_inner">
                       <h3 class="color_chart_view_pop_content_inner_ttl">TANGERINE TEA<span>タンジェリンティー</span></h3>
-                      <img src="img/top/thema_202409/colorchart/tangerinetea_popup.png" alt="">
+                      <img src="img/top/thema_202502/colorchart/tangerinetea_popup.png" alt="">
                       <div class="color_chart_view_closebtn"></div>
                     </div>
                   </div>
                 </div>
                 <div class="color_chart_right_07"></div>
-                <div class="color_chart_right_08">
-                  <div class="color_chart_view_pop">
-                    <img data-gtm-click="MIRROR_GRAY" src="img/top/thema_202409/colorchart/mirrorgray.png" alt="">
-                    <span>ミラーグレー</span>
-                  </div>
-                  <div class="color_chart_view_pop_content">
-                    <div class="color_chart_view_pop_content_inner">
-                      <h3 class="color_chart_view_pop_content_inner_ttl">MIRROR GRAY<span>ミラーグレー</span></h3>
-                      <img src="img/top/thema_202409/colorchart/mirrorgray_popup.png" alt="">
-                      <div class="color_chart_view_closebtn"></div>
-                    </div>
-                  </div>
-                </div>
+                <div class="color_chart_right_08"></div>
                 <div class="color_chart_right_09">
                   <div class="color_chart_view_pop">
-                    <img data-gtm-click="PEACH_CRUSH" src="img/top/thema_202409/colorchart/peachclush.png" alt="">
+                    <img data-gtm-click="PEACH_CRUSH" src="img/top/thema_202502/colorchart/peachclush.png" alt="">
                     <span>ピーチクラッシュ</span>
                   </div>
                   <div class="color_chart_view_pop_content">
                     <div class="color_chart_view_pop_content_inner">
                       <h3 class="color_chart_view_pop_content_inner_ttl">PEACH CRUSH<span>ピーチクラッシュ</span></h3>
-                      <img src="img/top/thema_202409/colorchart/peachclush_popup.png" alt="">
+                      <img src="img/top/thema_202502/colorchart/peachclush_popup.png" alt="">
                       <div class="color_chart_view_closebtn"></div>
                     </div>
                   </div>
@@ -444,28 +459,27 @@
                 <div class="color_chart_right_05"></div>
                 <div class="color_chart_right_06">
                   <div class="color_chart_view_pop">
-                    <img data-gtm-click="CORAL_BROWN" src="img/top/thema_202409/colorchart/coralbrown.png" alt="">
+                    <img data-gtm-click="CORAL_BROWN" src="img/top/thema_202502/colorchart/coralbrown.png" alt="">
                     <span>コーラルブラウン</span>
                   </div>
                   <div class="color_chart_view_pop_content">
                     <div class="color_chart_view_pop_content_inner">
                       <h3 class="color_chart_view_pop_content_inner_ttl">CORAL BROWN<span>コーラルブラウン</span></h3>
-                      <img src="img/top/thema_202409/colorchart/coralbrown_popup.png" alt="">
+                      <img src="img/top/thema_202502/colorchart/coralbrown_popup.png" alt="">
                       <div class="color_chart_view_closebtn"></div>
                     </div>
                   </div>
                 </div>
                 <div class="color_chart_right_07"></div>
                 <div class="color_chart_right_08">
-                  <div class="color_chart_view_pop color_chart_view_pop_new">
-                    <img data-gtm-click="DREAM_GRAY" src="img/top/thema_202409/colorchart/dreamgray.png" alt="">
-                    <span>ドリームグレー</span>
-                    <div class="color_chart_view_pop_new_icon"></div>
+                  <div class="color_chart_view_pop">
+                    <img data-gtm-click="MIRROR_GRAY" src="img/top/thema_202502/colorchart/mirrorgray.png" alt="">
+                    <span>ミラーグレー</span>
                   </div>
                   <div class="color_chart_view_pop_content">
                     <div class="color_chart_view_pop_content_inner">
-                      <h3 class="color_chart_view_pop_content_inner_ttl">DREAM GRAY<span>ドリームグレー</span></h3>
-                      <img src="img/top/thema_202409/colorchart/dreamgray_popup.png" alt="">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">MIRROR GRAY<span>ミラーグレー</span></h3>
+                      <img src="img/top/thema_202502/colorchart/mirrorgray_popup.png" alt="">
                       <div class="color_chart_view_closebtn"></div>
                     </div>
                   </div>
@@ -475,55 +489,19 @@
                 <div class="color_chart_right_01"></div>
                 <div class="color_chart_right_02"></div>
                 <div class="color_chart_right_03"></div>
-                <div class="color_chart_right_04">
-                  <div class="color_chart_view_pop">
-                    <img data-gtm-click="SAKURA_SMORE" src="img/top/thema_202409/colorchart/sakurasmore.png" alt="">
-                    <span>サクラスモア</span>
-                  </div>
-                  <div class="color_chart_view_pop_content">
-                    <div class="color_chart_view_pop_content_inner">
-                      <h3 class="color_chart_view_pop_content_inner_ttl">SAKURA SMORE <span>サクラスモア</span></h3>
-                      <img src="img/top/thema_202409/colorchart/sakurasmore_popup.png" alt="">
-                      <div class="color_chart_view_closebtn"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="color_chart_right_05">
-                  <div class="color_chart_view_pop">
-                    <img data-gtm-click="DAZZLE_GRAY" src="img/top/thema_202409/colorchart/dazzlebeige.png" alt="">
-                    <span>ダズルベージュ</span>
-                  </div>
-                  <div class="color_chart_view_pop_content">
-                    <div class="color_chart_view_pop_content_inner">
-                      <h3 class="color_chart_view_pop_content_inner_ttl">DAZZLE BEIGE <span>ダズルベージュ</span></h3>
-                      <img src="img/top/thema_202409/colorchart/dazzlebeige_popup.png" alt="">
-                      <div class="color_chart_view_closebtn"></div>
-                    </div>
-                  </div>
-                </div>
+                <div class="color_chart_right_04"></div>
+                <div class="color_chart_right_05"></div>
                 <div class="color_chart_right_06"></div>
-                <div class="color_chart_right_07">
-                  <div class="color_chart_view_pop">
-                    <img data-gtm-click="BUBBLE_BLUE" src="img/top/thema_202409/colorchart/bubbleblue.png" alt="">
-                    <span>バブルブルー</span>
-                  </div>
-                  <div class="color_chart_view_pop_content">
-                    <div class="color_chart_view_pop_content_inner">
-                      <h3 class="color_chart_view_pop_content_inner_ttl">BUBBLE BLUE<span>バブルブルー</span></h3>
-                      <img src="img/top/thema_202409/colorchart/bubbleblue_popup.png" alt="">
-                      <div class="color_chart_view_closebtn"></div>
-                    </div>
-                  </div>
-                </div>
+                <div class="color_chart_right_07"></div>
                 <div class="color_chart_right_08">
                   <div class="color_chart_view_pop">
-                    <img data-gtm-click="DAZZLE_GRAY" src="img/top/thema_202409/colorchart/dazzlegray.png" alt="">
-                    <span>ダズルグレー</span>
+                    <img data-gtm-click="DREAM_GRAY" src="img/top/thema_202502/colorchart/dreamgray.png" alt="">
+                    <span>ドリームグレー</span>
                   </div>
                   <div class="color_chart_view_pop_content">
                     <div class="color_chart_view_pop_content_inner">
-                      <h3 class="color_chart_view_pop_content_inner_ttl">DAZZLE GRAY<span>ダズルグレー</span></h3>
-                      <img src="img/top/thema_202409/colorchart/dazzlegray_popup.png" alt="">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">DREAM GRAY<span>ドリームグレー</span></h3>
+                      <img src="img/top/thema_202502/colorchart/dreamgray_popup.png" alt="">
                       <div class="color_chart_view_closebtn"></div>
                     </div>
                   </div>
@@ -532,48 +510,200 @@
                 <!--04-->
                 <div class="color_chart_right_01"></div>
                 <div class="color_chart_right_02"></div>
+                <div class="color_chart_right_03"></div>
+                <div class="color_chart_right_04">
+                  <div class="color_chart_view_pop">
+                    <img data-gtm-click="SAKURA_SMORE" src="img/top/thema_202502/colorchart/sakurasmore.png" alt="">
+                    <span>サクラスモア</span>
+                  </div>
+                  <div class="color_chart_view_pop_content">
+                    <div class="color_chart_view_pop_content_inner">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">SAKURA SMORE <span>サクラスモア</span></h3>
+                      <img src="img/top/thema_202502/colorchart/sakurasmore_popup.png" alt="">
+                      <div class="color_chart_view_closebtn"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="color_chart_right_05">
+                  <div class="color_chart_view_pop">
+                    <img data-gtm-click="DAZZLE_GRAY" src="img/top/thema_202502/colorchart/dazzlebeige.png" alt="">
+                    <span>ダズルベージュ</span>
+                  </div>
+                  <div class="color_chart_view_pop_content">
+                    <div class="color_chart_view_pop_content_inner">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">DAZZLE BEIGE <span>ダズルベージュ</span></h3>
+                      <img src="img/top/thema_202502/colorchart/dazzlebeige_popup.png" alt="">
+                      <div class="color_chart_view_closebtn"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="color_chart_right_06"></div>
+                <div class="color_chart_right_07">
+                  <div class="color_chart_view_pop">
+                    <img data-gtm-click="BUBBLE_BLUE" src="img/top/thema_202502/colorchart/bubbleblue.png" alt="">
+                    <span>バブルブルー</span>
+                  </div>
+                  <div class="color_chart_view_pop_content">
+                    <div class="color_chart_view_pop_content_inner">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">BUBBLE BLUE<span>バブルブルー</span></h3>
+                      <img src="img/top/thema_202502/colorchart/bubbleblue_popup.png" alt="">
+                      <div class="color_chart_view_closebtn"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="color_chart_right_08">
+                  <div class="color_chart_view_pop">
+                    <img data-gtm-click="DAZZLE_GRAY" src="img/top/thema_202502/colorchart/dazzlegray.png" alt="">
+                    <span>ダズルグレー</span>
+                  </div>
+                  <div class="color_chart_view_pop_content">
+                    <div class="color_chart_view_pop_content_inner">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">DAZZLE GRAY<span>ダズルグレー</span></h3>
+                      <img src="img/top/thema_202502/colorchart/dazzlegray_popup.png" alt="">
+                      <div class="color_chart_view_closebtn"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="color_chart_right_09">
+                  <div class="color_chart_view_pop color_chart_view_pop_new">
+                    <img data-gtm-click="DAZZLE_GRAY" src="img/top/thema_202502/colorchart/pinkbomb.png" alt="">
+                    <span>ピンクボム</span>
+                    <div class="color_chart_view_pop_new_icon"></div>
+                  </div>
+                  <div class="color_chart_view_pop_content">
+                    <div class="color_chart_view_pop_content_inner">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">PINK BOMB<span>ピンクボム</span></h3>
+                      <img src="img/top/thema_202502/colorchart/pinkbomb_popup.png" alt="">
+                      <div class="color_chart_view_closebtn"></div>
+                    </div>
+                  </div>
+                </div>
+                <!--05-->
+                <div class="color_chart_right_01"></div>
+                <div class="color_chart_right_02"></div>
                 <div class="color_chart_right_03">
                   <div class="color_chart_view_pop">
-                    <img data-gtm-click="TINT_BROWN" src="img/top/thema_202409/colorchart/tintbrown.png" alt="">
+                    <img data-gtm-click="TINT_BROWN" src="img/top/thema_202502/colorchart/tintbrown.png" alt="">
                     <span>ティント<br>ブラウン</span>
                   </div>
                   <div class="color_chart_view_pop_content">
                     <div class="color_chart_view_pop_content_inner">
                       <h3 class="color_chart_view_pop_content_inner_ttl">TINT BROWN<span>ティントブラウン</span></h3>
-                      <img src="img/top/thema_202409/colorchart/tintbrown_popup.png" alt="">
+                      <img src="img/top/thema_202502/colorchart/tintbrown_popup.png" alt="">
                       <div class="color_chart_view_closebtn"></div>
                     </div>
                   </div>
                 </div>
+                <div class="color_chart_right_04"></div>
+                <div class="color_chart_right_05">
+                  <div class="color_chart_view_pop color_chart_view_pop_new">
+                    <img data-gtm-click="DAZZLE_GRAY" src="img/top/thema_202502/colorchart/twinklebrown.png" alt="">
+                    <span>トゥインクル<br>ブラウン</span>
+                    <div class="color_chart_view_pop_new_icon"></div>
+                  </div>
+                  <div class="color_chart_view_pop_content">
+                    <div class="color_chart_view_pop_content_inner">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">TWINKLE BROWN<span>トゥインクルブラウン</span></h3>
+                      <img src="img/top/thema_202502/colorchart/twinklebrown_popup.png" alt="">
+                      <div class="color_chart_view_closebtn"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="color_chart_right_06"></div>
+                <div class="color_chart_right_07"></div>
+                <div class="color_chart_right_08">
+                  <div class="color_chart_view_pop">
+                    <img data-gtm-click="MELTY_MIST" src="img/top/thema_202502/colorchart/meltymist.png" alt="">
+                    <span>メルティー<br>ミスト</span>
+                  </div>
+                  <div class="color_chart_view_pop_content">
+                    <div class="color_chart_view_pop_content_inner">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">MELTY MIST<span>メルティーミスト</span></h3>
+                      <img src="img/top/thema_202502/colorchart/meltymist_popup.png" alt="">
+                      <div class="color_chart_view_closebtn"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="color_chart_right_09"></div>
+                <!--06-->
+                <div class="color_chart_right_01"></div>
+                <div class="color_chart_right_02">
+                  <div class="color_chart_view_pop">
+                    <img data-gtm-click="DARK_PEONY" src="img/top/thema_202502/colorchart/darkpeony.png" alt="">
+                    <span>ダークピオニー</span>
+                  </div>
+                  <div class="color_chart_view_pop_content">
+                    <div class="color_chart_view_pop_content_inner">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">DARK PEONY<span>ダークピオニー</span></h3>
+                      <img src="img/top/thema_202502/colorchart/darkpeony_popup.png" alt="">
+                      <div class="color_chart_view_closebtn"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="color_chart_right_03">
+                  <div class="color_chart_view_pop">
+                    <img data-gtm-click="DOLLISH_BROWN" src="img/top/thema_202502/colorchart/dolishbrown.png" alt="">
+                    <span>ドーリッシュ<br>ブラウン</span>
+                  </div>
+                  <div class="color_chart_view_pop_content">
+                    <div class="color_chart_view_pop_content_inner">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">DOLLISH BROWN<span>ドーリッシュブラウン</span></h3>
+                      <img src="img/top/thema_202502/colorchart/dolishbrown_popup.png" alt="">
+                      <div class="color_chart_view_closebtn"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="color_chart_right_04">
+                  <div class="color_chart_view_pop">
+                    <img data-gtm-click="SAKURA_SMORE" src="img/top/thema_202502/colorchart/sakurapetal.png" alt="">
+                    <span>サクラペタル</span>
+                  </div>
+                  <div class="color_chart_view_pop_content">
+                    <div class="color_chart_view_pop_content_inner">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">SAKURA PETAL <span>サクラペタル</span></h3>
+                      <img src="img/top/thema_202502/colorchart/sakurapetal_popup.png" alt="">
+                      <div class="color_chart_view_closebtn"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="color_chart_right_05"></div>
+                <div class="color_chart_right_06"></div>
+                <div class="color_chart_right_07"></div>
+                <div class="color_chart_right_08"></div>
+                <div class="color_chart_right_09"></div>
+                <!--08-->
+                <div class="color_chart_right_01"></div>
+                <div class="color_chart_right_02"></div>
+                <div class="color_chart_right_03"></div>
                 <div class="color_chart_right_04"></div>
                 <div class="color_chart_right_05"></div>
                 <div class="color_chart_right_06"></div>
                 <div class="color_chart_right_07"></div>
                 <div class="color_chart_right_08">
                   <div class="color_chart_view_pop">
-                    <img data-gtm-click="MELTY_MIST" src="img/top/thema_202409/colorchart/meltymist.png" alt="">
-                    <span>メルティー<br>ミスト</span>
+                    <img data-gtm-click="DOLLISH_GRAY" src="img/top/thema_202502/colorchart/dolishgray.png" alt="">
+                    <span>ドーリッシュ<br>グレー</span>
                   </div>
                   <div class="color_chart_view_pop_content">
                     <div class="color_chart_view_pop_content_inner">
-                      <h3 class="color_chart_view_pop_content_inner_ttl">MELTY MIST<span>メルティーミスト</span></h3>
-                      <img src="img/top/thema_202409/colorchart/meltymist_popup.png" alt="">
+                      <h3 class="color_chart_view_pop_content_inner_ttl">DOLLISH GRAY<span>ドーリッシュグレー</span></h3>
+                      <img src="img/top/thema_202502/colorchart/dolishgray_popup.png" alt="">
                       <div class="color_chart_view_closebtn"></div>
                     </div>
                   </div>
                 </div>
                 <div class="color_chart_right_09"></div>
-                <!--05-->
+                <!--08-->
                 <div class="color_chart_right_01"></div>
                 <div class="color_chart_right_02">
                   <div class="color_chart_view_pop">
-                    <img data-gtm-click="BROWN_BUNNY" src="img/top/thema_202409/colorchart/brownbunny.png" alt="">
+                    <img data-gtm-click="BROWN_BUNNY" src="img/top/thema_202502/colorchart/brownbunny.png" alt="">
                     <span>ブラウンバニー</span>
                   </div>
                   <div class="color_chart_view_pop_content">
                     <div class="color_chart_view_pop_content_inner">
                       <h3 class="color_chart_view_pop_content_inner_ttl">BROWN BUNNY<span>ブラウンバニー</span></h3>
-                      <img src="img/top/thema_202409/colorchart/brownbunny_popup.png" alt="">
+                      <img src="img/top/thema_202502/colorchart/brownbunny_popup.png" alt="">
                       <div class="color_chart_view_closebtn"></div>
                     </div>
                   </div>
@@ -585,80 +715,21 @@
                 <div class="color_chart_right_07"></div>
                 <div class="color_chart_right_08"></div>
                 <div class="color_chart_right_09"></div>
-                <!--06-->
-                <div class="color_chart_right_01"></div>
-                <div class="color_chart_right_02"></div>
-                <div class="color_chart_right_03">
-                  <div class="color_chart_view_pop">
-                    <img data-gtm-click="DOLLISH_BROWN" src="img/top/thema_202409/colorchart/dolishbrown.png" alt="">
-                    <span>ドーリッシュ<br>ブラウン</span>
-                  </div>
-                  <div class="color_chart_view_pop_content">
-                    <div class="color_chart_view_pop_content_inner">
-                      <h3 class="color_chart_view_pop_content_inner_ttl">DOLLISH BROWN<span>ドーリッシュブラウン</span></h3>
-                      <img src="img/top/thema_202409/colorchart/dolishbrown_popup.png" alt="">
-                      <div class="color_chart_view_closebtn"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="color_chart_right_04">
-                  <div class="color_chart_view_pop">
-                    <img data-gtm-click="SAKURA_PETAL" src="img/top/thema_202409/colorchart/sakurapetal.png" alt="">
-                    <span>サクラペタル</span>
-                  </div>
-                  <div class="color_chart_view_pop_content">
-                    <div class="color_chart_view_pop_content_inner">
-                      <h3 class="color_chart_view_pop_content_inner_ttl">SAKURA PETAL<span>サクラペタル</span></h3>
-                      <img src="img/top/thema_202409/colorchart/sakurapetal_popup.png" alt="">
-                      <div class="color_chart_view_closebtn"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="color_chart_right_05"></div>
-                <div class="color_chart_right_06"></div>
-                <div class="color_chart_right_07"></div>
-                <div class="color_chart_right_08">
-                  <div class="color_chart_view_pop">
-                    <img data-gtm-click="DOLLISH_GRAY" src="img/top/thema_202409/colorchart/dolishgray.png" alt="">
-                    <span>ドーリッシュ<br>グレー</span>
-                  </div>
-                  <div class="color_chart_view_pop_content">
-                    <div class="color_chart_view_pop_content_inner">
-                      <h3 class="color_chart_view_pop_content_inner_ttl">DOLLISH GRAY<span>ドーリッシュグレー</span></h3>
-                      <img src="img/top/thema_202409/colorchart/dolishgray_popup.png" alt="">
-                      <div class="color_chart_view_closebtn"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="color_chart_right_09"></div>
-                <!--07-->
+                <!--09-->
                 <div class="color_chart_right_01">
-                  <div class="color_chart_view_pop color_chart_view_pop_new">
-                    <img data-gtm-click="UNIFORM_BLACK" src="img/top/thema_202409/colorchart/uniformblack.png" alt="">
+                  <div class="color_chart_view_pop">
+                    <img data-gtm-click="UNIFORM_BLACK" src="img/top/thema_202502/colorchart/uniformblack.png" alt="">
                     <span>ユニフォーム<br>ブラック</span>
-                    <div class="color_chart_view_pop_new_icon color_chart_view_pop_new_icon_left"></div>
                   </div>
                   <div class="color_chart_view_pop_content">
                     <div class="color_chart_view_pop_content_inner">
                       <h3 class="color_chart_view_pop_content_inner_ttl">UNIFORM BLACK<span>ユニフォームブラック</span></h3>
-                      <img src="img/top/thema_202409/colorchart/uniformblack_popup.png" alt="">
+                      <img src="img/top/thema_202502/colorchart/uniformblack_popup.png" alt="">
                       <div class="color_chart_view_closebtn"></div>
                     </div>
                   </div>
                 </div>
-                <div class="color_chart_right_02">
-                  <div class="color_chart_view_pop">
-                    <img data-gtm-click="DARK_PEONY" src="img/top/thema_202409/colorchart/darkpeony.png" alt="">
-                    <span>ダークピオニー</span>
-                  </div>
-                  <div class="color_chart_view_pop_content">
-                    <div class="color_chart_view_pop_content_inner">
-                      <h3 class="color_chart_view_pop_content_inner_ttl">DARK PEONY<span>ダークピオニー</span></h3>
-                      <img src="img/top/thema_202409/colorchart/darkpeony_popup.png" alt="">
-                      <div class="color_chart_view_closebtn"></div>
-                    </div>
-                  </div>
-                </div>
+                <div class="color_chart_right_02"></div>
                 <div class="color_chart_right_03"></div>
                 <div class="color_chart_right_04"></div>
                 <div class="color_chart_right_05"></div>
@@ -672,127 +743,94 @@
         </section>
         <!-- ADD INTRO (RELEASE 202409) -->
         <section class="topProductRelease" id="1">
-          <div class="note_bg aos-init aos-animate" data-aos="fade-up"></div>
           <h2 class="topProductReleaseHeader">
-            <img src="img/top/thema_202409/newcolor_top_01.webp" class="aos-init aos-animate" data-aos="fade-up" alt="夢みたいに可愛い|DIA14.5mm新色登場">
+            <img src="img/top/thema_202502/newcolor_top_01.webp" class="aos-init aos-animate" data-aos="fade-up" alt="夢みたいに可愛い|DIA14.5mm新色登場">
           </h2>
           <div class="topProductReleaseFooter">
-            <div class="topProductReleaseFooterInner">
-              <img class="topProductReleaseFooterInnerTtl aos-init aos-animate" src="img/top/thema_202409/top_dream_gray_ttl.png" data-aos="fade-up" alt="うるうる極細フチ#ゆめかわグレー">
-              <img src="img/top/thema_202409/top_dream_gray_img.png" class="aos-init aos-animate" data-aos="fade-up" alt="G.DIA13.8mm">
+            <!--Twinkle Brown-->
+            <div class="topProductReleaseFooterInner topProductReleaseFooterInner_twinklebrown">
+              <img class="topProductReleaseFooterInnerTtl aos-init aos-animate" src="img/top/thema_202502/top_twinklebrown_ttl.png" data-aos="fade-up" alt="Twinkle Brownトゥインクルブラウン">
+              <img src="img/top/thema_202502/top_twinklebrown_img_head.png" class="topProductReleaseFooterInnerTtl_content_01 aos-init aos-animate" data-aos="fade-up" alt="3つのハイライトデザインで自然な輝き♡毎日使いやすいナチュラルブラウンカラー">
+              <img src="img/top/thema_202502/top_twinklebrown_img_foot.png" class="topProductReleaseFooterInnerTtl_content_02 aos-init aos-animate" data-aos="fade-up" alt="#きらきらブラウン">
             </div>
-            <div class="topProductReleaseFooterInner">
-              <img class="topProductReleaseFooterInnerTtl aos-init aos-animate" src="img/top/thema_202409/top_uniform_black_ttl.png" data-aos="fade-up" alt="夢みたいに可愛い|DIA14.5mm新色登場">
-              <img src="img/top/thema_202409/top_uniform_black_img.png" class="aos-init aos-animate" data-aos="fade-up" alt="G.DIA13.8mm">
+            <!--Pink Bomb-->
+            <div class="topProductReleaseFooterInner topProductReleaseFooterInner_pinkbomb">
+              <img class="topProductReleaseFooterInnerTtl aos-init aos-animate" src="img/top/thema_202502/top_pinkbomb_ttl.png" data-aos="fade-up" alt="Pink Bombピンクボム">
+              <img src="img/top/thema_202502/top_pinkbomb_img_head.png" class="topProductReleaseFooterInnerTtl_content_01 aos-init aos-animate" data-aos="fade-up" alt="盛れるけど馴染むふわふわ太フチ ちょっぴり白っぽシュガーピンク">
+              <img src="img/top/thema_202502/top_pinkbomb_img_foot.png" class="topProductReleaseFooterInnerTtl_content_02 aos-init aos-animate" data-aos="fade-up" alt="#あまあまピンク">
             </div>
-          </div>
-        </section>
-        <!-- NEW COLOR (RELEASE 202409) -->
-        <section class="topNewColor">
-          <h2 class="topNewColorTtl">
-            <img src="img/top/thema_202409/top_new_color_ttl.png" alt="New Colors Lens Point" class="aos-init aos-animate" data-aos="fade-up">
-          </h2>
-          <div class="topNewColorHeader">
-            <img src="img/top/thema_202409/top_new_color_header.png" alt="待望のDIA14.5mmがデビュー" class="aos-init aos-animate" data-aos="fade-up">
-          </div>
-          <div class="topNewColorFooter">
-            <img src="img/top/thema_202409/top_new_color_footer.png" alt="細フチ×透明感カラー×大きめサイズ|夢みたいに可愛いレンズ誕生|DreamGray-極細レイヤーフチ/儚げ幻想グレー|UniformBlack-くっきりグラデ細フチ/透明感ブラック" class="aos-init aos-animate" data-aos="fade-up">
           </div>
         </section>
         <!-- ADD LINEUP (RELEASE 202409) -->
         <section class="newcolorTopLineup" id="2">
           <h2 class="newcolorTopLineupTtl aos-init aos-animate" data-aos="fade-up">
-            <img src="img/top/thema_202409/newcolor-top-lineup-title.svg" alt="Lineup">
+            <img src="img/top/thema_202502/newcolor-top-lineup-title.svg" alt="Lineup">
           </h2>
           <div class="newcolorTopLineupList aos-init aos-animate" data-aos="fade-up">
+            <a href="./product/twinkle_brown.html" class="div2">
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/twinklebrown/newcolor-top-lineup-twinklebrown.webp" alt="">
+              <img src="img/top/thema_202502/lineup/new-icon.png" alt="" class="newcolorTopLineupNewIcon">
+            </a>
+            <a href="./product/pink_bomb.html" class="div3">
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/pinkbomb/newcolor-top-lineup-pinkbomb.webp" alt="">
+              <img src="img/top/thema_202502/lineup/new-icon.png" alt="" class="newcolorTopLineupNewIcon">
+            </a>
             <!--01-->
             <a href="./product/dream_gray.html" class="div2">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/dreamgray/newcolor-top-lineup-dreamgray.webp" alt=""><img src="img/top/thema_202409/lineup/dreamgray/newcolor-top-lineup-dreamgray-title.png" alt="Dream Gray" class="newcolorTopLineupName">
-              <img src="img/top/thema_202409/lineup/dreamgray/newcolor-top-lineup-dreamgray-lens.webp" alt="" class="newcolorTopLineupLens">
-              <img src="img/top/thema_202409/lineup/new-icon.png" alt="" class="newcolorTopLineupNewIcon">
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/dreamgray/newcolor-top-lineup-dreamgray.webp" alt="">
             </a>
             <a href="./product/uniform_black.html" class="div3">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/uniformblack/newcolor-top-lineup-uniformblack.webp" alt=""><img src="img/top/thema_202409/lineup/uniformblack/newcolor-top-lineup-uniformblack-title.png" alt="Uniform Black" class="newcolorTopLineupName">
-              <img src="img/top/thema_202409/lineup/uniformblack/newcolor-top-lineup-uniformblack-lens.webp" alt="" class="newcolorTopLineupLens">
-              <img src="img/top/thema_202409/lineup/new-icon.png" alt="" class="newcolorTopLineupNewIcon">
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/uniformblack/newcolor-top-lineup-uniformblack.webp" alt="">
             </a>
             <a href="./product/brown_bunny.html" class="div4">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/brownbunny/newcolor-top-lineup-brownbunny.webp" alt="" /><img src="img/top/thema_202409/lineup/brownbunny/newcolor-top-lineup-brownbunny-title.png" alt="Brown Bunny" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/brownbunny/newcolor-top-lineup-brownbunny-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/brownbunny/newcolor-top-lineup-brownbunny.webp" alt="" />
             </a>
             <!--02-->
             <a href="./product/dollish_brown.html" class="div5">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/dollishbrown/newcolor-top-lineup-dollishbrown.webp" alt="" /><img src="img/top/thema_202409/lineup/dollishbrown/newcolor-top-lineup-dollishbrown-title.png" alt="Dollish Brown" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/dollishbrown/newcolor-top-lineup-dollishbrown-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/dollishbrown/newcolor-top-lineup-dollishbrown.webp" alt="" />
             </a>
             <a href="./product/dollish_gray.html" class="div6">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/dollishgray/newcolor-top-lineup-dollishgray.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/dollishgray/newcolor-top-lineup-dollishgray-title.png" alt="Dollish Gray" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/dollishgray/newcolor-top-lineup-dollishgray-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/dollishgray/newcolor-top-lineup-dollishgray.webp" alt="" />
             </a>
             <a href="./product/bubble_blue.html" class="div7">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/bubbleblue/newcolor-top-lineup-bubbleblue.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/bubbleblue/newcolor-top-lineup-bubbleblue-title.png" alt="Bubble Blue" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/bubbleblue/newcolor-top-lineup-bubbleblue-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/bubbleblue/newcolor-top-lineup-bubbleblue.webp" alt="" />
             </a>
             <!--03-->
             <a href="./product/dark_peony.html" class="div8">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/darkpeony/newcolor-top-lineup-darkpeony.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/darkpeony/newcolor-top-lineup-darkpeony-title.png" alt="Dark Peony" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/darkpeony/newcolor-top-lineup-darkpeony-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/darkpeony/newcolor-top-lineup-darkpeony.webp" alt="" />
             </a>
             <a href="./product/sakura_smore.html" class="div9">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/sakurasmore/newcolor-top-lineup-sakurasmore.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/sakurasmore/newcolor-top-lineup-sakurasmore-title.png" alt="Sakura Smore" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/sakurasmore/newcolor-top-lineup-sakurasmore-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/sakurasmore/newcolor-top-lineup-sakurasmore.webp" alt="" />
             </a>
             <a href="./product/melty_mist.html" class="div10">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/meltymist/newcolor-top-lineup-meltymist.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/meltymist/newcolor-top-lineup-meltymist-title.png" alt="Melty Mist" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/meltymist/newcolor-top-lineup-meltymist-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/meltymist/newcolor-top-lineup-meltymist.webp" alt="" />
             </a>
             <!--04-->
             <a href="./product/sakura_petal.html" class="div11">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/sakurapetal/newcolor-top-lineup-sakurapetal.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/sakurapetal/newcolor-top-lineup-sakurapetal-title.png" alt="Sakura Petal" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/sakurapetal/newcolor-top-lineup-sakurapetal-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/sakurapetal/newcolor-top-lineup-sakurapetal.webp" alt="" />
             </a>
             <a href="./product/tint_brown.html" class="div12">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/tintbrown/newcolor-top-lineup-tintbrown.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/tintbrown/newcolor-top-lineup-tintbrown-title.png" alt="Tint Brown" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/tintbrown/newcolor-top-lineup-tintbrown-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/tintbrown/newcolor-top-lineup-tintbrown.webp" alt="" />
             </a>
             <a href="./product/dazzle_beige.html" class="div13">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/dazzlebeige/newcolor-top-lineup-dazzlebeige.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/dazzlebeige/newcolor-top-lineup-dazzlebeige-title.png" alt="Dazzle Beige" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/dazzlebeige/newcolor-top-lineup-dazzlebeige-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/dazzlebeige/newcolor-top-lineup-dazzlebeige.webp" alt="" />
             </a>
             <!--05-->
             <a href="./product/dazzle_gray.html" class="div14">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/dazzlegray/newcolor-top-lineup-dazzlegray.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/dazzlegray/newcolor-top-lineup-dazzlegray-title.png" alt="Dazzle Gray" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/dazzlegray/newcolor-top-lineup-dazzlegray-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/dazzlegray/newcolor-top-lineup-dazzlegray.webp" alt="" />
             </a>
             <a href="./product/coral_brown.html" class="div15">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/coralbrown/newcolor-top-lineup-coralbrown.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/coralbrown/newcolor-top-lineup-coralbrown-title.png" alt="Coral Brown" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/coralbrown/newcolor-top-lineup-coralbrown-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/coralbrown/newcolor-top-lineup-coralbrown.webp" alt="" />
             </a>
             <a href="./product/mirror_gray.html" class="div16">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/mirrorgray/newcolor-top-lineup-mirrorgray.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/mirrorgray/newcolor-top-lineup-mirrorgray-title.png" alt="Mirror Gray" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/mirrorgray/newcolor-top-lineup-mirrorgray-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/mirrorgray/newcolor-top-lineup-mirrorgray.webp" alt="" />
             </a>
             <!--06-->
             <a href="./product/peach_crush.html" class="div17">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/peachcrush/newcolor-top-lineup-peachcrush.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/peachcrush/newcolor-top-lineup-peachcrush-title.png" alt="Peach Crush" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/peachcrush/newcolor-top-lineup-peachcrush-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/peachcrush/newcolor-top-lineup-peachcrush.webp" alt="" />
             </a>
             <a href="./product/tangerine_tea.html" class="div18">
-              <img class="newcolorTopLineupImg" src="img/top/thema_202409/lineup/tangerinetea/newcolor-top-lineup-tangerinetea.webp" alt="" />
-              <img src="img/top/thema_202409/lineup/tangerinetea/newcolor-top-lineup-tangerinetea-title.png" alt="Tangerine Tea" class="newcolorTopLineupName" />
-              <img src="img/top/thema_202409/lineup/tangerinetea/newcolor-top-lineup-tangerinetea-lens.webp" alt="" class="newcolorTopLineupLens" />
+              <img class="newcolorTopLineupImg" src="img/top/thema_202502/lineup/tangerinetea/newcolor-top-lineup-tangerinetea.webp" alt="" />
             </a>
           </div>
         </section>
@@ -814,33 +852,37 @@
         <div class="topProductsContent">
           <div class="topProductsContentInner">
             <section>
-              <div class="note_bg aos-init aos-animate" data-aos="fade-up"></div>
-              <h2 class="top_products_content_dreamgray_ttl aos-init aos-animate" data-aos="fade-up"><img src="img/top/thema_202409/top_products_content_dreamgray_ttl.png" alt="DREAM GRAY"></h2>
-              <div class="top_products_content_dreamgray top_products_content_dreamgray_head">
-                <div class="top_products_content_dreamgray_content">
-                  <img src="img/top/thema_202409/top_products_content_dreamgray.png" alt="ゆるかわグレー/クリアレンズ装用/ドリームグレー装用/DIA14.5mm|着色直径13.8mm|BC8.6mm" class="aos-init aos-animate" data-aos="fade-up" />
+              <div class="aos-init aos-animate" data-aos="fade-up"></div>
+              <h2 class="top_products_content_twinklebrown_ttl aos-init aos-animate" data-aos="fade-up"><img src="img/top/thema_202502/top_products_content_twinklebrown_ttl.png" alt="TWINKLE BROWNトゥインクルブラウン"></h2>
+              <div class="top_products_content_twinklebrown top_products_content_twinklebrown_head">
+                <div class="top_products_content_twinklebrown_content">
+                  <img src="img/top/thema_202502/top_products_content_twinklebrown.png" alt="DIA14.5mm G.DIA13.8mm BC8.6mm #きらきらブラウン クリアレンズ装用 トゥインクルブラウン装用" class="aos-init aos-animate" data-aos="fade-up" />
                 </div>
               </div>
-              <div class="top_products_content_dreamgray_footer">
-                <img src="img/top/thema_202409/top_products_content_dreamgray_content_after.png" alt="" class="aos-init aos-animate" data-aos="fade-up" />
+              <div class="top_products_content_twinklebrown_footer">
+                <img src="img/top/thema_202502/top_products_content_twinklebrown_footer_01.png" alt="3つのハイライトでもっと輝くきらきらデイリーブラウン" class="aos-init aos-animate" data-aos="fade-up" />
+                <img src="img/top/thema_202502/top_products_content_twinklebrown_footer_02.png" alt="" class="aos-init aos-animate" data-aos="fade-up" />
               </div>
-              <div class="top_products_content_dreamgray_footer_txt">
-                <img src="img/top/thema_202409/top_products_content_dreamgray_txt.png" alt="極細うるうるレイヤーフチが儚さたっぷりのゆるかわグレー" class="aos-init aos-animate" data-aos="fade-up" />
+              <div class="top_products_content_twinklebrown_footer_txt">
+                <img src="img/top/thema_202502/top_products_content_twinklebrown_footer_txt_01.png" alt="もっと輝くレンズのヒミツ" class="aos-init aos-animate" data-aos="fade-up" />
+                <img src="img/top/thema_202502/top_products_content_twinklebrown_footer_txt_02.png" alt="3つのハイライトデザインで自然な輝き♡毎日使いやすいナチュラルブラウンカラー" class="aos-init aos-animate" data-aos="fade-up" />
               </div>
             </section>
             <section>
               <div class="note_bg aos-init aos-animate" data-aos="fade-up"></div>
-              <h2 class="top_products_content_uniformblack_ttl aos-init aos-animate" data-aos="fade-up"><img src="img/top/thema_202409/top_products_content_uniformblack_ttl.png" alt="UNIFORM BLACK"></h2>
-              <div class="top_products_content_dreamgray top_products_content_dreamgray_head">
-                <div class="top_products_content_dreamgray_content">
-                  <img src="img/top/thema_202409/top_products_content_uniformblack.png" alt="制服ブラック/クリアレンズ装用/ユニフォームブラック装用/DIA14.5mm|着色直径13.8mm|BC8.6mm" class="aos-init aos-animate" data-aos="fade-up" />
+              <h2 class="top_products_content_pinkbombn_ttl aos-init aos-animate" data-aos="fade-up"><img src="img/top/thema_202502/top_products_content_pinkbomb_ttl.png" alt="Pink Bombピンクボム"></h2>
+              <div class="top_products_content_pinkbomb top_products_content_pinkbomb_head">
+                <div class="top_products_content_pinkbomb_content">
+                  <img src="img/top/thema_202502/top_products_content_pinkbomb.png" alt="DIA 14.5mm G.DIA13.8mm BC8.6mm クリアレンズ装用 ピンクボム装用" class="aos-init aos-animate" data-aos="fade-up" />
                 </div>
               </div>
-              <div class="top_products_content_dreamgray_footer">
-                <img src="img/top/thema_202409/top_products_content_uniformblack_content_after.png" alt="" class="aos-init aos-animate" data-aos="fade-up" />
+              <div class="top_products_content_pinkbomb_footer">
+                <img src="img/top/thema_202502/top_products_content_pinkbomb_footer_01.png" alt="ふわふわ太フチでもっとラブリーあまあまトキメキピンク" class="aos-init aos-animate" data-aos="fade-up" />
+                <img src="img/top/thema_202502/top_products_content_pinkbomb_footer_02.png" alt="" class="aos-init aos-animate" data-aos="fade-up" />
               </div>
-              <div class="top_products_content_dreamgray_footer_txt">
-                <img src="img/top/thema_202409/top_products_content_uniformblack_txt.png" alt="くっきり細フチがキュルンと可愛いデイリーブラック" class="aos-init aos-animate" data-aos="fade-up" />
+              <div class="top_products_content_pinkbomb_footer_txt">
+                <img src="img/top/thema_202502/top_products_content_pinkbomb_footer_txt_01.png" alt="もっとラブリーなレンズのヒミツ" class="aos-init aos-animate" data-aos="fade-up" />
+                <img src="img/top/thema_202502/top_products_content_pinkbomb_footer_txt_02.png" alt="ちょっぴり白っぽシュガーピンク 盛れるけど馴染むふわふわ太フチ" class="aos-init aos-animate" data-aos="fade-up" />
               </div>
             </section>
           </div>
@@ -861,15 +903,12 @@
         <!-- ADD PROF (RELEASE 202409) -->
         <section class="miyawaki">
           <div class="miyawaki_inner">
-            <div class="blur blur_01"></div>
-            <div class="blur blur_02"></div>
-            <div class="blur blur_03"></div>
             <div class="miyawaki-logo">
-              <img src="img/top/thema_202409/molakBtmLogo.svg" alt="MOLAK color yourself to your mood">
+              <img src="img/top/thema_202502/molakBtmLogo.svg" alt="MOLAK color yourself to your mood">
             </div>
-            <img src="img/top/thema_202409/profile-01_1.webp" class="miyawaki-img" alt="">
+            <img src="img/top/thema_202502/profile-01_1.webp" class="miyawaki-img" alt="">
             <h2>
-              <img src="img/top/thema_202409/profile-02-name.svg" alt="MIYAWAKI SAKURA" class="miyawaki-name">
+              <img src="img/top/thema_202502/profile-02-name.svg" alt="MIYAWAKI SAKURA" class="miyawaki-name">
             </h2>
             <div class="miyawaki-text-block">
               <p class="miyawaki-text"> 2011年より日本にて活動を開始。<br /> 2018年～2021年は韓国に拠点を移し、<br /> 2年6ヶ月の活動を経て日本へ帰国。<br /> 2022年5月に再び韓国にて5人組ガールグループの<br /> メンバーとしてデビューし、<br /> さらに2023年1月にはグループで日本デビューを果たし、<br /> グローバルに活躍の場を広げている。<br /> カラーコンタクトレンズ『MOLAK』の<br /> イメージモデルをはじめプロデュース業など、<br /> 多岐にわたる活動も展開している。 </p>
@@ -1002,6 +1041,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="js/aos.js"></script>
+    <script src="js/menu_list_sns.js"></script>
     <script>
       (function (d) {
         var config = {
