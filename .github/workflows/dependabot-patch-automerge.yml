@@ -14,49 +14,36 @@ permissions:
   contents: write
 
 jobs:
-  merge-to-main:
+  auto-merge:
     runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
     steps:
+      - name: Create PR from patch to main
+        run: |
+          PR_URL=$(gh pr create --base main --head patch --title "Merge dependabot updates from patch to main" --body "Automated PR to merge updates from patch to main.")
+          echo "Created PR: $PR_URL"
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create PR from dependabot to main
-        if: github.actor == 'dependabot[bot]'
-        uses: actions/github-script@v4
-        with:
-          script: |
-            const { data: pullRequest } = await github.pulls.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: "Merge dependabot updates from dependabot to main",
-              head: "dependabot",
-              base: "main",
-              body: "Automated PR to merge updates from dependabot to main."
-            });
-            return pullRequest.html_url;
-
       - name: Auto-approve PR
-        if: github.actor == 'dependabot[bot]'
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         with:
           script: |
-            const pullRequest = context.payload.pull_request;
-            await github.pulls.createReview({
+            await github.rest.pulls.createReview({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: pullRequest.number,
+              pull_number: context.payload.pull_request.number,
               event: 'APPROVE'
             });
 
       - name: Auto-merge PR
-        if: github.actor == 'dependabot[bot]'
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         with:
           script: |
-            const pullRequest = context.payload.pull_request;
-            await github.pulls.merge({
+            await github.rest.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: pullRequest.number,
+              pull_number: context.payload.pull_request.number,
               merge_method: 'squash'
             });
