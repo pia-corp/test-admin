@@ -51,7 +51,6 @@ on:
 jobs:
   upload:
     name: Upload Files
-    needs: auth
     if: needs.auth.outputs.is_authorized == 'true'
     runs-on: ubuntu-latest
 
