@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       repository:
-        type: choice
         description: "対象ブランド"
+        type: choice
         required: true
         options:
           - "topards.jp"
@@ -31,17 +31,18 @@ on:
           - "michou.jp"
       repository_no_register:
         description: "任意のブランドリポジトリ"
-        default: ""
+        required: false
+        type: string
       target:
-        type: choice
         description: アップロード先
+        type: choice
         required: true
         options:
           - "検証環境"
           - "本番環境"
       sync:
-        type: choice
         description: "※検証環境はfullアップロードのみ"
+        type: choice
         required: true
         options:
           - "full"
@@ -54,92 +55,111 @@ jobs:
     timeout-minutes: 1
 
     steps:
-      - name: ユーザーの認証を確認
-        env:
-          USER_LOGIN: ${{ github.actor }}
-          CODE_OWNERS: ${{ vars.GIT_CODE_OWNERS }}
+      - name: Check user authorization
+        id: check_auth
         run: |
-          echo "$USER_LOGIN が許可されたリストに含まれているか確認しています..."
-          if ! echo "$CODE_OWNERS" | grep -q -w "$USER_LOGIN"; then
-            echo "::warning:: ユーザー $USER_LOGIN はこのワークフローを実行する権限がありません。"
+          AUTHORIZED_USERS="${{ vars.GIT_CODE_OWNERS }}"
+          CURRENT_USER="${{ github.actor }}"
+
+          if [[ $AUTHORIZED_USERS == *"$CURRENT_USER"* ]]; then
+            echo "User $CURRENT_USER is authorized"
+            echo "is_authorized=true" >> $GITHUB_OUTPUT
+          else
+            echo "User $CURRENT_USER is not authorized to run this workflow"
+            echo "is_authorized=false" >> $GITHUB_OUTPUT
             exit 1
           fi
-          echo "::notice:: ユーザー $USER_LOGIN は認証されました。続行します..."
 
-  Upload:
-    needs: [Auth]
+      - name: Set repository
+        id: set_repo
+        run: |
+          if [ "${{ github.event.inputs.repository }}" == "other" ]; then
+            if [ -z "${{ github.event.inputs.repository_no_register }}" ]; then
+              echo "Error: Repository name is required when 'other' is selected"
+              exit 1
+            fi
+            REPO="${{ github.event.inputs.repository_no_register }}"
+          else
+            REPO="${{ github.event.inputs.repository }}"
+          fi
+          echo "selected_repo=$REPO" >> $GITHUB_OUTPUT
+
+  upload:
+    name: Upload Files
+    needs: auth
+    if: needs.auth.outputs.is_authorized == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    env:
-      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
-    permissions:
-      contents: read
 
     steps:
-      - name: リポジトリをチェックアウト(過去の履歴をすべて取得)
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
+          repository: ${{ needs.auth.outputs.selected_repo }}
           fetch-depth: 0
 
-      - name: 本番環境か検証環境
+      - name: Set environment variables
+        id: set_env
         run: |
-          if (target == '検証環境') {
-            echo "HOST=${{ vars.DEVELOPMENT_HOST }}" >> $GITHUB_ENV
-            echo "PORT=${{ vars.DEVELOPMENT_PORT }}" >> $GITHUB_ENV
-            echo "USER_NAME=${{ vars.DEVELOPMENT_USER_NAME }}" >> $GITHUB_ENV
-            echo "PASSWORD=${{ secrets.DEVELOPMENT_PASSWORD }}" >> $GITHUB_ENV
-            echo "PORT=${{ vars.DEVELOPMENT_REMOTE_PATH }}" >> $GITHUB_ENV
-          } else {
-            echo "HOST=${{ vars.PRODUCTION_HOST }}" >> $GITHUB_ENV
-            echo "PORT=${{ vars.PRODUCTION_PORT }}" >> $GITHUB_ENV
-            echo "USER_NAME=${{ vars.PRODUCTION_USER_NAME }}" >> $GITHUB_ENV
-            echo "PASSWORD=${{ secrets.PRODUCTION_PASSWORD }}" >> $GITHUB_ENV
-          }
+          echo "HOST=${{ vars.HOST }}" >> $GITHUB_ENV
+          echo "PORT=${{ vars.PORT }}" >> $GITHUB_ENV
+          echo "USER_NAME=${{ vars.USER_NAME }}" >> $GITHUB_ENV
 
-      - name: Deploy via SFTP
-        if: ${{ inputs.target == '本番環境' }}
-        uses: milanmk/actions-file-deployer@1.15
-        with:
-          remote-protocol: 'sftp'
-          remote-host: ${{ env.HOST }}
-          remote-port: ${{ env.PORT }}
-          remote-user: ${{ env.USER_NAME }}
-          remote-password: ${{ env.PASSWORD }}
-          local-path: ${{ vars.LOCAL_PATH }}/${{ env.REPOSITORY }}
-          remote-path: ${{ env.REPOSITORY }}
-          sync: ${{ inputs.sync }}
-          debug: true
+          if [ "${{ github.event.inputs.target }}" == "dev" ]; then
+            echo "Setting up for development environment"
+            echo "TARGET_PATH=${{ vars.DEVELOPMENT_REMOTE_PATH }}" >> $GITHUB_ENV
+            echo "ENVIRONMENT=開発環境" >> $GITHUB_ENV
+          else
+            echo "Setting up for production environment"
+            echo "TARGET_PATH=${{ vars.PRODUCTION_REMOTE_PATH }}" >> $GITHUB_ENV
+            echo "ENVIRONMENT=本番環境" >> $GITHUB_ENV
+          fi
 
-      - name: 結果
-        if: ${{ inputs.target == '本番環境' }}
+      - name: Install lftp
         run: |
-          {
-            echo "# 処理結果"
-            echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードしました。"
-            echo "| リポジトリ | アップロード先 |"
-            echo "| -- | -- |"
-            echo "| ${{ env.REPOSITORY }} | https://www.${{ env.REPOSITORY }} |"
-          } >> $GITHUB_STEP_SUMMARY
+          sudo apt-get update
+          sudo apt-get install -y lftp
 
-      - name: Deploy via FTP
-        if: ${{ inputs.target == '検証環境' }}
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ env.HOST }}
-          username: ${{ env.USER_NAME }}
-          password: ${{ env.PASSWORD }}
-          port:  ${{ env.PORT }}
-          local-dir: ${{ vars.LOCAL_PATH }}/${{ env.REPOSITORY }}
-          server-dir: ${{ env.DEVELOPMENT_REMOTE_PATH }}/${{ env.REPOSITORY }}
-          ARGS: --delete --parallel=15
-
-      - name: 結果
-        if: ${{ inputs.target == '検証環境' }}
+      - name: Upload to Production (SFTP)
+        if: github.event.inputs.target == 'prod'
         run: |
-          {
-            echo "# 処理結果"
-            echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードしました。"
-            echo "| リポジトリ | アップロード先 |"
-            echo "| -- | -- |"
-            echo "| ${{ env.REPOSITORY }} | http://piapiapia.xsrv.jp/test/${{ env.REPOSITORY }}/ |"
-          } >> $GITHUB_STEP_SUMMARY
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+          if [ "${{ github.event.inputs.sync }}" == "full" ]; then
+            # Full sync - mirror the entire directory
+            lftp -e "set sftp:auto-confirm yes; \
+                    open -u ${{ env.USER_NAME }},${{ secrets.PASSWORD }} sftp://${{ env.HOST }}:${{ env.PORT }}; \
+                    mirror -R --delete --verbose ./ ${{ env.TARGET_PATH }}; \
+                    bye"
+          else
+            # Delta sync - only upload changed files
+            lftp -e "set sftp:auto-confirm yes; \
+                    open -u ${{ env.USER_NAME }},${{ secrets.PASSWORD }} sftp://${{ env.HOST }}:${{ env.PORT }}; \
+                    mirror -R --verbose ./ ${{ env.TARGET_PATH }}; \
+                    bye"
+          fi
+
+          echo "ファイルを ${{ env.ENVIRONMENT }} へアップロードしました。" >> $GITHUB_STEP_SUMMARY
+          echo "リポジトリ: ${{ needs.auth.outputs.selected_repo }}" >> $GITHUB_STEP_SUMMARY
+          echo "同期方法: ${{ github.event.inputs.sync }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload to Development (FTP)
+        if: github.event.inputs.target == 'dev'
+        run: |
+          if [ "${{ github.event.inputs.sync }}" == "full" ]; then
+            # Full sync - mirror the entire directory
+            lftp -e "set ftp:ssl-allow no; \
+                    open -u ${{ env.USER_NAME }},${{ secrets.PASSWORD }} ${{ env.HOST }}:${{ env.PORT }}; \
+                    mirror -R --delete --verbose ./ ${{ env.TARGET_PATH }}; \
+                    bye"
+          else
+            # Delta sync - only upload changed files
+            lftp -e "set ftp:ssl-allow no; \
+                    open -u ${{ env.USER_NAME }},${{ secrets.PASSWORD }} ${{ env.HOST }}:${{ env.PORT }}; \
+                    mirror -R --verbose ./ ${{ env.TARGET_PATH }}; \
+                    bye"
+          fi
+
+          echo "ファイルを ${{ env.ENVIRONMENT }} へアップロードしました。" >> $GITHUB_STEP_SUMMARY
+          echo "リポジトリ: ${{ needs.auth.outputs.selected_repo }}" >> $GITHUB_STEP_SUMMARY
+          echo "同期方法: ${{ github.event.inputs.sync }}" >> $GITHUB_STEP_SUMMARY
