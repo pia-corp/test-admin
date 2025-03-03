@@ -67,10 +67,10 @@ jobs:
           echo "PORT=${{ vars.PORT }}" >> $GITHUB_ENV
           echo "USER_NAME=${{ vars.USER_NAME }}" >> $GITHUB_ENV
 
-          if [ "${{ github.event.inputs.target }}" == "dev" ]; then
+          if [ "${{ github.event.inputs.target }}" == "検証環境" ]; then
             echo "Setting up for development environment"
             echo "TARGET_PATH=${{ vars.DEVELOPMENT_REMOTE_PATH }}" >> $GITHUB_ENV
-            echo "ENVIRONMENT=開発環境" >> $GITHUB_ENV
+            echo "ENVIRONMENT=検証環境" >> $GITHUB_ENV
           else
             echo "Setting up for production environment"
             echo "TARGET_PATH=${{ vars.PRODUCTION_REMOTE_PATH }}" >> $GITHUB_ENV
@@ -83,7 +83,7 @@ jobs:
           sudo apt-get install -y lftp
 
       - name: Upload to Production (SFTP)
-        if: github.event.inputs.target == 'prod'
+        if: github.event.inputs.target == '本番環境'
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
@@ -107,7 +107,7 @@ jobs:
           echo "同期方法: ${{ github.event.inputs.sync }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload to Development (FTP)
-        if: github.event.inputs.target == 'dev'
+        if: github.event.inputs.target == '本番環境'
         run: |
           if [ "${{ github.event.inputs.sync }}" == "full" ]; then
             # Full sync - mirror the entire directory
