@@ -1042,7 +1042,60 @@ UNIFORM BLACK
   background: url(../img/uniform_black/sp/image_bg.jpg) no-repeat;
   background-size: cover;
 }
-
+/* =====================================
+TWINKLE BROWN
+===================================== */
+.twinkle_brown .pdt-mv-box {
+  background: url(../img/twinkle_brown/sp/mv.jpg) no-repeat;
+  background-size: cover;
+  background-position: center top;
+}
+/*1Month追加時調整が必要かも*/
+.twinkle_brown .pdt-mv-product {
+  width: 49%;
+}
+.twinkle_brown .product-design-single_package{
+  width: 46%
+}
+.twinkle_brown .product-design-left{
+  margin-bottom: 23px;
+}
+/*1Month追加時調整が必要かも*/
+.twinkle_brown .pdt-mv {
+  background: url(../img/twinkle_brown/sp/mv_bg.jpg) no-repeat;
+  background-size: cover;
+}
+.twinkle_brown .image {
+  background: url(../img/twinkle_brown/sp/image_bg.jpg) no-repeat;
+  background-size: cover;
+}
+/* =====================================
+PINK BOMB
+===================================== */
+.pink_bomb .pdt-mv-box {
+  background: url(../img/pink_bomb/sp/mv.jpg) no-repeat;
+  background-size: cover;
+  background-position: center top;
+}
+/*1Month追加時調整が必要かも*/
+.pink_bomb .pdt-mv-product {
+  width: 49%;
+}
+.pink_bomb .product-design-single_package{
+  width: 46%
+}
+.pink_bomb .product-design-left{
+  margin-bottom: 23px;
+}
+/*1Month追加時調整が必要かも*/
+.pink_bomb .pdt-mv {
+  background: url(../img/pink_bomb/sp/mv_bg.jpg) no-repeat;
+  background-size: cover;
+}
+.pink_bomb .image {
+  background: url(../img/pink_bomb/sp/image_bg.jpg) no-repeat;
+  background-size: cover;
+}
 /* =====================================
 TORIC
 ===================================== */

@@ -19,9 +19,11 @@
 .alwaysFooterOnlineShop .online-shop-list > *:nth-child(3):before{
   content: "";
   display: block;
-  height: 45px;
+  height: 40px;
+  width: 100%;
   border-bottom: 1px solid #c87290;
   position: absolute;
+  top: 5px;
   background: url(../img/fixed_cart_coming_soon_txt.png) center center no-repeat;
   background-size: contain;
 }
@@ -36,20 +38,10 @@
 .alwaysFooterOnlineShop .online-shop-list > *:nth-child(2){
   border: none
 }
- /*消す*/
-.alwaysFooterOnlineShop .online-shop-list > *:nth-child(3):before{
-  display: block;
-  height: 45px;
-  border-bottom: 1px solid #c87290;
-  position: absolute;
-  top: 0;
-  width: 100%;
-} 
-/*消す*/
 .alwaysFooterOnlineShop .online-shop-list > *:nth-child(3){
   display: block;
   height: 90px;
-  padding-top: 45px; /*消す*/
+  padding-top: 50px; /*消す*/
   border-bottom: none;
 /*戻す  border-bottom: 1px solid #c87290;*/
   position: relative;
@@ -104,7 +96,7 @@
     height: 40px;
     border-bottom: 1px solid #c87290;
     position: absolute;
-    top: 0;
+    top: 4px;
     width: 100%;
   } 
   /*消す*/
@@ -133,13 +125,26 @@
 .c-modal_wrap .menu-list:after{
     content: "";
     display: block;
-  /*
-    width: 280px;
-    height: 60px;
-  */
     width: 286px;
     height: 105px;
-    background: url(../img/multi_coming_soon_txt.png);
+    /*
+    width: 286px;
+    height: 105px;
+    */
+    background: url(../img/multi_coming_soon_txt.png) center center;
+    background-size: cover;
+    position: absolute;
+    bottom: -115px;
+    left: calc( 50% - 143px );
+    z-index: 1;
+}
+
+.c-modal_wrap .menu-list:after{
+    content: "";
+    display: block;
+    width: 286px;
+    height: 105px;
+    background: url(../img/multi_coming_soon_txt.png) center center;
     background-size: cover;
     position: absolute;
     bottom: -115px;
@@ -152,20 +157,15 @@
 .header-menu > ul:after{
   content: "";
   display: block;
-  /*
-  width: 280px;
-  height: 60px;
-  */
   width: 286px;
   height: 105px;
-  background: url(../img/multi_coming_soon_txt.png);
+  background: url(../img/multi_coming_soon_txt.png) center center;
   background-size: cover;
   position: absolute;
   bottom: -115px;
   left: calc( 50% - 143px );
   z-index: 1;
 }
-/*
 @media only screen and (max-width: 370px){
   .c-modal_wrap .menu-list:after{
     width: 300px;
@@ -174,4 +174,3 @@
     left: calc( 50% - 167px );
   }
 }
-*/
