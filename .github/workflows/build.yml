@@ -41,6 +41,8 @@ jobs:
   CreateBranch:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
 
     steps:
       - name: リポジトリをチェックアウト
