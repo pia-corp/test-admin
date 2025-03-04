@@ -64,12 +64,12 @@ jobs:
         uses: milanmk/actions-file-deployer@1.15
         with:
           remote-protocol: 'sftp'
-          remote-host: ${{ env.HOST }}
-          remote-port: ${{ env.PORT }}
-          remote-user: ${{ env.USER_NAME }}
-          remote-password: ${{ env.PASSWORD }}
-          local-path: ${{ vars.LOCAL_PATH }}/${{ env.REPOSITORY }}
-          remote-path: ${{ env.REPOSITORY }}
+          remote-host: ${{ vars.PRODUCTION_HOST }}
+          remote-port: ${{ vars.PRODUCTION_PORT }}
+          remote-user: ${{ vars.PRODUCTION_USER_NAME }}
+          remote-password: ${{ vars.PRODUCTION_PASSWORD }}
+          local-path: ${{ env.REPOSITORY }}/${{ vars.PRODUCTION_LOCAL_PATH }}
+          remote-path: ${{ vars.REPOSITORY }}/${{ vars.PRODUCTION_REMOTE_PATH }}
           sync: ${{ inputs.sync }}
           debug: true
 
@@ -92,12 +92,12 @@ jobs:
         if: ${{ inputs.target == '検証環境' }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ env.HOST }}
-          username: ${{ env.USER_NAME }}
-          password: ${{ env.PASSWORD }}
-          port:  ${{ env.PORT }}
-          local-dir: ${{ vars.LOCAL_PATH }}/${{ env.REPOSITORY }}
-          server-dir: ${{ env.DEVELOPMENT_REMOTE_PATH }}/${{ env.REPOSITORY }}
+          server: ${{ vars.DEVELOPMENT_HOST }}
+          username: ${{ vars.DEVELOPMENT_USER_NAME }}
+          password: ${{ vars.DEVELOPMENT_PASSWORD }}
+          port:  ${{ vars.DEVELOPMENT_PORT }}
+          local-dir: ${{ env.REPOSITORY }}/${{ vars.LOCAL_PATH }}
+          server-dir: ${{ vars.DEVELOPMENT_REMOTE_PATH }}/${{ env.REPOSITORY }}
           ARGS: --delete --parallel=15
 
       - name: 結果
