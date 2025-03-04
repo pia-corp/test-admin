@@ -67,7 +67,7 @@ jobs:
           remote-host: ${{ vars.PRODUCTION_HOST }}
           remote-port: ${{ vars.PRODUCTION_PORT }}
           remote-user: ${{ vars.PRODUCTION_USER_NAME }}
-          remote-password: ${{ vars.PRODUCTION_PASSWORD }}
+          remote-password: ${{ secrets.PRODUCTION_PASSWORD }}
           local-path: ${{ env.REPOSITORY }}/${{ vars.PRODUCTION_LOCAL_PATH }}
           remote-path: ${{ vars.REPOSITORY }}/${{ vars.PRODUCTION_REMOTE_PATH }}
           sync: ${{ inputs.sync }}
@@ -94,11 +94,10 @@ jobs:
         with:
           server: ${{ vars.DEVELOPMENT_HOST }}
           username: ${{ vars.DEVELOPMENT_USER_NAME }}
-          password: ${{ vars.DEVELOPMENT_PASSWORD }}
+          password: ${{ secrets.DEVELOPMENT_PASSWORD }}
           port:  ${{ vars.DEVELOPMENT_PORT }}
           local-dir: ${{ env.REPOSITORY }}/${{ vars.LOCAL_PATH }}
           server-dir: ${{ vars.DEVELOPMENT_REMOTE_PATH }}/${{ env.REPOSITORY }}
-          ARGS: --delete --parallel=15
 
       - name: 結果
         if: ${{ inputs.target == '検証環境' }}
