@@ -58,9 +58,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository_owner }}/${{ env.REPOSITORY }}
-          fetch-depth: 0
 
       - name: Set environment variables
         id: set_env
