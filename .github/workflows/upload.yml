@@ -79,52 +79,73 @@ jobs:
             echo "ENVIRONMENT=本番環境" >> $GITHUB_ENV
           fi
 
-      - name: Install lftp
+      - name: 本番環境か検証環境
         run: |
-          sudo apt-get update
-          sudo apt-get install -y lftp
+          if (target == '検証環境') {
+            echo "HOST=${{ vars.DEVELOPMENT_HOST }}" >> $GITHUB_ENV
+            echo "PORT=${{ vars.DEVELOPMENT_PORT }}" >> $GITHUB_ENV
+            echo "USER_NAME=${{ vars.DEVELOPMENT_USER_NAME }}" >> $GITHUB_ENV
+            echo "PASSWORD=${{ secrets.DEVELOPMENT_PASSWORD }}" >> $GITHUB_ENV
+            echo "PORT=${{ vars.DEVELOPMENT_REMOTE_PATH }}" >> $GITHUB_ENV
+          } else {
+            echo "HOST=${{ vars.PRODUCTION_HOST }}" >> $GITHUB_ENV
+            echo "PORT=${{ vars.PRODUCTION_PORT }}" >> $GITHUB_ENV
+            echo "USER_NAME=${{ vars.PRODUCTION_USER_NAME }}" >> $GITHUB_ENV
+            echo "PASSWORD=${{ secrets.PRODUCTION_PASSWORD }}" >> $GITHUB_ENV
+          }
 
-      - name: Upload to Production (SFTP)
-        if: inputs.target == '本番環境'
+      - name: Deploy via SFTP
+        if: ${{ inputs.target == '本番環境' }}
+        uses: milanmk/actions-file-deployer@1.15
+        with:
+          remote-protocol: 'sftp'
+          remote-host: ${{ env.HOST }}
+          remote-port: ${{ env.PORT }}
+          remote-user: ${{ env.USER_NAME }}
+          remote-password: ${{ env.PASSWORD }}
+          local-path: ${{ vars.LOCAL_PATH }}/${{ env.REPOSITORY }}
+          remote-path: ${{ env.REPOSITORY }}
+          sync: ${{ inputs.sync }}
+          debug: true
+
+      - name: 結果
+        if: ${{ inputs.target == '本番環境' }}
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          {
+            echo "# 処理結果"
+            echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードしました。"
+            echo "| リポジトリ | アップロード先 |"
+            echo "| -- | -- |"
+            echo "| ${{ env.REPOSITORY }} | https://www.${{ env.REPOSITORY }} |"
+            echo ""
+            echo "ファイルを ${{ env.ENVIRONMENT }} へアップロードしました。" >> $GITHUB_STEP_SUMMARY
+            echo "リポジトリ: ${{ needs.auth.outputs.selected_repo }}" >> $GITHUB_STEP_SUMMARY
+            echo "同期方法: ${{ inputs.sync }}" >> $GITHUB_STEP_SUMMARY
+          } >> $GITHUB_STEP_SUMMARY
 
-          if [ "${{ inputs.sync }}" == "full" ]; then
-            # Full sync - mirror the entire directory
-            lftp -e "set sftp:auto-confirm yes; \
-                    open -u ${{ env.USER_NAME }},${{ secrets.PASSWORD }} sftp://${{ env.HOST }}:${{ env.PORT }}; \
-                    mirror -R --delete --verbose ./ ${{ env.TARGET_PATH }}; \
-                    bye"
-          else
-            # Delta sync - only upload changed files
-            lftp -e "set sftp:auto-confirm yes; \
-                    open -u ${{ env.USER_NAME }},${{ secrets.PASSWORD }} sftp://${{ env.HOST }}:${{ env.PORT }}; \
-                    mirror -R --verbose ./ ${{ env.TARGET_PATH }}; \
-                    bye"
-          fi
+      - name: Deploy via FTP
+        if: ${{ inputs.target == '検証環境' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ env.HOST }}
+          username: ${{ env.USER_NAME }}
+          password: ${{ env.PASSWORD }}
+          port:  ${{ env.PORT }}
+          local-dir: ${{ vars.LOCAL_PATH }}/${{ env.REPOSITORY }}
+          server-dir: ${{ env.DEVELOPMENT_REMOTE_PATH }}/${{ env.REPOSITORY }}
+          ARGS: --delete --parallel=15
 
-          echo "ファイルを ${{ env.ENVIRONMENT }} へアップロードしました。" >> $GITHUB_STEP_SUMMARY
-          echo "リポジトリ: ${{ needs.auth.outputs.selected_repo }}" >> $GITHUB_STEP_SUMMARY
-          echo "同期方法: ${{ inputs.sync }}" >> $GITHUB_STEP_SUMMARY
-
-      - name: Upload to Development (FTP)
-        if: inputs.target == '検証環境'
+      - name: 結果
+        if: ${{ inputs.target == '検証環境' }}
         run: |
-          if [ "${{ inputs.sync }}" == "full" ]; then
-            # Full sync - mirror the entire directory
-            lftp -e "set ftp:ssl-allow no; \
-                    open -u ${{ env.USER_NAME }},${{ secrets.PASSWORD }} ${{ env.HOST }}:${{ env.PORT }}; \
-                    mirror -R --delete --verbose ./ ${{ env.TARGET_PATH }}; \
-                    bye"
-          else
-            # Delta sync - only upload changed files
-            lftp -e "set ftp:ssl-allow no; \
-                    open -u ${{ env.USER_NAME }},${{ secrets.PASSWORD }} ${{ env.HOST }}:${{ env.PORT }}; \
-                    mirror -R --verbose ./ ${{ env.TARGET_PATH }}; \
-                    bye"
-          fi
-
-          echo "ファイルを ${{ env.ENVIRONMENT }} へアップロードしました。" >> $GITHUB_STEP_SUMMARY
-          echo "リポジトリ: ${{ needs.auth.outputs.selected_repo }}" >> $GITHUB_STEP_SUMMARY
-          echo "同期方法: ${{ inputs.sync }}" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "# 処理結果"
+            echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードしました。"
+            echo "| リポジトリ | アップロード先 |"
+            echo "| -- | -- |"
+            echo "| ${{ env.REPOSITORY }} | http://piapiapia.xsrv.jp/test/${{ env.REPOSITORY }}/ |"
+            echo ""
+            echo "ファイルを ${{ env.ENVIRONMENT }} へアップロードしました。" >> $GITHUB_STEP_SUMMARY
+            echo "リポジトリ: ${{ needs.auth.outputs.selected_repo }}" >> $GITHUB_STEP_SUMMARY
+            echo "同期方法: ${{ inputs.sync }}" >> $GITHUB_STEP_SUMMARY
+          } >> $GITHUB_STEP_SUMMARY

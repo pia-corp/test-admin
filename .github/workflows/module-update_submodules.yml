@@ -48,7 +48,7 @@ jobs:
             echo "Submodule exists"
             echo "submodule_exists=true" >> $GITHUB_ENV
           else
-            echo "::notice:: サブモジュールの更新情報は存在しません"
+            echo "::notice:: サブモジュールは存在しません"
             echo "submodule_exists=false" >> $GITHUB_ENV
           fi
 
