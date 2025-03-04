@@ -59,21 +59,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 本番環境か検証環境
-        run: |
-          if (target == '検証環境') {
-            echo "HOST=${{ vars.DEVELOPMENT_HOST }}" >> $GITHUB_ENV
-            echo "PORT=${{ vars.DEVELOPMENT_PORT }}" >> $GITHUB_ENV
-            echo "USER_NAME=${{ vars.DEVELOPMENT_USER_NAME }}" >> $GITHUB_ENV
-            echo "PASSWORD=${{ secrets.DEVELOPMENT_PASSWORD }}" >> $GITHUB_ENV
-            echo "PORT=${{ vars.DEVELOPMENT_REMOTE_PATH }}" >> $GITHUB_ENV
-          } else {
-            echo "HOST=${{ vars.PRODUCTION_HOST }}" >> $GITHUB_ENV
-            echo "PORT=${{ vars.PRODUCTION_PORT }}" >> $GITHUB_ENV
-            echo "USER_NAME=${{ vars.PRODUCTION_USER_NAME }}" >> $GITHUB_ENV
-            echo "PASSWORD=${{ secrets.PRODUCTION_PASSWORD }}" >> $GITHUB_ENV
-          }
-
       - name: Deploy via SFTP
         if: ${{ inputs.target == '本番環境' }}
         uses: milanmk/actions-file-deployer@1.15
