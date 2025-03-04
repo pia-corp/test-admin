@@ -59,7 +59,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          repository: ${{ env.REPOSITORY }}
+          repository: ${{ github.repository_owner }}/${{ env.REPOSITORY }}
           fetch-depth: 0
 
       - name: Set environment variables
