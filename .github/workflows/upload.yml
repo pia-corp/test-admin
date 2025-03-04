@@ -68,8 +68,8 @@ jobs:
           remote-port: ${{ vars.PRODUCTION_PORT }}
           remote-user: ${{ vars.PRODUCTION_USER_NAME }}
           remote-password: ${{ secrets.PRODUCTION_PASSWORD }}
-          local-path: ${{ env.REPOSITORY }}/${{ vars.PRODUCTION_LOCAL_PATH }}
-          remote-path: ${{ vars.REPOSITORY }}/${{ vars.PRODUCTION_REMOTE_PATH }}
+          local-path: ${{ env.REPOSITORY }}/${{ vars.PRODUCTION_LOCAL_PATH }}/
+          remote-path: ${{ vars.REPOSITORY }}/${{ vars.PRODUCTION_REMOTE_PATH }}/
           sync: ${{ inputs.sync }}
           debug: true
 
@@ -96,8 +96,8 @@ jobs:
           username: ${{ vars.DEVELOPMENT_USER_NAME }}
           password: ${{ secrets.DEVELOPMENT_PASSWORD }}
           port:  ${{ vars.DEVELOPMENT_PORT }}
-          local-dir: ${{ env.REPOSITORY }}/${{ vars.LOCAL_PATH }}
-          server-dir: ${{ vars.DEVELOPMENT_REMOTE_PATH }}/${{ env.REPOSITORY }}
+          local-dir: ${{ env.REPOSITORY }}/${{ vars.LOCAL_PATH }}/
+          server-dir: ${{ vars.DEVELOPMENT_REMOTE_PATH }}/${{ env.REPOSITORY }}/
 
       - name: 結果
         if: ${{ inputs.target == '検証環境' }}
