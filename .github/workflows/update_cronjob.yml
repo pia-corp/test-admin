@@ -37,6 +37,8 @@ jobs:
   Auth:
     runs-on: ubuntu-latest
     timeout-minutes: 1
+    env:
+      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
 
     steps:
       - name: CronJobリストを取得
