@@ -59,23 +59,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set environment variables
-        id: set_env
-        run: |
-          echo "HOST=${{ vars.HOST }}" >> $GITHUB_ENV
-          echo "PORT=${{ vars.PORT }}" >> $GITHUB_ENV
-          echo "USER_NAME=${{ vars.USER_NAME }}" >> $GITHUB_ENV
-
-          if [ "${{ inputs.target }}" == "検証環境" ]; then
-            echo "Setting up for development environment"
-            echo "TARGET_PATH=${{ vars.DEVELOPMENT_REMOTE_PATH }}" >> $GITHUB_ENV
-            echo "ENVIRONMENT=検証環境" >> $GITHUB_ENV
-          else
-            echo "Setting up for production environment"
-            echo "TARGET_PATH=${{ vars.PRODUCTION_REMOTE_PATH }}" >> $GITHUB_ENV
-            echo "ENVIRONMENT=本番環境" >> $GITHUB_ENV
-          fi
-
       - name: 本番環境か検証環境
         run: |
           if (target == '検証環境') {
