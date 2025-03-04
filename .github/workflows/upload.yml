@@ -96,7 +96,7 @@ jobs:
           username: ${{ vars.DEVELOPMENT_USER_NAME }}
           password: ${{ secrets.DEVELOPMENT_PASSWORD }}
           port:  ${{ vars.DEVELOPMENT_PORT }}
-          local-dir: ${{ env.REPOSITORY }}/${{ vars.LOCAL_PATH }}/
+          local-dir: out/${{ env.REPOSITORY }}/
           server-dir: ${{ vars.DEVELOPMENT_REMOTE_PATH }}/${{ env.REPOSITORY }}/
 
       - name: 結果
