@@ -48,7 +48,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d '{
               "job": {
-                "url": "https://api.github.com/repos/pia-corp/${{ env.repository }}/actions/workflows/upload.yml/dispatches",
+                "url": "https://api.github.com/repos/pia-corp/${{ env.repository }}/dispatches",
                 "enabled": false,
                 "saveResponses": false,
                 "title": "${{ env.title }}",
