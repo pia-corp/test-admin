@@ -14,6 +14,8 @@ jobs:
   Cron:
     runs-on: ubuntu-latest
     timeout-minutes: 1
+    env:
+      repository: "test-admin"
 
     steps:
       - name: CRON JOBのタイトルを設定
@@ -46,7 +48,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d '{
               "job": {
-                "url": "https://api.github.com/repos/pia-corp/${{ env.title }}/actions/workflows/upload.yml/dispatches",
+                "url": "https://api.github.com/repos/pia-corp/${{ env.repository }}/actions/workflows/upload.yml/dispatches",
                 "enabled": false,
                 "saveResponses": false,
                 "title": "${{ env.title }}",
@@ -61,7 +63,9 @@ jobs:
                 },
                 "extendedData": {
                   "headers": {
-                    "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}"
+                    "Accept : application/vnd.github+json",
+                    "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}",
+                    "X-GitHub-Api-Version : 2022-11-28"
                   },
                   "body": "{\"ref\": \"main\"}"
                 },

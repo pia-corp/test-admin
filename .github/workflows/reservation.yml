@@ -166,14 +166,17 @@ jobs:
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d "{
-              \"job\": {
-                \"enabled\": true,
-                \"schedule\": {
-                  \"hours\": [$hour],
-                  \"mdays\": [$day],
-                  \"minutes\": [$minutes],
-                  \"months\": [$month]
-                }
+              "job": {
+                "enabled": true,
+                "schedule": {
+                  "hours": [$hour],
+                  "mdays": [$day],
+                  "minutes": [$minutes],
+                  "months": [$month]
+                },
+                "extendedData": {
+                  "body": "{\"ref\": \"main\"}"
+                },
               }
             }" \
             https://api.cron-job.org/jobs/${{ env.job_id }} || { echo 'Failed to register CronJob'; echo "エラーログ: $(curl -X PATCH -H 'Content-Type: application/json' -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" -d '{\"job\": {\"enabled\": true, \"schedule\": {\"hours\": [$hour], \"mdays\": [$day], \"minutes\": [$minutes], \"months\": [$month]}}}' https://api.cron-job.org/jobs/${{ env.job_id }})"; exit 1; }

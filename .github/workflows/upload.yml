@@ -1,6 +1,8 @@
-name: 02.手動ファイルアップロード
+name: 02.ファイルアップロード
 
 on:
+  repository_dispatch:
+    types: [active]
   workflow_dispatch:
     inputs:
       repository:
@@ -59,57 +61,60 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy via SFTP
-        if: ${{ inputs.target == '本番環境' }}
-        uses: milanmk/actions-file-deployer@1.15
-        with:
-          remote-protocol: 'sftp'
-          remote-host: ${{ vars.PRODUCTION_HOST }}
-          remote-port: ${{ vars.PRODUCTION_PORT }}
-          remote-user: ${{ vars.PRODUCTION_USER_NAME }}
-          remote-password: ${{ secrets.PRODUCTION_PASSWORD }}
-          local-path: ${{ env.REPOSITORY }}/${{ vars.PRODUCTION_LOCAL_PATH }}/
-          remote-path: ${{ vars.REPOSITORY }}/${{ vars.PRODUCTION_REMOTE_PATH }}/
-          sync: ${{ inputs.sync }}
-          debug: true
+      - name: test
+        run: echo ${{ github.event.client_payload.message }}
 
-      - name: 結果
-        if: ${{ inputs.target == '本番環境' }}
-        run: |
-          {
-            echo "# 処理結果"
-            echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードしました。"
-            echo "| リポジトリ | アップロード先 |"
-            echo "| -- | -- |"
-            echo "| ${{ env.REPOSITORY }} | https://www.${{ env.REPOSITORY }} |"
-            echo ""
-            echo "ファイルを ${{ env.ENVIRONMENT }} へアップロードしました。" >> $GITHUB_STEP_SUMMARY
-            echo "リポジトリ: ${{ needs.auth.outputs.selected_repo }}" >> $GITHUB_STEP_SUMMARY
-            echo "同期方法: ${{ inputs.sync }}" >> $GITHUB_STEP_SUMMARY
-          } >> $GITHUB_STEP_SUMMARY
+      # - name: Deploy via SFTP
+      #   if: ${{ inputs.target == '本番環境' }}
+      #   uses: milanmk/actions-file-deployer@1.15
+      #   with:
+      #     remote-protocol: 'sftp'
+      #     remote-host: ${{ vars.PRODUCTION_HOST }}
+      #     remote-port: ${{ vars.PRODUCTION_PORT }}
+      #     remote-user: ${{ vars.PRODUCTION_USER_NAME }}
+      #     remote-password: ${{ secrets.PRODUCTION_PASSWORD }}
+      #     local-path: ${{ env.REPOSITORY }}/${{ vars.PRODUCTION_LOCAL_PATH }}/
+      #     remote-path: ${{ vars.REPOSITORY }}/${{ vars.PRODUCTION_REMOTE_PATH }}/
+      #     sync: ${{ inputs.sync }}
+      #     debug: true
 
-      - name: Deploy via FTP
-        if: ${{ inputs.target == '検証環境' }}
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ vars.DEVELOPMENT_HOST }}
-          username: ${{ vars.DEVELOPMENT_USER_NAME }}
-          password: ${{ secrets.DEVELOPMENT_PASSWORD }}
-          port:  ${{ vars.DEVELOPMENT_PORT }}
-          local-dir: out/${{ env.REPOSITORY }}/
-          server-dir: ${{ vars.DEVELOPMENT_REMOTE_PATH }}/${{ env.REPOSITORY }}/
+      # - name: 結果
+      #   if: ${{ inputs.target == '本番環境' }}
+      #   run: |
+      #     {
+      #       echo "# 処理結果"
+      #       echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードしました。"
+      #       echo "| リポジトリ | アップロード先 |"
+      #       echo "| -- | -- |"
+      #       echo "| ${{ env.REPOSITORY }} | https://www.${{ env.REPOSITORY }} |"
+      #       echo ""
+      #       echo "ファイルを ${{ env.ENVIRONMENT }} へアップロードしました。" >> $GITHUB_STEP_SUMMARY
+      #       echo "リポジトリ: ${{ needs.auth.outputs.selected_repo }}" >> $GITHUB_STEP_SUMMARY
+      #       echo "同期方法: ${{ inputs.sync }}" >> $GITHUB_STEP_SUMMARY
+      #     } >> $GITHUB_STEP_SUMMARY
 
-      - name: 結果
-        if: ${{ inputs.target == '検証環境' }}
-        run: |
-          {
-            echo "# 処理結果"
-            echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードしました。"
-            echo "| リポジトリ | アップロード先 |"
-            echo "| -- | -- |"
-            echo "| ${{ env.REPOSITORY }} | http://piapiapia.xsrv.jp/test/${{ env.REPOSITORY }}/ |"
-            echo ""
-            echo "ファイルを ${{ env.ENVIRONMENT }} へアップロードしました。" >> $GITHUB_STEP_SUMMARY
-            echo "リポジトリ: ${{ needs.auth.outputs.selected_repo }}" >> $GITHUB_STEP_SUMMARY
-            echo "同期方法: ${{ inputs.sync }}" >> $GITHUB_STEP_SUMMARY
-          } >> $GITHUB_STEP_SUMMARY
+      # - name: Deploy via FTP
+      #   if: ${{ inputs.target == '検証環境' }}
+      #   uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      #   with:
+      #     server: ${{ vars.DEVELOPMENT_HOST }}
+      #     username: ${{ vars.DEVELOPMENT_USER_NAME }}
+      #     password: ${{ secrets.DEVELOPMENT_PASSWORD }}
+      #     port:  ${{ vars.DEVELOPMENT_PORT }}
+      #     local-dir: out/${{ env.REPOSITORY }}/
+      #     server-dir: ${{ vars.DEVELOPMENT_REMOTE_PATH }}/${{ env.REPOSITORY }}/
+
+      # - name: 結果
+      #   if: ${{ inputs.target == '検証環境' }}
+      #   run: |
+      #     {
+      #       echo "# 処理結果"
+      #       echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードしました。"
+      #       echo "| リポジトリ | アップロード先 |"
+      #       echo "| -- | -- |"
+      #       echo "| ${{ env.REPOSITORY }} | http://piapiapia.xsrv.jp/test/${{ env.REPOSITORY }}/ |"
+      #       echo ""
+      #       echo "ファイルを ${{ env.ENVIRONMENT }} へアップロードしました。" >> $GITHUB_STEP_SUMMARY
+      #       echo "リポジトリ: ${{ needs.auth.outputs.selected_repo }}" >> $GITHUB_STEP_SUMMARY
+      #       echo "同期方法: ${{ inputs.sync }}" >> $GITHUB_STEP_SUMMARY
+      #     } >> $GITHUB_STEP_SUMMARY
