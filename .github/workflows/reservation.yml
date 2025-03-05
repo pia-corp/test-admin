@@ -179,23 +179,20 @@ jobs:
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d '{
-              "job": {
-                "enabled": true,
-                "schedule": {
-                  "hours": ['$hour'],
-                  "mdays": ['$day'],
-                  "minutes": ['$minutes'],
-                  "months": ['$month']
+              \"job\": {
+                \"enabled\": true,
+                \"schedule\": {
+                  \"hours\": ['$hour'],
+                  \"mdays\": ['$day'],
+                  \"minutes\": ['$minutes'],
+                  \"months\": ['$month']
                 },
-                "extendedData": {
-                  "body": "{\"event_type\": \"active\", \"inputs\": {\"repository\": \"${{ inputs.repository }}\", \"repository_no_register\": \"${{ inputs.repository_no_register }}\", \"target\": \"${{ inputs.target }}\", \"sync\": \"${{ inputs.sync }}\"}}"
+                \"extendedData\": {
+                  \"body\": \"{\"event_type\": \"active\", \"inputs\": {\"repository\": \"${{ inputs.repository }}\", \"repository_no_register\": \"${{ inputs.repository_no_register }}\", \"target\": \"${{ inputs.target }}\", \"sync\": \"${{ inputs.sync }}\"}}\"
                 }
               }
             }' \
-            https://api.cron-job.org/jobs/${{ env.job_id }} ||
-            {
-              echo 'Failed to register CronJob'; echo "エラーログ: $(curl -X PATCH -H 'Content-Type: application/json' -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" -d '{\"job\": {\"enabled\": true, \"schedule\": {\"hours\": [$hour], \"mdays\": [$day], \"minutes\": [$minutes], \"months\": [$month]}}}' https://api.cron-job.org/jobs/${{ env.job_id }})"; exit 1; }
-            }
+            https://api.cron-job.org/jobs/${{ env.job_id }}
 
 
       - name: CronJobリストを取得
