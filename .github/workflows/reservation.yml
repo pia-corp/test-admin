@@ -188,7 +188,7 @@ jobs:
                   "months": [$month]
                 },
                 "extendedData": {
-                  "body": "{\"event_type\": \"active\", \"inputs\": {\"repository\":${{ inputs.repository }},\"repository_no_register\":${{ inputs.repository_no_register }}, \"target\": ${{ inputs.target }}, \"sync\": ${{ inputs.sync }}}}"
+                  "body": "{\"event_type\": \"active\", \"inputs\": {\"repository\": \"${{ inputs.repository }}\", \"repository_no_register\": \"${{ inputs.repository_no_register }}\", \"target\": \"${{ inputs.target }}\", \"sync\": \"${{ inputs.sync }}\"}}"
                 },
               }
             }" \
