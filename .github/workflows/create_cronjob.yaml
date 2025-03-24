@@ -1,96 +1,199 @@
+# ===================================================
+# 公開予約設定の新規作成ワークフロー (初回のみ実行)
+# ===================================================
+#
+# 【概要】
+# このワークフローは、指定されたリポジトリ名に対して新規のCronジョブを
+# cron-job.org上に作成します。このジョブはGitHub Actionsワークフローを
+# 定期的にトリガーするために使用されます。
+#
+# 【前提条件】
+# - cron-job.orgのAPIトークン (CRON_JOB_TOKEN) が設定されていること
+# - GitHubパーソナルアクセストークン (GIT_PERSONAL_ACCESS_TOKEN) が設定されていること
+# - 対象リポジトリがpia-corp組織内に存在すること
+#
+# 【使用方法】
+# このワークフローは手動でトリガーする必要があります。
+# 実行時に「登録するリポジトリ名」パラメータを指定してください。
+#
+# 【注意事項】
+# - このワークフローは初回のみ実行してください
+# - 同じ名前のCronジョブが既に存在する場合はエラーになります
+# - デフォルトでは作成されたCronジョブは無効状態です
+#
+# ===================================================
+
 name: 05.公開予約設定の新規作成(初回のみ実行)
 
 on:
   workflow_dispatch:
     inputs:
-      job_title:
+      repository_name:
         description: "登録するリポジトリ名"
         required: true
+        type: string
 
 permissions:
   contents: write
 
 jobs:
-  Cron:
+  create_cron_job:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     env:
-      repository: "test-admin"
+      # 対象リポジトリの設定（環境に応じて変更可能）
+      target_repository: "test-admin"
+      # APIエンドポイント
+      cron_job_api_url: "https://api.cron-job.org/jobs"
+      github_api_url: "https://api.github.com"
 
     steps:
-      - name: CRON JOBのタイトルを設定
-        id: set_title
+      # =============================
+      # ステップ1: 入力パラメータの検証とタイトル設定
+      # =============================
+      - name: 公開予約設定のタイトルを検証と設定
+        id: validate_and_set_title
         run: |
-          if [ -z "${{ inputs.job_title }}" ]; then
-            echo "::error:: '登録するリポジトリ名' が未入力です。"
+          # 入力パラメータ（リポジトリ名）が空でないことを確認
+          if [ -z "${{ inputs.repository_name }}" ]; then
+            echo "::error:: '登録するリポジトリ名' が未入力です。入力してから再試行してください。"
             exit 1
           fi
-          echo "title=${{ inputs.job_title }}" >> $GITHUB_ENV
 
-      - name: 任意のタイトルが既に存在するか確認
+          # 環境変数にCronジョブのタイトルをセット（後続ステップで使用）
+          echo "cron_job_title=${{ inputs.repository_name }}" >> $GITHUB_ENV
+          echo "✓ Cronジョブタイトルを '${{ inputs.repository_name }}' に設定しました"
+
+      # =============================
+      # ステップ2: 既存のCronジョブとの重複確認
+      # =============================
+      - name: 同名のCronジョブが既に存在するか確認
+        id: check_existing_job
         run: |
-          response=$(curl -s -X GET \
+          echo "🔍 既存のCronジョブを確認しています..."
+
+          # Cron-job.orgのAPIから現在のジョブ一覧を取得
+          # curlコマンドが失敗した場合は詳細なエラーメッセージを表示
+          api_response=$(curl -s -X GET \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
-            https://api.cron-job.org/jobs) || { echo "::error:: CRONジョブの取得に失敗しました。"; echo "エラーログ: $(curl -s -X GET -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" https://api.cron-job.org/jobs)"; exit 1; }
+            ${{ env.cron_job_api_url }}) || {
+              echo "::error:: Cronジョブ一覧の取得に失敗しました。"
+              echo "エラー詳細: $(curl -s -X GET -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" ${{ env.cron_job_api_url }})"
+              exit 1
+            }
 
-          # Check if the title already exists
-          title_exists=$(echo "$response" | jq -r --arg title "${{ env.title }}" '.jobs[] | select(.url | contains($title)) | .url')
+          # 同じタイトルのジョブが存在するかjqコマンドで確認
+          # jqはJSON形式のデータを処理するためのコマンドラインツール
+          existing_job=$(echo "$api_response" | jq -r --arg title "${{ env.cron_job_title }}" '.jobs[] | select(.url | contains($title)) | .url')
 
-          if [ -n "$title_exists" ]; then
-            echo "::error:: タイトル '${{ env.title }}' のCRON JOBは既に存在します。"
+          # 重複がある場合はエラーメッセージを表示して処理を終了
+          if [ -n "$existing_job" ]; then
+            echo "::error:: タイトル '${{ env.cron_job_title }}' のCronジョブは既に存在します。別の名前を指定してください。"
             exit 1
           fi
 
-      - name: Create Cron job and Fetch ID
+          echo "✓ '${{ env.cron_job_title }}' という名前のCronジョブは存在しないことを確認しました"
+
+      # =============================
+      # ステップ3: 新規Cronジョブの作成
+      # =============================
+      - name: 新規Cronジョブの作成と設定
+        id: create_cron_job
         run: |
-          response=$(curl -s -X PUT \
+          echo "🔧 新規Cronジョブを作成しています..."
+
+          # Cronジョブの設定内容を変数に格納（可読性向上のため）
+          # 注意: 実際のAPIリクエストで使用される形式です
+          job_config='{
+            "job": {
+              "url": "${{ env.github_api_url }}/repos/pia-corp/${{ env.target_repository }}/dispatches",
+              "enabled": false,
+              "saveResponses": false,
+              "title": "${{ env.cron_job_title }}",
+              "schedule": {
+                "expiresAt": 0,
+                "timezone": "Asia/Tokyo",
+                "hours": [-1],
+                "mdays": [-1],
+                "minutes": [-1],
+                "months": [-1],
+                "wdays": [-1]
+              },
+              "extendedData": {
+                "headers": {
+                  "Accept": "application/vnd.github+json",
+                  "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}",
+                  "X-GitHub-Api-Version": "2022-11-28"
+                },
+                "body": "{\"event_type\": \"init\"}"
+              },
+              "requestMethod": 1
+            }
+          }'
+
+          # 変数展開を行うために一旦envsubコマンドを通す
+          job_config_expanded=$(echo "$job_config" | envsubst)
+
+          # Cron-job.orgのAPIを使用して新規ジョブを作成
+          creation_response=$(curl -s -X PUT \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
-            -d '{
-              "job": {
-                "url": "https://api.github.com/repos/pia-corp/${{ env.repository }}/dispatches",
-                "enabled": false,
-                "saveResponses": false,
-                "title": "${{ env.title }}",
-                "schedule": {
-                  "expiresAt": 0,
-                  "timezone": "Asia/Tokyo",
-                  "hours": [-1],
-                  "mdays": [-1],
-                  "minutes": [-1],
-                  "months": [-1],
-                  "wdays": [-1]
-                },
-                "extendedData": {
-                  "headers": {
-                    "Accept : application/vnd.github+json",
-                    "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}",
-                    "X-GitHub-Api-Version : 2022-11-28"
-                  },
-                  "body": "{\"ref\": \"main\"}"
-                },
-                "requestMethod": 1
-              }
-            }' https://api.cron-job.org/jobs) || { echo "::error:: CRONジョブの作成に失敗しました。"; echo "エラーログ: $(curl -s -X PUT -H 'Content-Type: application/json' -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" -d '{\"job\": {\"url\": \"https://api.github.com/repos/pia-corp/${{ env.title }}/actions/workflows/upload.yml/dispatches\",\"enabled\": false,\"saveResponses\": false,\"title\": \"${{ env.title }}\",\"schedule\": {\"expiresAt\": 0,\"timezone\": \"Asia/Tokyo\",\"hours\": [-1],\"mdays\": [-1],\"minutes\": [-1],\"months\": [-1],\"wdays\": [-1]},\"extendedData\": {\"headers\": {\"Authorization\": \"Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}\"},\"body\": \"{\\\"ref\\\": \\\"main\\\"}\"},\"requestMethod\": 1}}' https://api.cron-job.org/jobs)"; exit 1; }
+            -d "$job_config_expanded" \
+            ${{ env.cron_job_api_url }}) || {
+              echo "::error:: Cronジョブの作成に失敗しました。"
+              echo "エラー詳細: $creation_response"
+              exit 1
+            }
 
-            echo "Data from API: $response"
+          # APIからの応答をログに記録（デバッグ用）
+          echo "APIレスポンス: $creation_response"
 
-      - name: 任意のタイトルが正常に登録されたか確認
-        run: |
-          response=$(curl -s -X GET \
-            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
-            https://api.cron-job.org/jobs) || { echo "::error:: CRONジョブの取得に失敗しました。"; echo "エラーログ: $(curl -s -X GET -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" https://api.cron-job.org/jobs)"; exit 1; }
-
-          # Check if the title already exists
-          title_exists=$(echo "$response" | jq -r --arg title "${{ env.title }}" '.jobs[] | select(.url | contains($title)) | .url')
-
-          echo "# 処理結果"
-          if [ -n "$title_exists" ]; then
-            {
-              echo "${{ env.title }} の初期設定が完了しました。"
-            } >> $GITHUB_STEP_SUMMARY
+          # APIレスポンスからジョブIDを取得（確認用）
+          job_id=$(echo "$creation_response" | jq -r '.jobId')
+          if [ -n "$job_id" ] && [ "$job_id" != "null" ]; then
+            echo "✓ Cronジョブが作成されました (ID: $job_id)"
           else
-            {
-              echo "${{ env.title }} が登録できませんでした。"
-            } >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ レスポンスからジョブIDを取得できませんでした。作成は成功した可能性があります。"
+          fi
+
+      # =============================
+      # ステップ4: ジョブ作成の成功確認と結果報告
+      # =============================
+      - name: Cronジョブ作成の確認と結果報告
+        id: verify_job_creation
+        run: |
+          echo "🔍 作成したCronジョブを確認しています..."
+
+          # 少し待機してAPIの反映を待つ（オプション）
+          sleep 2
+
+          # Cron-job.orgのAPIから現在のジョブ一覧を再取得
+          verification_response=$(curl -s -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
+            ${{ env.cron_job_api_url }}) || {
+              echo "::error:: Cronジョブ一覧の取得に失敗しました。"
+              echo "エラー詳細: $(curl -s -X GET -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" ${{ env.cron_job_api_url }})"
+              exit 1
+            }
+
+          # 作成したジョブが存在するか確認
+          created_job=$(echo "$verification_response" | jq -r --arg title "${{ env.cron_job_title }}" '.jobs[] | select(.url | contains($title)) | .url')
+
+          # 結果をワークフローのサマリーに追加（GitHub Actions UI上に表示される）
+          echo "# 処理結果" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$created_job" ]; then
+            echo "✅ ${{ env.cron_job_title }} の予約公開するための初期設定が正常に完了しました。" >> $GITHUB_STEP_SUMMARY
+            echo "🔗 URL: $created_job" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ 注意: 作成されたCronジョブはデフォルトで無効状態です。cron-job.orgの管理画面から有効化してください。" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ ${{ env.cron_job_title }} の予約公開するための初期設定に失敗しました。ログを確認してください。" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # 次のステップの手順を明示
+          if [ -n "$created_job" ]; then
+            echo "# 次のステップ" >> $GITHUB_STEP_SUMMARY
+            echo "1. cron-job.orgの管理画面にログイン" >> $GITHUB_STEP_SUMMARY
+            echo "2. 作成されたジョブの設定を確認" >> $GITHUB_STEP_SUMMARY
+            echo "3. スケジュールを適切に設定" >> $GITHUB_STEP_SUMMARY
+            echo "4. ジョブを有効化" >> $GITHUB_STEP_SUMMARY
           fi

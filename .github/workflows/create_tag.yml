@@ -2,7 +2,7 @@ name: Create tag
 
 on:
   workflow_run:
-    workflows: ["01.納品ファイルの取得と公開予約"]
+    workflows: ["01.納品ファイルの取得"]
     types:
       - completed
 

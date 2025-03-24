@@ -1,11 +1,39 @@
+# ===================================================
+# ワークフロー: 公開予約システム
+# ===================================================
+#
+# 【概要】
+# このコードは、複数のブランドECサイトに対して、指定した日時に
+# 自動的にコンテンツを公開するための予約設定を行うGitHub Actionsワークフローです。
+# cron-job.orgのAPIを利用して予約タスクを管理し、
+# 指定した日時に「upload」イベントを発火させることで、コンテンツの自動公開を実現します。
+#
+# 【前提条件】
+# - cron-job.orgのAPIトークン (CRON_JOB_TOKEN) が設定されていること
+#
+# 主なフロー:
+# 1. 予約情報の入力
+# 2. 既存CronJobの取得
+# 3. 予約設定の更新
+# 4. 更新結果の確認
+#
+# 【注意事項】
+# - 月末日(29, 30, 31日)を指定する場合は、その月の日数に注意する必要あり予約は5分単位での設定のみ可能
+# - 検証環境では「full」同期タイプのみ利用可能、本番環境では「full」または「delta」同期タイプを選択可能
+# - 新しいドメインを追加する場合は、選択肢の更新とcron-job.org側での事前登録が必要。
+#
+# ===================================================
+
 name: 03.公開予約
 
+# トリガー: 手動実行のみ
 on:
   workflow_dispatch:
     inputs:
+      # ブランド選択用の入力フィールド
       repository:
         type: choice
-        description: "対象ブランド"
+        description: "対象ブランド（リストから選択）"
         required: true
         options:
           - "topards.jp"
@@ -29,208 +57,212 @@ on:
           - "chapun.jp"
           - "resay.jp"
           - "michou.jp"
-      repository_no_register:
-        description: "任意のブランドリポジトリ"
+
+      # リストにないブランド用の自由入力フィールド
+      repository_custom:
+        description: "リストにないブランド（任意入力）"
         default: ""
+
+      # 公開日時設定フィールド
       month:
         type: choice
-        required: false
-        description: 月
-        options:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
-          - 10
-          - 11
-          - 12
+        required: true
+        description: "予約月"
+        options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
       day:
         type: choice
-        required: false
-        description: 日
-        options:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
-          - 10
-          - 11
-          - 12
-          - 13
-          - 14
-          - 15
-          - 16
-          - 17
-          - 18
-          - 19
-          - 20
-          - 21
-          - 22
-          - 23
-          - 24
-          - 25
-          - 26
-          - 27
-          - 28
-          - 29
-          - 30
-          - 31
+        required: true
+        description: "予約日"
+        options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+
       hour:
         type: choice
-        required: false
-        description: 時間
-        options:
-          - 0
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 7
-          - 8
-          - 9
-          - 10
-          - 11
-          - 12
-          - 13
-          - 14
-          - 15
-          - 16
-          - 17
-          - 18
-          - 19
-          - 20
-          - 21
-          - 22
-          - 23
+        required: true
+        description: "予約時間"
+        options: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+
       minutes:
         type: choice
-        required: false
-        description: 分
-        options:
-          - 00
-          - 05
-          - 10
-          - 15
-          - 20
-          - 25
-          - 30
-          - 35
-          - 40
-          - 45
-          - 50
-          - 55
-      target:
-        description: アップロード先
+        required: true
+        description: "予約分"
+        options: ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"]
+
+      # 環境設定フィールド
+      target_environment:
+        description: "デプロイ環境"
         type: choice
         required: true
         options:
           - "検証環境"
           - "本番環境"
-      sync:
-        description: "※検証環境はfullアップロードのみ"
+
+      sync_type:
+        description: "同期タイプ（※検証環境はfullアップロードのみ）"
         type: choice
         required: true
         options:
-          - "full"
-          - "delta"
+          - "full"  # 完全同期
+          - "delta" # 差分同期
+
+# ジョブ定義
 jobs:
-  RESERVATION:
+  schedule_publication:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
-      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
+      # カスタム入力があればそちらを優先、なければリストから選択されたものを使用
+      TARGET_REPOSITORY: ${{ inputs.repository_custom != '' && inputs.repository_custom || inputs.repository }}
+      CRON_API_ENDPOINT: "https://api.cron-job.org/jobs"
 
     steps:
-      - name: CronJobリストを取得
+      # =============================
+      # ステップ1: 既存のCronJobリストを取得
+      # =============================
+      - name: "CronJobリストの取得"
+        id: fetch_cron_jobs
         run: |
-          response=$(curl -X GET \
+          echo "::group::CronJobリスト取得"
+          response=$(curl -s -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              https://api.cron-job.org/jobs) || { echo 'Failed to fetch CronJob list'; echo "エラーログ: $(curl -X GET -H 'Content-Type: application/json' -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' https://api.cron-job.org/jobs)"; exit 1; }
-          echo "Data from API: $response"
-          echo "$response" > data.json
+              ${CRON_API_ENDPOINT}) || {
+                echo "::error::CronJobリストの取得に失敗しました"
+                exit 1
+              }
+          echo "レスポンスデータ: $response"
+          echo "$response" > cron_jobs.json
+          echo "::endgroup::"
 
-      - name: ジョブIDを抽出
+      # =============================
+      # ステップ2: 対象リポジトリのジョブIDを抽出
+      # =============================
+      - name: "対象リポジトリのジョブID抽出"
+        id: extract_job_id
         run: |
-          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json) || { echo 'Failed to extract Job ID'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json)"; exit 1; }
-          echo "Job ID: $JOB_ID"
+          echo "::group::ジョブID抽出"
+          JOB_ID=$(jq -r '.jobs[] | select(.title == "'"$TARGET_REPOSITORY"'") | .jobId' cron_jobs.json) || {
+            echo "::error::ジョブIDの抽出に失敗しました: $(cat cron_jobs.json)"
+            exit 1
+          }
+
+          if [ -z "$JOB_ID" ]; then
+            echo "::error::リポジトリ '$TARGET_REPOSITORY' に対応するジョブIDが見つかりませんでした"
+            exit 1
+          fi
+
+          echo "抽出されたジョブID: $JOB_ID"
           echo "job_id=$JOB_ID" >> $GITHUB_ENV
+          echo "::endgroup::"
 
-      - name: CronJobの登録
+      # =============================
+      # ステップ3: CronJobの予約設定更新
+      # =============================
+      - name: "CronJob予約設定の更新"
+        id: update_cron_job
         env:
-          month: ${{ inputs.month }}
-          day: ${{ inputs.day }}
-          hour: ${{ inputs.hour }}
-          minutes: ${{ inputs.minutes }}
+          MONTH: ${{ inputs.month }}
+          DAY: ${{ inputs.day }}
+          HOUR: ${{ inputs.hour }}
+          MINUTES: ${{ inputs.minutes }}
         run: |
-          curl -X PATCH \
+          echo "::group::CronJob予約設定更新"
+          # JSON形式のリクエストボディを作成
+          REQUEST_BODY=$(cat <<EOF
+          {
+            "job": {
+              "enabled": true,
+              "schedule": {
+                "hours": [$HOUR],
+                "mdays": [$DAY],
+                "minutes": [$MINUTES],
+                "months": [$MONTH]
+              },
+              "extendedData": {
+                "body": "{\"event_type\": \"upload\", \"client_payload\": {\"repository\": \"${{ inputs.repository }}\", \"repository_custom\": \"${{ inputs.repository_custom }}\", \"target\": \"${{ inputs.target_environment }}\", \"sync\": \"${{ inputs.sync_type }}\"}}"
+              }
+            }
+          }
+          EOF
+          )
+
+          # CronJobの更新リクエスト実行
+          update_response=$(curl -s -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
-            -d '{
-              \"job\": {
-                \"enabled\": true,
-                \"schedule\": {
-                  \"hours\": ['$hour'],
-                  \"mdays\": ['$day'],
-                  \"minutes\": ['$minutes'],
-                  \"months\": ['$month']
-                },
-                \"extendedData\": {
-                  \"body\": \"{\"event_type\": \"active\", \"inputs\": {\"repository\": \"${{ inputs.repository }}\", \"repository_no_register\": \"${{ inputs.repository_no_register }}\", \"target\": \"${{ inputs.target }}\", \"sync\": \"${{ inputs.sync }}\"}}\"
-                }
-              }
-            }' \
-            https://api.cron-job.org/jobs/${{ env.job_id }}
+            -d "$REQUEST_BODY" \
+            ${CRON_API_ENDPOINT}/${{ env.job_id }})
 
+          echo "更新レスポンス: $update_response"
 
-      - name: CronJobリストを取得
+          # 更新に失敗した場合のエラーハンドリング
+          if [[ $(echo "$update_response" | jq -r '.status') != "success" ]]; then
+            echo "::error::CronJob更新に失敗しました: $update_response"
+            exit 1
+          fi
+          echo "::endgroup::"
+
+      # =============================
+      # ステップ4: 更新後のCronJob情報を再取得して確認
+      # =============================
+      - name: "更新後のCronJob情報取得"
+        id: fetch_updated_cron_job
         run: |
-          response=$(curl -X GET \
+          echo "::group::更新後のCronJob情報取得"
+          updated_response=$(curl -s -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              https://api.cron-job.org/jobs) || { echo 'Failed to fetch CronJob list'; echo "エラーログ: $(curl -X GET -H 'Content-Type: application/json' -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' https://api.cron-job.org/jobs)"; exit 1; }
-          echo "Data from API: $response"
-          echo "$response" > data.json
+              ${CRON_API_ENDPOINT}) || {
+                echo "::error::更新後のCronJob情報取得に失敗しました"
+                exit 1
+              }
 
-      - name: ジョブ情報を抽出
+          echo "$updated_response" > updated_cron_jobs.json
+          echo "::endgroup::"
+
+      # =============================
+      # ステップ5: 最新のジョブ情報を抽出
+      # =============================
+      - name: "更新後のジョブ情報抽出"
+        id: extract_updated_job_info
         run: |
-          # jq を使って ドメイン のデータを抽出
-          Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json) || { echo 'Failed to extract reservation status'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)"; exit 1; }
-          Hours=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json) || { echo 'Failed to extract hours'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json)"; exit 1; }
-          MDays=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json) || { echo 'Failed to extract days'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json)"; exit 1; }
-          Minutes=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json) || { echo 'Failed to extract minutes'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json)"; exit 1; }
-          Months=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json) || { echo 'Failed to extract months'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json)"; exit 1; }
-          timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json) || { echo 'Failed to extract timezone'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json)"; exit 1; }
+          echo "::group::更新後のジョブ情報抽出"
+          # jq を使って各種設定値を抽出
+          JOB_ENABLED=$(jq -r '.jobs[] | select(.title == "'"$TARGET_REPOSITORY"'") | .enabled' updated_cron_jobs.json)
+          JOB_HOURS=$(jq -r '.jobs[] | select(.title == "'"$TARGET_REPOSITORY"'") | .schedule.hours | @csv' updated_cron_jobs.json)
+          JOB_DAYS=$(jq -r '.jobs[] | select(.title == "'"$TARGET_REPOSITORY"'") | .schedule.mdays | @csv' updated_cron_jobs.json)
+          JOB_MINUTES=$(jq -r '.jobs[] | select(.title == "'"$TARGET_REPOSITORY"'") | .schedule.minutes | @csv' updated_cron_jobs.json)
+          JOB_MONTHS=$(jq -r '.jobs[] | select(.title == "'"$TARGET_REPOSITORY"'") | .schedule.months | @csv' updated_cron_jobs.json)
+          JOB_TIMEZONE=$(jq -r '.jobs[] | select(.title == "'"$TARGET_REPOSITORY"'") | .schedule.timezone' updated_cron_jobs.json)
 
-          # 抽出した値を表示
-          echo "ENABLED_AFTER=$Enabled" >> $GITHUB_ENV
-          echo "Hours=$Hours" >> $GITHUB_ENV
-          echo "MDays=$MDays" >> $GITHUB_ENV
-          echo "Minutes=$Minutes" >> $GITHUB_ENV
-          echo "Months=$Months" >> $GITHUB_ENV
-          echo "Timezone=$timezone" >> $GITHUB_ENV
+          # 抽出した値を環境変数に保存
+          echo "JOB_ENABLED=$JOB_ENABLED" >> $GITHUB_ENV
+          echo "JOB_HOURS=$JOB_HOURS" >> $GITHUB_ENV
+          echo "JOB_DAYS=$JOB_DAYS" >> $GITHUB_ENV
+          echo "JOB_MINUTES=$JOB_MINUTES" >> $GITHUB_ENV
+          echo "JOB_MONTHS=$JOB_MONTHS" >> $GITHUB_ENV
+          echo "JOB_TIMEZONE=$JOB_TIMEZONE" >> $GITHUB_ENV
+          echo "::endgroup::"
 
-      - name: 結果の表示
+      # =============================
+      # ステップ6: 結果のサマリー表示
+      # =============================
+      - name: "予約設定結果のサマリー表示"
         run: |
           # GitHubステップサマリーに情報を追加
           {
-            echo "# 予約状況の更新結果"
-            echo "| リポジトリ | 予約日時 | 予約ステータス |"
-            echo "| -- | -- | -- |"
-            echo "| ${{ env.REPOSITORY }} | ${{ env.Timezone }} ${{ env.Months }}月${{ env.MDays }}日${{ env.Hours }}時${{ env.Minutes }}分 | ${{ env.ENABLED_AFTER }} |"
+            echo "# EC公開予約設定結果"
             echo ""
-            echo "予約状況を直接確認する場合は以下のサイトへアクセスしてください。"
-            echo "https://cron-job.org/en/"
+            echo "## 予約情報"
+            echo "| 項目 | 値 |"
+            echo "| ---- | ---- |"
+            echo "| 対象リポジトリ | $TARGET_REPOSITORY |"
+            echo "| 予約日時 | ${{ env.JOB_MONTHS }}月 ${{ env.JOB_DAYS }}日 ${{ env.JOB_HOURS }}時 ${{ env.JOB_MINUTES }}分 (${{ env.JOB_TIMEZONE }}) |"
+            echo "| デプロイ環境 | ${{ inputs.target_environment }} |"
+            echo "| 同期タイプ | ${{ inputs.sync_type }} |"
+            echo "| 予約状態 | ${{ env.JOB_ENABLED == 'true' && '有効' || '無効' }} |"
+            echo ""
+            echo "## 備考"
+            echo "* 予約状況を直接確認する場合は [cron-job.org](https://cron-job.org/en/) にアクセスしてください"
+            echo "* ジョブID: \`${{ env.job_id }}\`"
           } >> $GITHUB_STEP_SUMMARY

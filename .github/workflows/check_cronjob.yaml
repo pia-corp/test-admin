@@ -1,3 +1,22 @@
+# ===================================================
+# check_cronjob.yml
+# ===================================================
+#
+# 【概要】
+# このワークフローは、Cron-job.orgに登録されているジョブの設定状況を取得し、
+# ステータスレポートを生成します。システム管理者がクローンジョブの監視や
+# 設定状態の確認を定期的に行うために使用します。
+#
+# 【主な機能】
+# - Cron-job.org APIからジョブ情報を取得
+# - 各ジョブのID、ドメイン名、有効状態、スケジュール情報を収集
+# - 結果をGitHub Actionsのサマリーに整形して表示
+#
+# 【前提条件】
+# - CRON_JOB_TOKEN: Cron-job.org APIへのアクセストークン（シークレットに設定必須）
+#
+# ===================================================
+
 name: 07.Cron設定と公開状況の確認
 
 on:
@@ -7,43 +26,92 @@ permissions:
   contents: read
 
 jobs:
-  Cron:
+  check_cron_status:
     runs-on: ubuntu-latest
     timeout-minutes: 1
 
     steps:
-      - name: リポジトリをチェックアウト
-        uses: actions/checkout@v4
-
-      - name: 登録情報の取得
+      - name: Cronジョブ情報の取得と出力
         env:
+          # Cron-job.org APIに接続するための認証トークン
           CRON_JOB_TOKEN: ${{ secrets.CRON_JOB_TOKEN }}
         run: |
-          response=$(curl -s -X GET \
+          # =============================
+          # 1. Cron-job.org APIからジョブ情報を取得
+          # =============================
+          echo "Cron-job.org APIからジョブ情報を取得しています..."
+
+          cron_api_response=$(curl -s -X GET \
             -H "Authorization: Bearer $CRON_JOB_TOKEN" \
-            https://api.cron-job.org/jobs) || { echo "::error:: CRONジョブの取得に失敗しました。"; echo "エラーログ: $(curl -s -X GET -H "Authorization: Bearer $CRON_JOB_TOKEN" https://api.cron-job.org/jobs)"; exit 1; }
+            https://api.cron-job.org/jobs) || {
+              echo "::error:: CRONジョブの取得に失敗しました。"
+              echo "エラーログ: $(curl -s -X GET -H "Authorization: Bearer $CRON_JOB_TOKEN" https://api.cron-job.org/jobs)"
+              exit 1
+            }
 
-          # jobIdとtitleを配列として格納
-          jobIds=($(echo "$response" | jq -r '.jobs[].jobId'))
-          titles=($(echo "$response" | jq -r '.jobs[].title'))
-          enabled=($(echo "$response" | jq -r '.jobs[].enabled'))
-          hours=($(echo "$response" | jq -r '.jobs[].schedule.hours | join(",")'))
-          mdays=($(echo "$response" | jq -r '.jobs[].schedule.mdays | join(",")'))
-          minutes=($(echo "$response" | jq -r '.jobs[].schedule.minutes | join(",")'))
-          months=($(echo "$response" | jq -r '.jobs[].schedule.months | join(",")'))
-          timezones=($(echo "$response" | jq -r '.jobs[].schedule.timezone'))
+          # APIリクエストが成功したか確認
+          if [ "$(echo "$cron_api_response" | jq -r '.error')" != "null" ]; then
+            error_message=$(echo "$cron_api_response" | jq -r '.error')
+            echo "::error:: APIエラー: $error_message"
+            exit 1
+          fi
 
-          echo "# 処理結果"
+          # 取得したジョブ数を確認
+          job_count=$(echo "$cron_api_response" | jq -r '.jobs | length')
+          echo "取得したジョブ数: $job_count"
+
+          if [ "$job_count" -eq 0 ]; then
+            echo "::warning:: 登録されているジョブがありません。"
+          fi
+
+          # =============================
+          # 2. 取得したJSON結果をパースして必要な情報を抽出
+          # =============================
+          echo "ジョブ情報を解析しています..."
+
+          # 各ジョブの情報を配列に格納
+          # 注意: 配列名はデータの内容を明確に表しています
+          cron_job_ids=($(echo "$cron_api_response" | jq -r '.jobs[].jobId'))
+          domain_names=($(echo "$cron_api_response" | jq -r '.jobs[].title'))
+          is_enabled=($(echo "$cron_api_response" | jq -r '.jobs[].enabled'))
+          scheduled_hours=($(echo "$cron_api_response" | jq -r '.jobs[].schedule.hours | join(",")'))
+          scheduled_days=($(echo "$cron_api_response" | jq -r '.jobs[].schedule.mdays | join(",")'))
+          scheduled_minutes=($(echo "$cron_api_response" | jq -r '.jobs[].schedule.minutes | join(",")'))
+          scheduled_months=($(echo "$cron_api_response" | jq -r '.jobs[].schedule.months | join(",")'))
+          time_zones=($(echo "$cron_api_response" | jq -r '.jobs[].schedule.timezone'))
+
+          # =============================
+          # 3. 結果をGitHub Actionsのサマリーに整形して出力
+          # =============================
+          echo "結果を整形してサマリーに出力しています..."
+
+          echo "# Cronジョブ監視結果" >> $GITHUB_STEP_SUMMARY
+          echo "実行日時: $(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_STEP_SUMMARY
+          echo "合計ジョブ数: $job_count" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
           {
-            echo "| CRON ID | ドメイン | 予約状況 | 予約時間 |"
+            # Markdown形式でテーブルのヘッダーを作成
+            echo "| CRON ID | ドメイン | 有効状態 | スケジュール詳細 |"
             echo "| --- | --- | --- | --- |"
-            for i in "${!jobIds[@]}"; do
-              if [ "${enabled[$i]}" = "true" ]; then
-                schedule_display="${timezones[$i]} ${months[$i]}月${mdays[$i]}日${hours[$i]}時${minutes[$i]}分"
+
+            # 各ジョブの情報をテーブルの行として追加
+            for index in "${!cron_job_ids[@]}"; do
+              # 有効なジョブかどうかでスケジュール表示を分岐
+              if [ "${is_enabled[$index]}" = "true" ]; then
+                # 有効な場合はスケジュール情報を整形して表示
+                schedule_info="${time_zones[$index]} ${scheduled_months[$index]}月${scheduled_days[$index]}日${scheduled_hours[$index]}時${scheduled_minutes[$index]}分"
+                status="有効"
               else
-                schedule_display="--"
+                # 無効な場合は「未設定」と表示
+                schedule_info="未設定"
+                status="無効"
               fi
 
-              echo "| ${jobIds[$i]} | ${titles[$i]} | ${enabled[$i]} | ${schedule_display} |"
+              # テーブル行の出力
+              # CRON ID | ドメイン名 | 有効/無効状態 | スケジュール情報
+              echo "| ${cron_job_ids[$index]} | ${domain_names[$index]} | ${status} | ${schedule_info} |"
             done
-          } >> $GITHUB_STEP_SUMMARY
+          } >> $GITHUB_STEP_SUMMARY  # GitHub Actionsの実行サマリーに出力
+
+          echo "処理が完了しました。GitHub Actionsのサマリーで結果を確認できます。"

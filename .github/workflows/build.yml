@@ -1,9 +1,36 @@
+# ===================================================
+# 納品ファイル取得ワークフロー
+# ===================================================
+# 概要:
+# このワークフローは、指定されたブランドリポジトリから納品ファイルを取得し、
+# サブモジュールの更新とサイトマップの生成を自動化するためのものです。
+#
+# 実行の流れ:
+# 1. リリース用の新しいブランチを作成
+# 2. サブモジュールを最新の状態に更新
+# 3. コミットメッセージを確認し、成功/失敗を判断
+# 4. 成功時: サイトマップを生成し、PRを作成・マージ
+# 5. 失敗時: ブランチを削除して終了
+#
+# 主な利用シーン:
+# - 定期的なサイト更新
+# - 新規コンテンツのデプロイ
+# - サイトマップの更新
+# ===================================================
+
 name: 01.納品ファイルの取得
 
+# ===================================================
+# ワークフロートリガー設定
+# ===================================================
+# 手動実行時に必要なパラメータを定義します。
+# - target_brand: 定義済みブランドリストから選択
+# - custom_brand_repo: リストにないカスタムブランドを指定
+# ===================================================
 on:
   workflow_dispatch:
     inputs:
-      repository:
+      target_brand:
         type: choice
         description: "対象ブランド"
         required: true
@@ -29,20 +56,41 @@ on:
           - "chapun.jp"
           - "resay.jp"
           - "michou.jp"
-      repository_no_register:
-        description: "任意のブランドリポジトリ"
+      custom_brand_repo:
+        description: "任意のブランドリポジトリ (リストにない場合に入力)"
         default: ""
 
+# ===================================================
+# 権限設定
+# ===================================================
+# - contents: リポジトリコンテンツの読み書き権限
+# - pull-requests: PRの作成・編集権限
+# ===================================================
 permissions:
   contents: write
   pull-requests: write
 
+# ===================================================
+# ジョブ定義
+# ===================================================
 jobs:
-  CreateBranch:
+  # ===================================================
+  # リリースブランチ作成ジョブ
+  # ===================================================
+  # 目的: 納品ファイル処理用の一時的なリリースブランチを作成
+  # 処理内容:
+  # 1. リポジトリのチェックアウト
+  # 2. ユニークなID付きのブランチを作成
+  # 3. リモートリポジトリにブランチをプッシュ
+  # ===================================================
+  create_release_branch:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
+      # 入力パラメータから対象リポジトリを決定（カスタム指定 or 選択リスト）
+      TARGET_REPOSITORY: ${{ inputs.custom_brand_repo != '' && inputs.custom_brand_repo || inputs.target_brand }}
+      # GitHub実行IDをベースにしたユニークなブランチ名
+      RELEASE_BRANCH_NAME: release/github_${{ github.run_id }}
 
     steps:
       - name: リポジトリをチェックアウト
@@ -50,105 +98,190 @@ jobs:
 
       - name: リリース用の新しいブランチを作成
         run: |
-          git checkout -b release/github_${{ github.run_id }}
+          git checkout -b ${{ env.RELEASE_BRANCH_NAME }}
+          echo "作成したブランチ: ${{ env.RELEASE_BRANCH_NAME }}"
         continue-on-error: false
 
       - name: 新しいブランチをプッシュ
         run: |
-          git push -u origin release/github_${{ github.run_id }}
+          git push -u origin ${{ env.RELEASE_BRANCH_NAME }}
+          echo "ブランチをリモートにプッシュしました: ${{ env.RELEASE_BRANCH_NAME }}"
         continue-on-error: false
 
-  UpdateSubmodules:
-    needs: [CreateBranch]
+  # ===================================================
+  # サブモジュール更新ジョブ
+  # ===================================================
+  # 目的: リポジトリ内のサブモジュールを最新の状態に更新
+  # 処理内容:
+  # - 別ワークフローを再利用して全サブモジュールを更新
+  # - 更新には個人アクセストークンを使用（権限制限のため）
+  # 注意: この処理は自動コミットを生成します
+  # ===================================================
+  update_submodules:
+    needs: [create_release_branch]
     uses: ./.github/workflows/module-update_submodules.yml
     with:
-      repository: ${{ inputs.repository }}
-      repository_no_register: ${{ inputs.repository_no_register }}
+      repository: ${{ inputs.target_brand }}
+      repository_no_register: ${{ inputs.custom_brand_repo }}
       branch_name: release/github_${{ github.run_id }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}
 
-  GetCommitMessage:
-    needs: [UpdateSubmodules]
+  # ===================================================
+  # コミットメッセージ取得ジョブ
+  # ===================================================
+  # 目的: サブモジュール更新結果の成否を判断
+  # 処理内容:
+  # 1. リリースブランチをチェックアウト
+  # 2. 最新コミットのメッセージを取得
+  # 3. メッセージを次のジョブに引き継ぐ
+  # 重要: このメッセージによりプロセスの成功/失敗を判断します
+  # ===================================================
+  get_commit_message:
+    needs: [update_submodules]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      COMMIT_MESSAGE: ${{ steps.get_commit_message.outputs.COMMIT_MESSAGE }}
+      # 次のジョブで条件分岐に使用する出力値
+      COMMIT_MESSAGE: ${{ steps.extract_commit_message.outputs.COMMIT_MESSAGE }}
 
     steps:
-      - name: Checkout repository
+      - name: リリースブランチをチェックアウト
         uses: actions/checkout@v4.2.1
         with:
           ref: release/github_${{ github.run_id }}
 
-      - name: Get commit message
-        id: get_commit_message
+      - name: 最新のコミットメッセージを取得
+        id: extract_commit_message
         run: |
+          # 最新のコミットメッセージを取得してトリムする
           COMMIT_MESSAGE=$(git log -1 --pretty=%s | xargs)
-          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
-          echo "$COMMIT_MESSAGE"
 
-  CreateSiteMap:
-    needs: [GetCommitMessage]
-    if: ${{ needs.GetCommitMessage.outputs.COMMIT_MESSAGE && (needs.GetCommitMessage.outputs.COMMIT_MESSAGE == 'Automatically update submodules' || needs.GetCommitMessage.outputs.COMMIT_MESSAGE == 'Automatically add submodules') }}
+          # 環境変数に格納して次のジョブに渡す
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+
+          # ログにも出力して確認できるようにする
+          echo "取得したコミットメッセージ: '$COMMIT_MESSAGE'"
+
+          # 期待値との一致を確認
+          if [[ "$COMMIT_MESSAGE" == "Automatically update submodules" || "$COMMIT_MESSAGE" == "Automatically add submodules" ]]; then
+            echo "✅ 有効なコミットメッセージです。処理を続行します。"
+          else
+            echo "⚠️ 無効なコミットメッセージです。ブランチは削除されます。"
+          fi
+
+  # ===================================================
+  # サイトマップ作成ジョブ
+  # ===================================================
+  # 目的: サブモジュール更新が成功した場合にサイトマップを生成
+  # 実行条件:
+  # - コミットメッセージが "Automatically update submodules" または
+  #   "Automatically add submodules" のいずれかと一致すること
+  # 処理内容:
+  # - 別ワークフローを再利用してサイトマップXMLを生成
+  # ===================================================
+  create_sitemap:
+    needs: [get_commit_message]
+    if: ${{ needs.get_commit_message.outputs.COMMIT_MESSAGE && (needs.get_commit_message.outputs.COMMIT_MESSAGE == 'Automatically update submodules' || needs.get_commit_message.outputs.COMMIT_MESSAGE == 'Automatically add submodules') }}
 
     uses: ./.github/workflows/module-create_sitemap.yml
     with:
-      repository: ${{ inputs.repository }}
-      repository_no_register: ${{ inputs.repository_no_register }}
+      repository: ${{ inputs.target_brand }}
+      repository_no_register: ${{ inputs.custom_brand_repo }}
       branch_name: release/github_${{ github.run_id }}
     secrets:
       GITHUB_TOKEN_VALUE: ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}
 
-  DeleteBranch:
-    needs: [GetCommitMessage]
+  # ===================================================
+  # エラー時のブランチ削除ジョブ
+  # ===================================================
+  # 目的: サブモジュール更新が失敗した場合に作成したブランチを削除
+  # 実行条件:
+  # - コミットメッセージが期待値と一致しない場合
+  # 処理内容:
+  # 1. リポジトリをチェックアウト
+  # 2. リモートブランチを削除
+  # 3. エラーログを記録
+  # ===================================================
+  delete_branch_on_error:
+    needs: [get_commit_message]
     runs-on: ubuntu-latest
     timeout-minutes: 1
-    if: ${{ needs.GetCommitMessage.outputs.COMMIT_MESSAGE && needs.GetCommitMessage.outputs.COMMIT_MESSAGE != 'Automatically update submodules' && needs.GetCommitMessage.outputs.COMMIT_MESSAGE != 'Automatically add submodules' }}
+    if: ${{ needs.get_commit_message.outputs.COMMIT_MESSAGE && needs.get_commit_message.outputs.COMMIT_MESSAGE != 'Automatically update submodules' && needs.get_commit_message.outputs.COMMIT_MESSAGE != 'Automatically add submodules' }}
 
     steps:
-      - name: Checkout repository
+      - name: リポジトリをチェックアウト
         uses: actions/checkout@v4
 
-      - name: Delete branch
+      - name: ブランチを削除
         run: |
+          # リモートブランチを削除
           git push origin --delete release/github_${{ github.run_id }}
+
+          # Githubアクションの通知を生成
           echo "::notice:: ブランチを削除しました。release/github_${{ github.run_id }}"
+
+          # エラーログを記録（トラブルシューティング用）
           echo "エラーログ: $(curl -s -X GET -H "Authorization: Bearer $CRON_JOB_TOKEN" https://api.cron-job.org/jobs)"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  CloseBranch:
-    needs: CreateSiteMap
+  # ===================================================
+  # プルリクエスト作成と完了処理ジョブ
+  # ===================================================
+  # 目的: 更新内容を本番ブランチにマージするためのPR処理
+  # 実行条件:
+  # - サイトマップ作成ジョブが正常に完了していること
+  # 処理内容:
+  # 1. リリースブランチをチェックアウト
+  # 2. 既存PRの有無を確認
+  # 3. 新規PRを作成（未作成の場合）
+  # 4. PRをマージして作業を完了
+  # ===================================================
+  finalize_pull_request:
+    needs: create_sitemap
     runs-on: ubuntu-latest
     timeout-minutes: 3
     env:
-      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
+      TARGET_REPOSITORY: ${{ inputs.custom_brand_repo != '' && inputs.custom_brand_repo || inputs.target_brand }}
+      RELEASE_BRANCH_NAME: release/github_${{ github.run_id }}
 
     steps:
-      - name: Checkout repository
+      - name: リリースブランチをチェックアウト
         uses: actions/checkout@v4
         with:
-          ref: release/github_${{ github.run_id }}
+          ref: ${{ env.RELEASE_BRANCH_NAME }}
           fetch-depth: 0
 
-      - name: check PR
-        id: check_pr
+      - name: プルリクエストの存在確認
+        id: check_pull_request
         run: |
-          echo "count=$(gh pr list -B release/github_${{ github.run_id }} -H ${{ github.ref_name }} --json 'id' -q '.[] | length')" >> $GITHUB_OUTPUT
+          # 現在のブランチを起点とするPRの数を取得
+          echo "count=$(gh pr list -B ${{ env.RELEASE_BRANCH_NAME }} -H ${{ github.ref_name }} --json 'id' -q '.[] | length')" >> $GITHUB_OUTPUT
+
+          # 結果をログに出力
+          echo "既存PRの確認結果: ${{ steps.check_pull_request.outputs.count }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create PR
-        if: ${{ steps.check_pr.outputs.count == '' }}
+      - name: プルリクエストの作成
+        if: ${{ steps.check_pull_request.outputs.count == '' }}
         run: |
+          # 自動生成タイトルと説明でPRを作成
           gh pr create --fill
+          echo "新規プルリクエストを作成しました"
         env:
           GITHUB_TOKEN: ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}
 
-      - name: Merge Pull Request
+      - name: プルリクエストのマージ
         run: |
+          # PRをマージ
           gh pr merge --merge
+
+          # ワークフロー完了後のPR一覧を出力（確認用）
+          echo "プルリクエスト一覧:"
           gh pr list
+
+          echo "✅ デプロイプロセスが完了しました"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

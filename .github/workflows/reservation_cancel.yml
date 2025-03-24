@@ -1,8 +1,35 @@
+# ===================================================
+# 予約キャンセルワークフロー
+# ===================================================
+#
+# 【概要】
+# このワークフローは、公開予約をキャンセル（無効化）するためのものです。
+# CronJob.org APIを使用して登録されているCronジョブのステータスを取得し、
+# enabledパラメータをfalseに設定することで予約を無効化します。
+#
+# 主なフロー:
+# 1. 手動実行でターゲットリポジトリを指定
+# 2. CronJob.orgからすべてのジョブ情報を取得
+# 3. 指定されたリポジトリに一致するジョブIDを抽出
+# 4. 該当ジョブのenabledパラメータをfalseに設定
+# 5. 更新後の情報を取得して変更を確認
+# 6. 結果のサマリーを作成
+#
+# 【前提条件】
+# - CRON_JOB_TOKEN: CronJob.org APIアクセストークン
+#
+# ===================================================
+
 name: 04.公開予約キャンセル
 
+# =============================
+# ワークフロートリガー設定
+# =============================
 on:
+  # 手動実行のみに対応
   workflow_dispatch:
     inputs:
+      # ドロップダウンで選択するブランドリスト
       repository:
         type: choice
         description: "対象ブランド"
@@ -29,44 +56,104 @@ on:
           - "chapun.jp"
           - "resay.jp"
           - "michou.jp"
-      repository_no_register:
-        description: "任意のブランドリポジトリ"
+      # リストにないブランドを手動入力する場合の入力欄
+      custom_repository:
+        description: "任意のブランドリポジトリ（リストにない場合）"
         default: ""
 
+# =============================
+# ジョブ定義
+# =============================
 jobs:
-  CANCEL_RESERVATION:
+  cancel_reservation:
+    name: 予約キャンセル処理
     runs-on: ubuntu-latest
     timeout-minutes: 3
     permissions:
       contents: read
       actions: write
     env:
-      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
+      # カスタムリポジトリが入力された場合はそちらを優先、なければドロップダウンで選択されたリポジトリを使用
+      TARGET_REPOSITORY: ${{ inputs.custom_repository != '' && inputs.custom_repository || inputs.repository }}
+      # CronJob.org API エンドポイント
+      CRON_API_BASE_URL: "https://api.cron-job.org"
+      # 出力ファイル名
+      CRON_JOBS_FILE: "cron_jobs.json"
+      UPDATED_JOBS_FILE: "updated_jobs.json"
 
     steps:
+      # =============================
+      # Step 1: CronJob一覧取得
+      # =============================
       - name: CronJobリストを取得
+        id: fetch_cron_jobs
         run: |
-          response=$(curl -X GET \
+          echo "::group::CronJob APIからジョブ一覧を取得"
+          echo "📥 $TARGET_REPOSITORY の予約情報を取得中..."
+
+          # CronJob APIから全ジョブ情報を取得
+          # 注意: secrets.CRON_JOB_TOKEN が設定されていることを確認
+          response=$(curl -s -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              https://api.cron-job.org/jobs) || { echo 'Failed to fetch CronJob list'; echo "エラーログ: $(curl -X GET -H 'Content-Type: application/json' -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' https://api.cron-job.org/jobs)"; exit 1; }
-          echo "Data from API: $response"
-          echo "$response" > data.json
+              ${CRON_API_BASE_URL}/jobs) || {
+                echo "❌ エラー: CronJobリストの取得に失敗しました"
+                echo "🔍 考えられる原因:"
+                echo "  - CRON_JOB_TOKEN が無効または期限切れ"
+                echo "  - CronJob.org API への接続エラー"
+                exit 1
+              }
 
-      - name: ジョブIDを抽出
+          # 取得したデータをファイルに保存
+          echo "$response" > ${CRON_JOBS_FILE}
+          echo "✅ ジョブリストを ${CRON_JOBS_FILE} に保存しました"
+          echo "::endgroup::"
+
+      # =============================
+      # Step 2: 対象ジョブ情報抽出
+      # =============================
+      - name: 対象ジョブの情報を抽出
+        id: extract_job_info
         run: |
-          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json) || { echo 'Failed to extract Job ID'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json)"; exit 1; }
-          echo "Job ID: $JOB_ID"
+          echo "::group::対象ジョブの情報抽出"
+          echo "🔍 $TARGET_REPOSITORY のジョブ情報を検索中..."
+
+          # 対象リポジトリのジョブIDを抽出
+          # jq を使用してJSON形式のレスポンスから情報を抽出
+          JOB_ID=$(jq -r --arg repo "$TARGET_REPOSITORY" '.jobs[] | select(.title == $repo) | .jobId' ${CRON_JOBS_FILE})
+
+          # ジョブIDが見つからない場合のエラーハンドリング
+          if [ -z "$JOB_ID" ] || [ "$JOB_ID" = "null" ]; then
+            echo "❌ エラー: '$TARGET_REPOSITORY'に一致するジョブIDが見つかりません"
+            echo "🔍 考えられる原因:"
+            echo "  - 指定したリポジトリ名が正確に一致していない"
+            echo "  - このリポジトリのCronJobが登録されていない"
+            exit 1
+          fi
+
+          # 現在の有効状態を抽出
+          CURRENT_STATUS=$(jq -r --arg repo "$TARGET_REPOSITORY" '.jobs[] | select(.title == $repo) | .enabled' ${CRON_JOBS_FILE})
+
+          echo "📋 対象ジョブID: $JOB_ID"
+          echo "📋 現在の予約状態: $CURRENT_STATUS"
+
+          # 環境変数に設定して後続ステップで使用できるようにする
           echo "job_id=$JOB_ID" >> $GITHUB_ENV
+          echo "current_status=$CURRENT_STATUS" >> $GITHUB_ENV
+          echo "::endgroup::"
 
-      - name: 予約状況を抽出
+      # =============================
+      # Step 3: 予約キャンセル処理
+      # =============================
+      - name: 予約をキャンセル（無効化）
+        id: disable_job
         run: |
-          Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json) || { echo 'Failed to extract reservation status'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)"; exit 1; }
-          echo "ENABLED_BEFORE=$Enabled" >> $GITHUB_ENV
+          echo "::group::CronJobの無効化"
+          echo "🔄 ジョブID: ${{ env.job_id }} の予約を無効化中..."
 
-      - name: CronJobのアイテムを更新
-        run: |
-          curl -X PATCH \
+          # ジョブを無効化するAPIリクエスト
+          # enabled=false に設定することで予約をキャンセル
+          DISABLE_RESPONSE=$(curl -s -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d "{
@@ -74,41 +161,95 @@ jobs:
                 \"enabled\": false
               }
             }" \
-            https://api.cron-job.org/jobs/${{ env.job_id }} || { echo 'Failed to update CronJob'; echo "エラーログ: $(curl -X PATCH -H 'Content-Type: application/json' -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" -d '{\"job\": {\"enabled\": false}}' https://api.cron-job.org/jobs/${{ env.job_id }})"; exit 1; }
+            ${CRON_API_BASE_URL}/jobs/${{ env.job_id }})
 
-      - name: CronJobリストを取得
+          # レスポンスのステータスを確認
+          HTTP_STATUS=$(echo "$DISABLE_RESPONSE" | jq -r '.status // "unknown"')
+
+          if [ "$HTTP_STATUS" = "unknown" ] || [ "$HTTP_STATUS" = "error" ]; then
+            echo "❌ エラー: CronJobの無効化に失敗しました"
+            echo "🔍 APIレスポンス: $DISABLE_RESPONSE"
+            exit 1
+          fi
+
+          echo "✅ 予約の無効化リクエストを送信しました"
+          echo "::endgroup::"
+
+      # =============================
+      # Step 4: 更新後の情報取得
+      # =============================
+      - name: 更新後のジョブ情報を取得
+        id: verify_update
         run: |
-          response=$(curl -X GET \
+          echo "::group::更新後のジョブ情報取得"
+          echo "🔄 更新後の情報を確認中..."
+
+          # 更新後のジョブ情報を再取得
+          updated_response=$(curl -s -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              https://api.cron-job.org/jobs) || { echo 'Failed to fetch CronJob list'; echo "エラーログ: $(curl -X GET -H 'Content-Type: application/json' -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' https://api.cron-job.org/jobs)"; exit 1; }
-          echo "Data from API: $response"
-          echo "$response" > data.json
+              ${CRON_API_BASE_URL}/jobs) || {
+                echo "❌ エラー: 更新後のCronJobリスト取得に失敗しました"
+                exit 1
+              }
 
-      - name: ジョブ情報を抽出
-        run: |
-          Enabled=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json) || { echo 'Failed to extract reservation status'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .enabled' data.json)"; exit 1; }
-          Hours=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json) || { echo 'Failed to extract hours'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.hours | @csv' data.json)"; exit 1; }
-          MDays=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json) || { echo 'Failed to extract days'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.mdays | @csv' data.json)"; exit 1; }
-          Minutes=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json) || { echo 'Failed to extract minutes'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.minutes | @csv' data.json)"; exit 1; }
-          Months=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json) || { echo 'Failed to extract months'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.months | @csv' data.json)"; exit 1; }
-          timezone=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json) || { echo 'Failed to extract timezone'; echo "エラーログ: $(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .schedule.timezone' data.json)"; exit 1; }
+          # 更新された情報をファイルに保存
+          echo "$updated_response" > ${UPDATED_JOBS_FILE}
 
-          echo "ENABLED_AFTER=$Enabled" >> $GITHUB_ENV
-          echo "Hours=$Hours" >> $GITHUB_ENV
-          echo "MDays=$MDays" >> $GITHUB_ENV
-          echo "Minutes=$Minutes" >> $GITHUB_ENV
-          echo "Months=$Months" >> $GITHUB_ENV
-          echo "Timezone=$timezone" >> $GITHUB_ENV
+          # 更新後の予約情報を抽出
+          NEW_STATUS=$(jq -r --arg repo "$TARGET_REPOSITORY" '.jobs[] | select(.title == $repo) | .enabled' ${UPDATED_JOBS_FILE})
+          HOURS=$(jq -r --arg repo "$TARGET_REPOSITORY" '.jobs[] | select(.title == $repo) | .schedule.hours | @csv' ${UPDATED_JOBS_FILE})
+          DAYS=$(jq -r --arg repo "$TARGET_REPOSITORY" '.jobs[] | select(.title == $repo) | .schedule.mdays | @csv' ${UPDATED_JOBS_FILE})
+          MINUTES=$(jq -r --arg repo "$TARGET_REPOSITORY" '.jobs[] | select(.title == $repo) | .schedule.minutes | @csv' ${UPDATED_JOBS_FILE})
+          MONTHS=$(jq -r --arg repo "$TARGET_REPOSITORY" '.jobs[] | select(.title == $repo) | .schedule.months | @csv' ${UPDATED_JOBS_FILE})
+          TIMEZONE=$(jq -r --arg repo "$TARGET_REPOSITORY" '.jobs[] | select(.title == $repo) | .schedule.timezone' ${UPDATED_JOBS_FILE})
 
-      - name: 結果の表示
+          # 更新結果の確認
+          if [ "$NEW_STATUS" = "true" ]; then
+            echo "⚠️ 警告: 予約ステータスが正しく無効化されていない可能性があります"
+          else
+            echo "✅ 予約の無効化が完了しました"
+          fi
+
+          # 環境変数に設定
+          echo "new_status=$NEW_STATUS" >> $GITHUB_ENV
+          echo "schedule_hours=$HOURS" >> $GITHUB_ENV
+          echo "schedule_days=$DAYS" >> $GITHUB_ENV
+          echo "schedule_minutes=$MINUTES" >> $GITHUB_ENV
+          echo "schedule_months=$MONTHS" >> $GITHUB_ENV
+          echo "timezone=$TIMEZONE" >> $GITHUB_ENV
+          echo "::endgroup::"
+
+      # =============================
+      # Step 5: 結果サマリー作成
+      # =============================
+      - name: 結果のサマリーを作成
+        id: create_summary
         run: |
           {
-            echo "# 予約状況の更新結果"
-            echo "| リポジトリ | 予約日時 | 予約ステータス |"
-            echo "| -- | -- | -- |"
-            echo "| ${{ env.REPOSITORY }} | ${{ env.Timezone }} ${{ env.Months }}月${{ env.MDays }}日${{ env.Hours }}時${{ env.Minutes }}分 | ${{ env.ENABLED_BEFORE }} -> ${{ env.ENABLED_AFTER }} |"
+            echo "# 予約キャンセル結果"
             echo ""
-            echo "予約状況を直接確認する場合は以下のサイトへアクセスしてください。"
-            echo "https://cron-job.org/en/"
+            echo "## 処理概要"
+            echo "- **処理日時**: $(date '+%Y-%m-%d %H:%M:%S')"
+            echo "- **実行者**: ${{ github.actor }}"
+            echo ""
+            echo "## 対象予約情報"
+            echo "| リポジトリ | 予約日時 | 予約ステータス変更 |"
+            echo "| ---------- | -------- | ------------------ |"
+            echo "| $TARGET_REPOSITORY | ${{ env.timezone }} ${{ env.schedule_months }}月${{ env.schedule_days }}日${{ env.schedule_hours }}時${{ env.schedule_minutes }}分 | ${{ env.current_status }} → ${{ env.new_status }} |"
+            echo ""
+
+            # ステータスに基づいて結果メッセージを表示
+            if [ "${{ env.new_status }}" = "false" ]; then
+              echo "✅ **結果**: 予約のキャンセルに成功しました"
+            else
+              echo "⚠️ **結果**: 予約ステータスの更新に問題がある可能性があります。手動で確認してください。"
+            fi
+
+            echo ""
+            echo "## 備考"
+            echo "- このワークフローは CronJob.org の登録予約を無効化するだけであり、予約自体は削除されません"
+            echo "- 予約を再度有効化したい場合は、CronJob.org の管理画面から手動で行ってください"
+            echo "- 予約状況を直接確認する場合は以下のサイトへアクセスしてください"
+            echo "  [Cron-Job.org管理画面](https://cron-job.org/en/)"
           } >> $GITHUB_STEP_SUMMARY
