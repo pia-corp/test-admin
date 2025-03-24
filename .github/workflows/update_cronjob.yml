@@ -1,9 +1,39 @@
+# ===================================================
+# ファイル名: update_token.yml
+#
+# 概要:
+#   このワークフローは、指定されたドメインのCronJobのアクセストークンを
+#   更新するためのものです。GitHub ActionsからCronJob.orgのAPIを
+#   使用して、対象ジョブのGitHub Personal Access Tokenを更新します。
+#
+# 使用方法:
+#   1. GitHub Actionsの「Actions」タブから「06.トークンの更新（CRON JOB）」を選択
+#   2. 「Run workflow」ボタンをクリック
+#   3. 「対象ブランド」ドロップダウンから更新したいブランドを選択
+#      または「任意のブランドリポジトリ」にカスタムブランド名を入力
+#   4. 「Run workflow」ボタンをクリック
+#
+# 前提条件:
+#   以下のシークレットが設定されている必要があります:
+#   - CRON_JOB_TOKEN: CronJob.orgのAPIアクセストークン
+#   - GIT_PERSONAL_ACCESS_TOKEN: GitHubのパーソナルアクセストークン（更新対象）
+#
+# エラーハンドリング:
+#   - APIリクエスト失敗時: 適切なエラーメッセージを表示し、ワークフローを中断
+#   - ジョブIDが見つからない場合: エラーメッセージを表示し、ワークフローを中断
+#   - トークン更新失敗時: APIからのエラー詳細を表示し、ワークフローを中断
+#
+# ===================================================
+
 name: 06.トークンの更新（CRON JOB）
 
 on:
   workflow_dispatch:
     inputs:
-      repository:
+      # 定義済みブランドのリスト
+      # これらは会社が管理する全ブランドのリポジトリ名
+      # 新しいブランドを追加する場合は、このリストに追加します
+      targetBrand:
         type: choice
         description: "対象ブランド"
         required: true
@@ -29,36 +59,140 @@ on:
           - "chapun.jp"
           - "resay.jp"
           - "michou.jp"
-      repository_no_register:
+      # リストにないブランドを指定する場合のフィールド
+      # 一時的な更新や新規ブランドのテストに使用
+      customBrandRepo:
         description: "任意のブランドリポジトリ"
         default: ""
 
 jobs:
-  Auth:
+  TokenUpdate:
     runs-on: ubuntu-latest
     timeout-minutes: 1
     env:
-      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
+      # カスタムブランドが指定されていればそちらを優先、なければ定義済みリストから選択したものを使用
+      # この環境変数はこのジョブ内のすべてのステップで使用されます
+      TARGET_REPOSITORY: ${{ inputs.customBrandRepo != '' && inputs.customBrandRepo || inputs.targetBrand }}
 
     steps:
+      # =============================
+      # ステップ1: CronJob APIからジョブリストを取得
+      # =============================
       - name: CronJobリストを取得
+        id: fetch-cronjobs
         run: |
-          response=$(curl -s -X GET \
-            -H "Authorization: Bearer $CRON_JOB_TOKEN" \
-            https://api.cron-job.org/jobs) || { echo 'Failed to fetch CronJob list'; exit 1; }
-          echo "Data from API: $response"
-          echo "$response" > data.json
+          # APIからCronJobの一覧を取得
+          # Authorization ヘッダーにトークンを設定してGETリクエストを送信
+          echo "::group::CronJob APIからデータを取得"
+          echo "実行日時: $(date '+%Y-%m-%d %H:%M:%S')"
+          echo "対象リポジトリ: ${{ env.TARGET_REPOSITORY }}"
 
-      - name: ジョブIDを抽出
+          API_RESPONSE=$(curl -s -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
+            https://api.cron-job.org/jobs) || {
+              echo "::error::CronJobデータの取得に失敗しました"
+              echo "API応答が返ってこないか、ネットワークエラーが発生しました"
+              echo "CRON_JOB_TOKENが有効であることを確認してください"
+              exit 1
+            }
+
+          # レスポンスチェック
+          if echo "$API_RESPONSE" | jq -e '.status != "success"' > /dev/null; then
+            echo "::error::API応答エラー: $(echo "$API_RESPONSE" | jq -r '.error // "不明なエラー"')"
+            exit 1
+          fi
+
+          # レスポンスを一時ファイルに保存
+          # 後続のステップでこのファイルを参照します
+          echo "$API_RESPONSE" > cronjob_data.json
+          echo "::endgroup::"
+
+          # デバッグ用にレスポンスの概要を表示
+          echo "取得したジョブ数: $(jq '.jobs | length' cronjob_data.json)"
+          echo "データ取得完了: $(date '+%Y-%m-%d %H:%M:%S')"
+
+      # =============================
+      # ステップ2: 対象ブランドのジョブIDを抽出
+      # =============================
+      - name: 対象ブランドのジョブIDを抽出
+        id: extract-job-id
         run: |
-          JOB_ID=$(jq -r '.jobs[] | select(.title == "${{ env.REPOSITORY }}") | .jobId' data.json) || { echo 'Failed to extract Job ID'; exit 1; }
-          echo "Job ID: $JOB_ID"
-          echo "job_id=$JOB_ID" >> $GITHUB_ENV
+          echo "::group::ジョブID抽出処理"
+          echo "抽出開始: $(date '+%Y-%m-%d %H:%M:%S')"
 
+          # 対象ブランドに一致するジョブのIDを抽出
+          # jqコマンドを使用して、JSONデータから条件に一致するジョブのIDを取得
+          TARGET_JOB_ID=$(jq -r --arg brand "${{ env.TARGET_REPOSITORY }}" '.jobs[] | select(.title == $brand) | .jobId' cronjob_data.json) || {
+            echo "::error::ジョブIDの抽出に失敗しました"
+            echo "jqコマンドの実行中にエラーが発生しました"
+            exit 1
+          }
+
+          # ジョブIDが見つからない場合のエラーハンドリング
+          # 空文字列の場合は対象ブランドのジョブが存在しないことを意味します
+          if [ -z "$TARGET_JOB_ID" ]; then
+            echo "::error::指定されたブランド '${{ env.TARGET_REPOSITORY }}' のジョブIDが見つかりませんでした"
+            echo "CronJob.orgに該当するジョブが登録されているか確認してください"
+            echo "登録済みのジョブタイトル一覧:"
+            jq -r '.jobs[].title' cronjob_data.json | sort
+            exit 1
+          fi
+
+          # 環境変数に設定して後続のステップでも使用できるようにする
+          echo "抽出したジョブID: $TARGET_JOB_ID"
+          echo "target_job_id=$TARGET_JOB_ID" >> $GITHUB_ENV
+          echo "::endgroup::"
+
+      # =============================
+      # ステップ3: アクセストークンの更新
+      # =============================
       - name: アクセストークンの更新
+        id: update-token
         run: |
-          curl -s -X PATCH \
+          echo "::group::トークン更新処理"
+          echo "更新開始: $(date '+%Y-%m-%d %H:%M:%S')"
+          echo "対象ジョブID: ${{ env.target_job_id }}"
+
+          # 更新用のリクエストを送信
+          # PATCH メソッドでジョブの特定フィールドを更新
+          # extendedData.headers.Authorization に新しいトークンを設定
+          UPDATE_RESPONSE=$(curl -s -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
-            -d '{"job":{"extendedData":{headers:{Authorization:"Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}"}}}}' \
-            https://api.cron-job.org/jobs/${{ env.job_id }} || { echo 'Failed to update access token'; exit 1; }
+            -d '{
+              "job": {
+                "extendedData": {
+                  "headers": {
+                    "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}"
+                  }
+                }
+              }
+            }' \
+            https://api.cron-job.org/jobs/${{ env.target_job_id }}) || {
+              echo "::error::アクセストークンの更新に失敗しました"
+              echo "API呼び出し中にネットワークエラーが発生しました"
+              exit 1
+            }
+
+          # 更新結果の確認
+          # レスポンスのstatusフィールドをチェックして結果を確認
+          UPDATE_STATUS=$(echo "$UPDATE_RESPONSE" | jq -r '.status')
+          if [ "$UPDATE_STATUS" != "success" ]; then
+            echo "::error::トークン更新のレスポンスが成功ではありません: $UPDATE_STATUS"
+            echo "詳細: $(echo "$UPDATE_RESPONSE" | jq -r '.error // "不明なエラー"')"
+            echo "$UPDATE_RESPONSE" > update_error.json
+            echo "エラー詳細をupdate_error.jsonに保存しました"
+            exit 1
+          fi
+
+          # 正常終了時のメッセージ
+          echo "ブランド '${{ env.TARGET_REPOSITORY }}' のアクセストークンを正常に更新しました"
+          echo "完了時刻: $(date '+%Y-%m-%d %H:%M:%S')"
+          echo "::endgroup::"
+
+          # ジョブサマリーにも結果を出力
+          echo "## トークン更新結果" >> $GITHUB_STEP_SUMMARY
+          echo "- **ブランド**: ${{ env.TARGET_REPOSITORY }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **ジョブID**: ${{ env.target_job_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **更新状態**: ✅ 成功" >> $GITHUB_STEP_SUMMARY
+          echo "- **実行時刻**: $(date '+%Y-%m-%d %H:%M:%S')" >> $GITHUB_STEP_SUMMARY

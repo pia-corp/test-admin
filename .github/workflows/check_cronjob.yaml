@@ -29,6 +29,8 @@ jobs:
   check_cron_status:
     runs-on: ubuntu-latest
     timeout-minutes: 1
+    env:
+      TZ: 'Asia/Tokyo'
 
     steps:
       - name: Cronジョブ情報の取得と出力
