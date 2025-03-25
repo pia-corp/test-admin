@@ -172,14 +172,14 @@ jobs:
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
               ${{ env.CRON_API_BASE_URL }}/${{ env.job_id }})
           # 取得したデータをファイルに保存
-          echo "$response" > ${CRON_JOBS_FILE}
+          echo "$response" > ${CRON_JOBS_FILE_UPDATED}
 
           # 現在の有効状態を抽出
-          CURRENT_STATUS=$(jq -r --arg repo "$TARGET_REPOSITORY" '.jobs[] | select(.title == $repo) | .enabled' ${CRON_JOBS_FILE})
+          UPDATE_STATUS=$(jq -r --arg repo "$TARGET_REPOSITORY" '.jobs[] | select(.title == $repo) | .enabled' ${CRON_JOBS_FILE_UPDATED})
 
-          if [ "$CURRENT_STATUS" = "false" ]; then
+          if [ "$UPDATE_STATUS" = "false" ]; then
             echo "❌ エラー: CronJobの無効化に失敗しました"
-            echo "🔍 APIレスポンス: $DISABLE_RESPONSE"
+            echo "🔍 APIレスポンス: $UPDATE_STATUS"
             exit 1
           else
             echo "✅ 予約の無効化リクエストを送信しました"
