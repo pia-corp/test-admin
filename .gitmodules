@@ -28,3 +28,6 @@
 [submodule "melady.jp"]
 	path = melady.jp
 	url = https://github.com/pia-corp/melady.jp
+[submodule "chapun.jp"]
+	path = chapun.jp
+	url = https://github.com/pia-corp/chapun.jp
