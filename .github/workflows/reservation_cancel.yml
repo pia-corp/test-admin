@@ -76,7 +76,7 @@ jobs:
       # カスタムリポジトリが入力された場合はそちらを優先、なければドロップダウンで選択されたリポジトリを使用
       TARGET_REPOSITORY: ${{ inputs.custom_repository != '' && inputs.custom_repository || inputs.repository }}
       # CronJob.org API エンドポイント
-      CRON_API_BASE_URL: "https://api.cron-job.org/jobs"
+      CRON_API_BASE_URL: "https://api.cron-job.org/jobs/"
       # 出力ファイル名
       CRON_JOBS_FILE: "cron_jobs.json"
       UPDATED_JOBS_FILE: "updated_jobs.json"
@@ -161,13 +161,13 @@ jobs:
                 \"enabled\": false
               }
             }" \
-            ${{ env.CRON_API_BASE_URL }}/${{ env.job_id }}
+            ${{ env.CRON_API_BASE_URL }}${{ env.job_id }}
 
           # CronJob APIから無効化したジョブ情報を取得
           response=$(curl -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              ${{ env.CRON_API_BASE_URL }}/${{ env.job_id }})
+              ${{ env.CRON_API_BASE_URL }}${{ env.job_id }})
 
           # 取得したデータをファイルに保存
           echo "$response" > ${CRON_JOBS_FILE_UPDATED}
