@@ -30,9 +30,6 @@ name: 06.トークンの更新（CRON JOB）
 on:
   workflow_dispatch:
     inputs:
-      # 定義済みブランドのリスト
-      # これらは会社が管理する全ブランドのリポジトリ名
-      # 新しいブランドを追加する場合は、このリストに追加します
       targetBrand:
         type: choice
         description: "対象ブランド"
@@ -59,8 +56,6 @@ on:
           - "chapun.jp"
           - "resay.jp"
           - "michou.jp"
-      # リストにないブランドを指定する場合のフィールド
-      # 一時的な更新や新規ブランドのテストに使用
       customBrandRepo:
         description: "任意のブランドリポジトリ"
         default: ""

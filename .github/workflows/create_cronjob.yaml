@@ -82,6 +82,8 @@ jobs:
               exit 1
             }
 
+          echo "$api_response"
+
           # 同じタイトルのジョブが存在するかjqコマンドで確認
           # jqはJSON形式のデータを処理するためのコマンドラインツール
           existing_job=$(echo "$api_response" | jq -r --arg title "${{ env.cron_job_title }}" '.jobs[] | select(.url | contains($title)) | .url')
