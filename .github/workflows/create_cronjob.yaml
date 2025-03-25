@@ -82,12 +82,9 @@ jobs:
               exit 1
             }
 
-          echo "$api_response"
-
           # 同じタイトルのジョブが存在するかjqコマンドで確認
           # jqはJSON形式のデータを処理するためのコマンドラインツール
-          existing_job=$(echo "$api_response" | jq -r --arg title "${{ env.cron_job_title }}" '.jobs[] | select(.url | contains($title)) | .url')
-          echo "$existing_job"
+          existing_job=$(echo "$api_response" | jq -r --arg title "${{ env.cron_job_title }}" '.jobs[] | select(.title | contains($title)) | .url')
 
           # 重複がある場合はエラーメッセージを表示して処理を終了
           if [ -n "$existing_job" ]; then
@@ -128,7 +125,7 @@ jobs:
                   "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}",
                   "X-GitHub-Api-Version": "2022-11-28"
                 },
-                "body": "{\"event_type\": \"init\"}"
+                "body": "{\"event_type\": \"upload\", \"client_payload\": {\"repository\": \"${{ env.cron_job_title }}\", \"repository_custom\": \"${{ env.cron_job_title }}\", \"target\": \"検証環境\", \"sync\": \"full\"}}"
               },
               "requestMethod": 1
             }
@@ -180,7 +177,7 @@ jobs:
             }
 
           # 作成したジョブが存在するか確認
-          created_job=$(echo "$verification_response" | jq -r --arg title "${{ env.cron_job_title }}" '.jobs[] | select(.url | contains($title)) | .url')
+          created_job=$(echo "$verification_response" | jq -r --arg title "${{ env.cron_job_title }}" '.jobs[] | select(.title | contains($title)) | .url')
 
           # 結果をワークフローのサマリーに追加（GitHub Actions UI上に表示される）
           echo "# 処理結果" >> $GITHUB_STEP_SUMMARY
@@ -190,13 +187,4 @@ jobs:
             echo "⚠️ 注意: 作成されたCronジョブはデフォルトで無効状態です。cron-job.orgの管理画面から有効化してください。" >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ ${{ env.cron_job_title }} の予約公開するための初期設定に失敗しました。ログを確認してください。" >> $GITHUB_STEP_SUMMARY
-          fi
-
-          # 次のステップの手順を明示
-          if [ -n "$created_job" ]; then
-            echo "# 次のステップ" >> $GITHUB_STEP_SUMMARY
-            echo "1. cron-job.orgの管理画面にログイン" >> $GITHUB_STEP_SUMMARY
-            echo "2. 作成されたジョブの設定を確認" >> $GITHUB_STEP_SUMMARY
-            echo "3. スケジュールを適切に設定" >> $GITHUB_STEP_SUMMARY
-            echo "4. ジョブを有効化" >> $GITHUB_STEP_SUMMARY
           fi
