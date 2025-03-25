@@ -153,7 +153,7 @@ jobs:
 
           # ジョブを無効化するAPIリクエスト
           # enabled=false に設定することで予約をキャンセル
-          DISABLE_RESPONSE=$(curl -s -X PATCH \
+          curl -s -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d "{
@@ -161,19 +161,30 @@ jobs:
                 \"enabled\": false
               }
             }" \
-            ${{ env.CRON_API_BASE_URL }}/${{ env.job_id }})
+            ${{ env.CRON_API_BASE_URL }}/${{ env.job_id }}
 
-          # レスポンスのステータスを確認
-          HTTP_STATUS=$(echo "$DISABLE_RESPONSE" | jq -r '.status // "unknown"')
+          # # レスポンスのステータスを確認
+          # HTTP_STATUS=$(echo "$DISABLE_RESPONSE" | jq -r '.status // "unknown"')
 
-          if [ "$HTTP_STATUS" = "unknown" ] || [ "$HTTP_STATUS" = "error" ]; then
+          # CronJob APIから無効化したジョブ情報を取得
+          response=$(curl -s -X GET \
+              -H 'Content-Type: application/json' \
+              -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
+              ${{ env.CRON_API_BASE_URL }}/${{ env.job_id }})
+          # 取得したデータをファイルに保存
+          echo "$response" > ${CRON_JOBS_FILE}
+
+          # 現在の有効状態を抽出
+          CURRENT_STATUS=$(jq -r --arg repo "$TARGET_REPOSITORY" '.jobs[] | select(.title == $repo) | .enabled' ${CRON_JOBS_FILE})
+
+          if [ "$CURRENT_STATUS" = "false" ]; then
             echo "❌ エラー: CronJobの無効化に失敗しました"
             echo "🔍 APIレスポンス: $DISABLE_RESPONSE"
             exit 1
+          else
+            echo "✅ 予約の無効化リクエストを送信しました"
+            echo "::endgroup::"
           fi
-
-          echo "✅ 予約の無効化リクエストを送信しました"
-          echo "::endgroup::"
 
       # =============================
       # Step 4: 更新後の情報取得
