@@ -167,33 +167,24 @@ jobs:
           MINUTES: ${{ inputs.minutes }}
         run: |
           echo "::group::CronJob予約設定更新"
-          # JSON形式のリクエストボディを作成
-          REQUEST_BODY=$(cat <<EOF
-          {
-            "job": {
-              "enabled": true,
-              "schedule": {
-                "hours": [$HOUR],
-                "mdays": [$DAY],
-                "minutes": [$MINUTES],
-                "months": [$MONTH]
-              },
-              "extendedData": {
-                "body": "{\"event_type\": \"upload\", \"client_payload\": {\"repository\": \"${{ inputs.repository }}\", \"repository_custom\": \"${{ inputs.repository_custom }}\", \"target\": \"${{ inputs.target_environment }}\", \"sync\": \"${{ inputs.sync_type }}\"}}"
-              }
-            }
-          }
-          EOF
-          )
-
-          echo "リクエスト: $REQUEST_BODY"
-
-
           # CronJobの更新リクエスト実行
           update_response=$(curl -s -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
-            -d "$REQUEST_BODY" \
+            -d '{
+              \"job\": {
+                \"enabled\": true,
+                \"schedule\": {
+                  \"hours\": ['$hour'],
+                  \"mdays\": ['$day'],
+                  \"minutes\": ['$minutes'],
+                  \"months\": ['$month']
+                },
+                \"extendedData\": {
+                  \"body\": \"{\"event_type\": \"active\", \"inputs\": {\"repository\": \"${{ inputs.repository }}\", \"repository_no_register\": \"${{ inputs.repository_no_register }}\", \"target\": \"${{ inputs.target }}\", \"sync\": \"${{ inputs.sync }}\"}}\"
+                }
+              }
+            }'\
             ${{ env.cron_job_api_url }}/${{ env.job_id }})
 
           echo "更新レスポンス: $update_response"
