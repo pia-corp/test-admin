@@ -168,7 +168,7 @@ jobs:
         run: |
           echo "::group::CronJob予約設定更新"
           # CronJobの更新リクエスト実行
-          update_response=$(curl -s -X PATCH \
+          update_response=$(curl -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d '{
