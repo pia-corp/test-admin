@@ -153,7 +153,7 @@ jobs:
 
           # ジョブを無効化するAPIリクエスト
           # enabled=false に設定することで予約をキャンセル
-          DISABLE_RESPONSE=$(curl -s -X PATCH \
+          DISABLE_RESPONSE=$(curl -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d "{
