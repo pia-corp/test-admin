@@ -29,34 +29,6 @@ on:
   # 手動実行のみに対応
   workflow_dispatch:
     inputs:
-      # ドロップダウンで選択するブランドリスト
-      repository:
-        type: choice
-        description: "対象ブランド"
-        required: true
-        options:
-          - "topards.jp"
-          - "feliamo.jp"
-          - "molak.jp"
-          - "ns-collection.jp"
-          - "lilmoon.jp"
-          - "minette-lens.jp"
-          - "mirage-c.jp"
-          - "mimuco.jp"
-          - "harne.jp"
-          - "louer.jp"
-          - "lumieu.jp"
-          - "puuuuchu.jp"
-          - "melady.jp"
-          - "melloew.jp"
-          - "faloom.jp"
-          - "mimicharme.jp"
-          - "lensbe.jp"
-          - "clainel.jp"
-          - "chapun.jp"
-          - "resay.jp"
-          - "michou.jp"
-      # リストにないブランドを手動入力する場合の入力欄
       custom_repository:
         description: "任意のブランドリポジトリ（リストにない場合）"
         default: ""
@@ -74,9 +46,9 @@ jobs:
       actions: write
     env:
       # カスタムリポジトリが入力された場合はそちらを優先、なければドロップダウンで選択されたリポジトリを使用
-      TARGET_REPOSITORY: ${{ inputs.custom_repository != '' && inputs.custom_repository || inputs.repository }}
+      TARGET_REPOSITORY: ${{ inputs.custom_repository }}
       # CronJob.org API エンドポイント
-      CRON_API_BASE_URL: "https://api.cron-job.org/jobs/"
+      CRON_API_BASE_URL: "https://api.cron-job.org/jobs"
       # 出力ファイル名
       CRON_JOBS_FILE: "cron_jobs.json"
       UPDATED_JOBS_FILE: "updated_jobs.json"
@@ -161,28 +133,13 @@ jobs:
                 \"enabled\": false
               }
             }" \
-            ${{ env.CRON_API_BASE_URL }}${{ env.job_id }}
+            ${{ env.CRON_API_BASE_URL }}/${{ env.job_id }}
 
           # CronJob APIから無効化したジョブ情報を取得
           response=$(curl -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              ${{ env.CRON_API_BASE_URL }}${{ env.job_id }})
-
-          # 取得したデータをファイルに保存
-          echo "$response" > ${CRON_JOBS_FILE_UPDATED}
-
-          # 現在の有効状態を抽出
-          UPDATE_STATUS=$(jq -r --arg repo "$TARGET_REPOSITORY" '.jobDetails[] | select(.title == $repo) | .enabled' ${CRON_JOBS_FILE_UPDATED})
-
-          if [ "$UPDATE_STATUS" = "false" ]; then
-            echo "❌ エラー: CronJobの無効化に失敗しました"
-            echo "🔍 APIレスポンス: $UPDATE_STATUS"
-            exit 1
-          else
-            echo "✅ 予約の無効化リクエストを送信しました"
-            echo "::endgroup::"
-          fi
+              ${{ env.CRON_API_BASE_URL }}/${{ env.job_id }})
 
       # =============================
       # Step 4: 更新後の情報取得
