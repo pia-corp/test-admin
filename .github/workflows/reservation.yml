@@ -113,7 +113,7 @@ jobs:
     env:
       # カスタム入力があればそちらを優先、なければリストから選択されたものを使用
       TARGET_REPOSITORY: ${{ inputs.repository_custom != '' && inputs.repository_custom || inputs.repository }}
-      CRON_API_ENDPOINT: "https://api.cron-job.org/jobs"
+      cron_job_api_url: "https://api.cron-job.org/jobs"
 
     steps:
       # =============================
@@ -126,7 +126,7 @@ jobs:
           response=$(curl -s -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              CRON_API_ENDPOINT) || {
+              ${{ env.cron_job_api_url }}) || {
                 echo "::error::CronJobリストの取得に失敗しました"
                 exit 1
               }
@@ -191,7 +191,7 @@ jobs:
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d "$REQUEST_BODY" \
-            CRON_API_ENDPOINT/${{ env.job_id }})
+            ${{ env.cron_job_api_url }}/${{ env.job_id }})
 
           echo "更新レスポンス: $update_response"
 
