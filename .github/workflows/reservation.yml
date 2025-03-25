@@ -112,7 +112,7 @@ jobs:
     timeout-minutes: 3
     env:
       # カスタム入力があればそちらを優先、なければリストから選択されたものを使用
-      TARGET_REPOSITORY: ${{ inputs.repository_custom != '' && inputs.repository_custom || inputs.repository }}
+      cron_job_title: ${{ inputs.repository_custom != '' && inputs.repository_custom || inputs.repository }}
       cron_job_api_url: "https://api.cron-job.org/jobs"
 
     steps:
@@ -141,13 +141,13 @@ jobs:
         id: extract_job_id
         run: |
           echo "::group::ジョブID抽出"
-          JOB_ID=$(jq -r '.jobs[] | select(.title == "'"${env.TARGET_REPOSITORY}"'") | .jobId' cron_jobs.json) || {
+          JOB_ID=$(jq -r '.jobs[] | select(.title == "'"${{ env.cron_job_title }}"'") | .jobId' cron_jobs.json) || {
             echo "::error::ジョブIDの抽出に失敗しました: $(cat cron_jobs.json)"
             exit 1
           }
 
           if [ -z "$JOB_ID" ]; then
-            echo "::error::リポジトリ '${env.TARGET_REPOSITORY}' に対応するジョブIDが見つかりませんでした"
+            echo "::error::リポジトリ '${{ env.cron_job_title }}' に対応するジョブIDが見つかりませんでした"
             exit 1
           fi
 
@@ -228,12 +228,12 @@ jobs:
         run: |
           echo "::group::更新後のジョブ情報抽出"
           # jq を使って各種設定値を抽出
-          JOB_ENABLED=$(jq -r '.jobs[] | select(.title == "'"${env.TARGET_REPOSITORY}"'") | .enabled' updated_cron_jobs.json)
-          JOB_HOURS=$(jq -r '.jobs[] | select(.title == "'"${env.TARGET_REPOSITORY}"'") | .schedule.hours | @csv' updated_cron_jobs.json)
-          JOB_DAYS=$(jq -r '.jobs[] | select(.title == "'"${env.TARGET_REPOSITORY}"'") | .schedule.mdays | @csv' updated_cron_jobs.json)
-          JOB_MINUTES=$(jq -r '.jobs[] | select(.title == "'"${env.TARGET_REPOSITORY}"'") | .schedule.minutes | @csv' updated_cron_jobs.json)
-          JOB_MONTHS=$(jq -r '.jobs[] | select(.title == "'"${env.TARGET_REPOSITORY}"'") | .schedule.months | @csv' updated_cron_jobs.json)
-          JOB_TIMEZONE=$(jq -r '.jobs[] | select(.title == "'"${env.TARGET_REPOSITORY}"'") | .schedule.timezone' updated_cron_jobs.json)
+          JOB_ENABLED=$(jq -r '.jobs[] | select(.title == "'"${{ env.cron_job_title }}"'") | .enabled' updated_cron_jobs.json)
+          JOB_HOURS=$(jq -r '.jobs[] | select(.title == "'"${{ env.cron_job_title }}"'") | .schedule.hours | @csv' updated_cron_jobs.json)
+          JOB_DAYS=$(jq -r '.jobs[] | select(.title == "'"${{ env.cron_job_title }}"'") | .schedule.mdays | @csv' updated_cron_jobs.json)
+          JOB_MINUTES=$(jq -r '.jobs[] | select(.title == "'"${{ env.cron_job_title }}"'") | .schedule.minutes | @csv' updated_cron_jobs.json)
+          JOB_MONTHS=$(jq -r '.jobs[] | select(.title == "'"${{ env.cron_job_title }}"'") | .schedule.months | @csv' updated_cron_jobs.json)
+          JOB_TIMEZONE=$(jq -r '.jobs[] | select(.title == "'"${{ env.cron_job_title }}"'") | .schedule.timezone' updated_cron_jobs.json)
 
           # 抽出した値を環境変数に保存
           echo "JOB_ENABLED=$JOB_ENABLED" >> $GITHUB_ENV
@@ -256,7 +256,7 @@ jobs:
             echo "## 予約情報"
             echo "| 項目 | 値 |"
             echo "| ---- | ---- |"
-            echo "| 対象リポジトリ | ${env.TARGET_REPOSITORY} |"
+            echo "| 対象リポジトリ | ${{ env.cron_job_title }} |"
             echo "| 予約日時 | ${{ env.JOB_MONTHS }}月 ${{ env.JOB_DAYS }}日 ${{ env.JOB_HOURS }}時 ${{ env.JOB_MINUTES }}分 (${{ env.JOB_TIMEZONE }}) |"
             echo "| デプロイ環境 | ${{ inputs.target_environment }} |"
             echo "| 同期タイプ | ${{ inputs.sync_type }} |"
