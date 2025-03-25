@@ -85,6 +85,7 @@ jobs:
           # 同じタイトルのジョブが存在するかjqコマンドで確認
           # jqはJSON形式のデータを処理するためのコマンドラインツール
           existing_job=$(echo "$api_response" | jq -r --arg title "${{ env.cron_job_title }}" '.jobs[] | select(.url | contains($title)) | .url')
+          echo "$existing_job"
 
           # 重複がある場合はエラーメッセージを表示して処理を終了
           if [ -n "$existing_job" ]; then
