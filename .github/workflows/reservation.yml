@@ -126,7 +126,7 @@ jobs:
           response=$(curl -s -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              ${env.CRON_API_ENDPOINT}) || {
+              CRON_API_ENDPOINT) || {
                 echo "::error::CronJobリストの取得に失敗しました"
                 exit 1
               }
@@ -191,7 +191,7 @@ jobs:
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
             -d "$REQUEST_BODY" \
-            ${env.CRON_API_ENDPOINT}/${{ env.job_id }})
+            CRON_API_ENDPOINT/${{ env.job_id }})
 
           echo "更新レスポンス: $update_response"
 
@@ -212,7 +212,7 @@ jobs:
           updated_response=$(curl -s -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              ${env.CRON_API_ENDPOINT}) || {
+              CRON_API_ENDPOINT) || {
                 echo "::error::更新後のCronJob情報取得に失敗しました"
                 exit 1
               }
