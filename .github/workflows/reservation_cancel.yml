@@ -76,7 +76,7 @@ jobs:
       # カスタムリポジトリが入力された場合はそちらを優先、なければドロップダウンで選択されたリポジトリを使用
       TARGET_REPOSITORY: ${{ inputs.custom_repository != '' && inputs.custom_repository || inputs.repository }}
       # CronJob.org API エンドポイント
-      CRON_API_BASE_URL: "https://api.cron-job.org"
+      CRON_API_BASE_URL: "https://api.cron-job.org/jobs"
       # 出力ファイル名
       CRON_JOBS_FILE: "cron_jobs.json"
       UPDATED_JOBS_FILE: "updated_jobs.json"
@@ -96,7 +96,7 @@ jobs:
           response=$(curl -s -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              ${CRON_API_BASE_URL}/jobs) || {
+              ${{ env.CRON_API_BASE_URL }}) || {
                 echo "❌ エラー: CronJobリストの取得に失敗しました"
                 echo "🔍 考えられる原因:"
                 echo "  - CRON_JOB_TOKEN が無効または期限切れ"
@@ -161,7 +161,7 @@ jobs:
                 \"enabled\": false
               }
             }" \
-            ${CRON_API_BASE_URL}/jobs/${{ env.job_id }})
+            ${{ env.CRON_API_BASE_URL }}/${{ env.job_id }})
 
           # レスポンスのステータスを確認
           HTTP_STATUS=$(echo "$DISABLE_RESPONSE" | jq -r '.status // "unknown"')
@@ -188,7 +188,7 @@ jobs:
           updated_response=$(curl -s -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
-              ${CRON_API_BASE_URL}/jobs) || {
+              ${{ env.CRON_API_BASE_URL }}) || {
                 echo "❌ エラー: 更新後のCronJobリスト取得に失敗しました"
                 exit 1
               }
