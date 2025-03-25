@@ -186,6 +186,9 @@ jobs:
           EOF
           )
 
+          echo "リクエスト: $REQUEST_BODY"
+
+
           # CronJobの更新リクエスト実行
           update_response=$(curl -s -X PATCH \
             -H 'Content-Type: application/json' \
