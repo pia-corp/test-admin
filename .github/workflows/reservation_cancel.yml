@@ -163,15 +163,15 @@ jobs:
             }" \
             ${{ env.CRON_API_BASE_URL }}/${{ env.job_id }}
 
-          # # レスポンスのステータスを確認
-          # HTTP_STATUS=$(echo "$DISABLE_RESPONSE" | jq -r '.status // "unknown"')
-
           # CronJob APIから無効化したジョブ情報を取得
           response=$(curl -s -X GET \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}' \
               ${{ env.CRON_API_BASE_URL }}/${{ env.job_id }})
-          # 取得したデータをファイルに保存
+
+          echo "$response"
+
+              # 取得したデータをファイルに保存
           echo "$response" > ${CRON_JOBS_FILE_UPDATED}
 
           # 現在の有効状態を抽出
