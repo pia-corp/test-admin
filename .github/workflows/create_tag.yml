@@ -123,7 +123,14 @@ jobs:
           # 特殊文字をエスケープ
           escaped_changes=$(echo "$changes" | sed 's/"/\\"/g')
 
-          echo "changes=$escaped_changes" >> $GITHUB_OUTPUT
+          # GITHUB_OUTPUTに改行を含む値を渡す
+          {
+            echo "changes<<EOF"
+            echo "$changes"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          # echo "changes=$escaped_changes" >> $GITHUB_OUTPUT
 
       # リリースノートの本文を作成
       - name: Prepare Release Note Body
