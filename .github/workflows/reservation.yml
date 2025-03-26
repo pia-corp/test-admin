@@ -114,7 +114,7 @@ jobs:
         run: |
           echo "::group::ジョブID抽出"
 
-          job_id=$(jq -r '.jobs[] | select(.title == "'"${{ env.target_repository }}"'") | .jobId' cron_jobs.json) || {
+          job_id=$(jq -r '.jobs[] | select(.title == "${{ env.target_repository }}") | .jobId' cron_jobs.json) || {
             echo "::error::ジョブIDの抽出に失敗しました: $(cat cron_jobs.json)"
             exit 1
           }
@@ -142,6 +142,7 @@ jobs:
         run: |
           echo "::group::CronJob予約設定の更新"
 
+          echo "target_repository=${{ env.target_repository }}"
           json_payload=$(jq -n \
             --arg month "$job_month" \
             --arg day "$job_day" \
