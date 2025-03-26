@@ -45,30 +45,25 @@ jobs:
       - name: 前回のリリースタグを取得する
         id: fetch_previous_tag
         run: |
-          echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)" >> $GITHUB_OUTPUT || { echo "::error:: 前回のリリースタグの取得に失敗しました。"; echo "エラーログ: $(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest)"; exit 1; }
+          echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)" >> $GITHUB_OUTPUT
 
       - name: タグを生成する 「{YYYY.MM.DD}-{異なる日のリリース回数}.{当日リリース回数}」
         id: generate_release_tag
         run: |
           today=$(date +'%Y.%m.%d')
           pre_release_date=$(echo ${{ steps.fetch_previous_tag.outputs.pre_tag }} | awk -F'-' '{print $1}')
-          pre_release_counts=$(echo ${{ steps.fetch_previous_tag.outputs.pre_tag }} | awk -F'-' '{print $2}')
-          pre_release_day_count=$(echo $pre_release_counts | awk -F'.' '{print $1}')
-          if [[ $pre_release_date = $today ]]; then
-            pre_release_day_count=pre_release_day_count + 1
-          }
-          pre_release_today_count=$(echo $pre_release_counts | awk -F'.' '{print $2}')
+          pre_release_count=$(echo ${{ steps.fetch_previous_tag.outputs.pre_tag }} | awk -F'-' '{print $2}')
           if [[ ! $pre_release_date = $today ]]; then
-            pre_release_today_count=0
+            pre_release_count=0
           fi
-          echo "release_tag=$today-$(($pre_release_day_count)).$(($pre_release_today_count + 1))" >> $GITHUB_OUTPUT
+          echo "release_tag=$today-$(($pre_release_count + 1))" >> $GITHUB_OUTPUT
 
       - name: PRのDescriptionを取得しマークダウン形式に変換する
         id: fetch_pr_description
         run: |
           echo "pr_description=$(curl -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number}}' \
-            | jq .body | awk '{if ($0 == "null") print ""; else print}')" >> $GITHUB_OUTPUT || { echo "::error:: PRのDescriptionの取得に失敗しました。"; echo "エラーログ: $(curl -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number}}')"; exit 1; }
+            | jq .body | awk '{if ($0 == "null") print ""; else print}')" >> $GITHUB_OUTPUT
 
       - name: 前回リリースからの差分をもとに、変更点を取得する
         id: generate_changes
@@ -83,7 +78,7 @@ jobs:
               "previous_tag_name": "${{ steps.fetch_previous_tag.outputs.pre_tag }}",
               "target_commitish": "main"
             }' | jq .body
-          )" >> $GITHUB_OUTPUT || { echo "::error:: 変更点の取得に失敗しました。"; exit 1; }
+          )" >> $GITHUB_OUTPUT
 
       - name: リリースノートの本文を作成する
         id: prepare_release_note
