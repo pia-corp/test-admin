@@ -83,31 +83,20 @@ jobs:
           for file in $files; do
             relative_path=${file#./${{ env.REPOSITORY }}/public/}
             url="https://${{ env.REPOSITORY }}/$relative_path"
-            lastmod=$(date -r "$file" +"%Y-%m-%dT%H:%M:%S" 2>/dev/null || echo "")\
-            echo "lastmod1: $lastmod"
-            # lastmod=$(stat -c %y "$file" | TZ=Asia/Tokyo git log -1 --format="%ci" -- "$file")
 
-            # Git のコミット日時を取得（JST）
-            lastmod=$(git log -1 --format="%cI" -- "$file" 2>/dev/null || echo "")
-            echo "lastmod1-2: $lastmod"
+            # Git のコミット日時を取得（UTC → JST に変換）
+            lastmod_utc=$(git log -1 --format="%cI" -- "$file" 2>/dev/null || echo "")
+            echo "lastmod_utc: $lastmod_utc"
 
-            lastmod=$(git log -1 --format="%ci" --date=format-local:"%Y-%m-%dT%H:%M:%S" -- "$file" 2>/dev/null || echo "")
-            echo "lastmod2: $lastmod"
-
-            # lastmod=$(git log -1 --format="%ad" --date=format-local:"%Y-%m-%dT%H:%M:%S" -- "$file" 2>/dev/null || echo "")
-            # Git の変更日時を取得（ISO 8601 フォーマットに変換）
-            # lastmod=$(git log -1 --format="%ci" -- "$file" 2>/dev/null || echo "")
-
-
-            # Git のコミット日時を取得（JST）
-            lastmod=$(git log -1 --format="%cI" -- "$file" 2>/dev/null || echo "")
-
-            # Gitで取得できなかった場合はstatで代用
-            if [ -z "$lastmod" ]; then
-              lastmod=$(stat -c %y "$file" | awk -F '[. ]' '{print $1"T"$2}' 2>/dev/null || echo "")
-              echo "lastmod3-1: $lastmod"
-              lastmod=$(TZ=Asia/Tokyo date -d "$lastmod" +"%Y-%m-%dT%H:%M:%S%:z")
-              echo "lastmod3-2: $lastmod"
+            if [ -n "$lastmod_utc" ]; then
+              lastmod=$(TZ=Asia/Tokyo date -d "$lastmod_utc" +"%Y-%m-%dT%H:%M:%S%:z")
+              echo "lastmod: $lastmod"
+            else
+              # Gitで取得できなかった場合は stat の UTC を JST に変換
+              lastmod_utc=$(stat -c %y "$file" | awk -F '[. ]' '{print $1"T"$2"Z"}' 2>/dev/null || echo "")
+              echo "lastmod_utc: $lastmod_utc"
+              lastmod=$(TZ=Asia/Tokyo date -d "$lastmod_utc" +"%Y-%m-%dT%H:%M:%S%:z")
+              echo "lastmod: $lastmod"
             fi
 
             echo "Processing file: $file"
