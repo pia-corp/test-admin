@@ -1,3 +1,6 @@
 [submodule "michou.jp"]
 	path = michou.jp
 	url = https://github.com/pia-corp/michou.jp
+[submodule "chapun.jp"]
+	path = chapun.jp
+	url = https://github.com/pia-corp/chapun.jp
