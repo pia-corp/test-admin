@@ -39,78 +39,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # リポジトリのチェックアウト
-      - name: Checkout Repository
+      - name: リポジトリをチェックアウト
         uses: actions/checkout@v4
 
-      # 前回のリリースタグを取得
-      - name: Fetch Previous Release Tag
+      - name: 前回のリリースタグを取得する
         id: fetch_previous_tag
         run: |
-          # GitHub APIから最新のリリースタグを取得
-          tag_response=$(curl -H 'Accept: application/vnd.github.v3+json' \
-            -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
-            https://api.github.com/repos/${{ github.repository }}/releases/latest)
+          echo "pre_tag=$(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)" >> $GITHUB_OUTPUT || { echo "::error:: 前回のリリースタグの取得に失敗しました。"; echo "エラーログ: $(curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' https://api.github.com/repos/${{ github.repository }}/releases/latest)"; exit 1; }
 
-          # エラーハンドリングと、タグ名の抽出
-          previous_tag=$(echo "$tag_response" | jq -r '.tag_name // ""')
-
-          if [ -z "$previous_tag" ]; then
-            echo "::error::前回のリリースタグの取得に失敗しました。"
-            echo "レスポンス: $tag_response"
-            exit 1
-          fi
-
-          echo "pre_tag=$previous_tag" >> $GITHUB_OUTPUT
-
-      # 新しいリリースタグの生成
-      - name: Generate Release Tag
+      - name: タグを生成する 「{YYYY.MM.DD}-{異なる日のリリース回数}.{当日リリース回数}」
         id: generate_release_tag
         run: |
-          # タグの形式: {YYYY.MM.DD}-{異なる日のリリース回数}.{当日リリース回数}
           today=$(date +'%Y.%m.%d')
-          previous_tag="${{ steps.fetch_previous_tag.outputs.pre_tag }}"
-
-          # 前回のリリース日を抽出
-          previous_release_date=$(echo "$previous_tag" | cut -d'-' -f1)
-
-          # リリース回数のカウント
-          if [ "$previous_release_date" = "$today" ]; then
-            # 同じ日の場合、カウントをインクリメント
-            daily_release_count=$(echo "$previous_tag" | cut -d'-' -f2 | cut -d'.' -f1)
-            daily_release_count=$((daily_release_count + 1))
-            today_release_count=$(echo "$previous_tag" | cut -d'.' -f2)
-            today_release_count=$((today_release_count + 1))
-          else
-            # 異なる日の場合、カウントをリセット
-            daily_release_count=1
-            today_release_count=1
+          pre_release_date=$(echo ${{ steps.fetch_previous_tag.outputs.pre_tag }} | awk -F'-' '{print $1}')
+          pre_release_counts=$(echo ${{ steps.fetch_previous_tag.outputs.pre_tag }} | awk -F'-' '{print $2}')
+          pre_release_day_count=$(echo $pre_release_counts | awk -F'.' '{print $1}')
+          if [[ $pre_release_date = $today ]]; then
+            pre_release_day_count=pre_release_day_count + 1
+          }
+          pre_release_today_count=$(echo $pre_release_counts | awk -F'.' '{print $2}')
+          if [[ ! $pre_release_date = $today ]]; then
+            pre_release_today_count=0
           fi
+          echo "release_tag=$today-$(($pre_release_day_count)).$(($pre_release_today_count + 1))" >> $GITHUB_OUTPUT
 
-          # 新しいリリースタグを生成
-          new_release_tag="${today}-${daily_release_count}.${today_release_count}"
-          echo "release_tag=$new_release_tag" >> $GITHUB_OUTPUT
-
-      # プルリクエストの説明を取得
-      - name: Fetch Pull Request Description
+      - name: PRのDescriptionを取得しマークダウン形式に変換する
         id: fetch_pr_description
         run: |
-          # プルリクエストの本文を取得
-          pr_description=$(curl -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}' \
-            | jq -r '.body // ""')
+          echo "pr_description=$(curl -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number}}' \
+            | jq .body | awk '{if ($0 == "null") print ""; else print}')" >> $GITHUB_OUTPUT || { echo "::error:: PRのDescriptionの取得に失敗しました。"; echo "エラーログ: $(curl -H 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' 'https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number}}')"; exit 1; }
 
-          # 特殊文字をエスケープ
-          escaped_description=$(echo "$pr_description" | sed 's/"/\\"/g')
-
-          echo "pr_description=$escaped_description" >> $GITHUB_OUTPUT
-
-      # 前回リリース以降の変更点を収集
-      - name: Generate Release Changes
+      - name: 前回リリースからの差分をもとに、変更点を取得する
         id: generate_changes
         run: |
-          # GitHub APIを使用して変更点を生成
-          changes=$(curl -X POST \
+          echo "changes=$(
+          curl -X POST \
             -H 'Accept: application/vnd.github.v3+json' \
             -H 'Authorization: token ${{ secrets.GITHUB_TOKEN }}' \
             https://api.github.com/repos/${{ github.repository }}/releases/generate-notes \
@@ -118,61 +82,35 @@ jobs:
               "tag_name": "${{ steps.generate_release_tag.outputs.release_tag }}",
               "previous_tag_name": "${{ steps.fetch_previous_tag.outputs.pre_tag }}",
               "target_commitish": "main"
-            }' | jq -r '.body // ""')
+            }' | jq .body
+          )" >> $GITHUB_OUTPUT || { echo "::error:: 変更点の取得に失敗しました。"; exit 1; }
 
-          # 特殊文字をエスケープ
-          escaped_changes=$(echo "$changes" | sed 's/"/\\"/g')
-
-          # GITHUB_OUTPUTに改行を含む値を渡す
-          {
-            echo "changes<<EOF"
-            echo "$changes"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      # リリースノートの本文を作成
-      - name: Prepare Release Note Body
+      - name: リリースノートの本文を作成する
         id: prepare_release_note
         run: |
-          # プルリクエストの説明と変更点を結合
-          combined_note="${{ steps.fetch_pr_description.outputs.pr_description }}
+          echo "release_note_body=$(echo \
+            ${{ steps.fetch_pr_description.outputs.pr_description }} \
+            ${{ steps.generate_changes.outputs.changes }} \
+            | sed 's/\\"//g' | sed 's/["“]//g')" >> $GITHUB_OUTPUT
 
-          ${{ steps.generate_changes.outputs.changes }}"
-
-          # 余分な引用符を削除し、エスケープ
-          cleaned_note=$(echo "$combined_note" | sed 's/[""]//g')
-
-          # GITHUB_OUTPUTに改行を含む値を渡す
-          {
-            echo "release_note_body<<EOF"
-            echo "$cleaned_note"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-      # リリースの作成
-      - name: Create Release
+      - name: タグを切り、リリースノートを作成する
         run: |
-          # GitHub APIを使用してリリースを作成
           response=$(curl -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -d "{
-              \"tag_name\": \"${{ steps.generate_release_tag.outputs.release_tag }}\",
-              \"target_commitish\": \"main\",
-              \"name\": \"${{ steps.generate_release_tag.outputs.release_tag }}\",
-              \"body\": \"${{ steps.prepare_release_note.outputs.release_note_body }}\"
+            -d "{ \
+              \"tag_name\": \"${{ steps.generate_release_tag.outputs.release_tag }}\", \
+              \"target_commitish\": \"main\", \
+              \"name\": \"${{ steps.generate_release_tag.outputs.release_tag }}\", \
+              \"body\": \"${{ steps.prepare_release_note.outputs.release_note_body }}\" \
             }" \
             -w "%{http_code}" \
             -o response_body.txt \
             https://api.github.com/repos/${{ github.repository }}/releases)
-
-          # レスポンスステータスのチェック
-          status_code=$(tail -n1 <<< "$response")
-          body=$(cat response_body.txt)
-
-          echo "Status Code: $status_code"
-          echo "Response Body: $body"
-
-          if [ "$status_code" -ne 201 ]; then
-            echo "::error::リリースの作成に失敗しました。"
-            exit 1
-          fi
+            status_code=$(tail -n1 <<< "$response")
+            echo "Status Code: $status_code"
+            body=$(cat response_body.txt)
+            echo "Response Body: $body"
+            if [ $status_code -ne 201 ]; then
+              echo "::error:: リリースの作成に失敗しました。"
+              exit 1
+            fi
