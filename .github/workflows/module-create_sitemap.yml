@@ -1,10 +1,30 @@
-name: Create sitemap
+# ===================================================
+# Sitemap Generation Workflow
+# ===================================================
+#
+# 概要
+# このワークフローは、指定されたリポジトリのHTMLファイルから自動的にサイトマップを生成し、
+# 対象のブランチにコミットするGitHub Actionsワークフローです。
+#
+# 主な機能:
+# - 指定されたリポジトリの公開フォルダからHTMLファイルを検索
+# - 各HTMLファイルの最終更新日時を取得
+# - 標準的なサイトマップXML形式でサイトマップを生成
+# - 生成されたサイトマップを指定のブランチにコミット
+#
+# 注意事項 (Cautions):
+# - GitHub Tokenが必要
+# - 対象リポジトリに /public フォルダが存在する必要がある
+# - サブモジュールを含むリポジトリでも動作可能
+# ===================================================
+
+name: Create Sitemap
 
 on:
   workflow_call:
     inputs:
       repository:
-        description: "対象ブランド"
+        description: "対象ブランドのリポジトリ名"
         required: true
         type: string
       repository_no_register:
@@ -17,110 +37,115 @@ on:
         type: string
     secrets:
       GITHUB_TOKEN_VALUE:
-        description: "GitHub Token"
+        description: "GitHub認証トークン"
         required: true
 
+# リポジトリへの書き込み権限を設定
 permissions:
   contents: write
 
 jobs:
-  sitemap:
+  generate_sitemap:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+
+    # 動的にリポジトリ名を設定（任意のリポジトリが指定されている場合は優先）
     env:
-      REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
+      TARGET_REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
+      SITEMAP_OUTPUT_DIR: out/${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
+      PUBLIC_DIR: ./${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}/public
 
     steps:
-      - name: リポジトリをチェックアウト(過去の履歴をすべて取得)
+      # リポジトリの完全な履歴を取得
+      - name: リポジトリのチェックアウト
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ inputs.branch_name }}
 
-      - name: Gitの設定を行う
+      # Git設定を行い、GitHub Tokenを使用した操作を可能にする
+      - name: Gitユーザー設定
         run: |
           git config --global user.name ${{ vars.GIT_USERNAME }}
           git config --global user.email ${{ vars.GIT_MAILADDRESS }}
           git config --global url."https://${{ secrets.GITHUB_TOKEN_VALUE }}@github.com/".insteadOf "https://github.com/"
 
-      - name: submodulesを最新の状態に更新
+      # サブモジュールを含むリポジトリをクローン
+      - name: サブモジュールの更新
         run: |
-          git clone https://github.com/pia-corp/${{env.REPOSITORY}} --recursive || {
+          git clone https://github.com/pia-corp/${{ env.TARGET_REPOSITORY }} --recursive || {
             echo "::error:: サブモジュールの更新に失敗しました。"
-            echo "エラーログ: $(git clone https://github.com/pia-corp/${{env.REPOSITORY}} --recursive)"
             exit 1
           }
         env:
           GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN_VALUE }}
 
-      - name: 公開用のフォルダを再生成
+      # 出力フォルダの準備
+      - name: 出力フォルダの再生成
         run: |
-          # outフォルダを強制削除 (存在しない場合もエラーにならないようにする)
-          rm -rf out/${{ env.REPOSITORY }}
-
-          # outフォルダを作成
+          rm -rf out/${{ env.TARGET_REPOSITORY }}
           mkdir -p out
-          mkdir -p out/${{ env.REPOSITORY }}
-          if [ -d "./${{ env.REPOSITORY }}/public" ]; then
-            cp -R ./${{ env.REPOSITORY }}/public/* out/${{ env.REPOSITORY }}/
+          mkdir -p ${{ env.SITEMAP_OUTPUT_DIR }}
+
+          if [ -d "${{ env.PUBLIC_DIR }}" ]; then
+            cp -R ${{ env.PUBLIC_DIR }}/* ${{ env.SITEMAP_OUTPUT_DIR }}/
           else
-            echo "::error:: ./${{ env.REPOSITORY }}/public ディレクトリが存在しません。"
+            echo "::error:: ${{ env.PUBLIC_DIR }} ディレクトリが存在しません。"
             exit 1
           fi
 
-      - name: サイトマップxmlの生成
+      # サイトマップXMLの生成
+      - name: サイトマップXML生成
         run: |
-          if [ ! -d "./${{ env.REPOSITORY }}/public" ]; then
-            echo "::error:: ./${{ env.REPOSITORY }}/public ディレクトリが存在しません。"
+          if [ ! -d "${{ env.PUBLIC_DIR }}" ]; then
+            echo "::error:: ${{ env.PUBLIC_DIR }} ディレクトリが存在しません。"
             exit 1
           fi
 
-          files=$(find ./${{ env.REPOSITORY }}/public -type f -name '*.html')
+          # HTMLファイルを検索
+          files=$(find ${{ env.PUBLIC_DIR }} -type f -name '*.html')
 
-          echo '<?xml version="1.0" encoding="UTF-8"?>' > out/${{ env.REPOSITORY }}/sitemap.xml
-          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' >> out/${{ env.REPOSITORY }}/sitemap.xml
+          # サイトマップXMLの初期化
+          echo '<?xml version="1.0" encoding="UTF-8"?>' > ${{ env.SITEMAP_OUTPUT_DIR }}/sitemap.xml
+          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' >> ${{ env.SITEMAP_OUTPUT_DIR }}/sitemap.xml
 
+          # 各HTMLファイルについてサイトマップエントリを生成
           for file in $files; do
-            relative_path=${file#./${{ env.REPOSITORY }}/public/}
-            url="https://${{ env.REPOSITORY }}/$relative_path"
+            relative_path=${file#${{ env.PUBLIC_DIR }}/}
+            url="https://${{ env.TARGET_REPOSITORY }}/$relative_path"
 
-            # Git のコミット日時を取得（UTC → JST に変換）
+            # 最終更新日時を取得（UNIXタイムスタンプからJSTに変換）
             lastmod_utc=$(git log -1 --format="%cI" -- "$file" 2>/dev/null || echo "")
-            echo "lastmod_utc: $lastmod_utc"
 
             if [ -n "$lastmod_utc" ]; then
               lastmod=$(TZ=Asia/Tokyo date -d "$lastmod_utc" +"%Y-%m-%dT%H:%M:%S%:z")
-              echo "lastmod: $lastmod"
             else
-              # Gitで取得できなかった場合は stat の UTC を JST に変換
+              # Gitで取得できなかった場合はファイルの最終更新時刻を使用
               lastmod_utc=$(stat -c %y "$file" | awk -F '[. ]' '{print $1"T"$2"Z"}' 2>/dev/null || echo "")
-              echo "lastmod_utc: $lastmod_utc"
               lastmod=$(TZ=Asia/Tokyo date -d "$lastmod_utc" +"%Y-%m-%dT%H:%M:%S%:z")
-              echo "lastmod: $lastmod"
             fi
 
-            echo "Processing file: $file"
-            echo "Last modification time: $lastmod"
-
-            echo '  <url>' >> out/${{ env.REPOSITORY }}/sitemap.xml
-            echo "    <loc>$url</loc>" >> out/${{ env.REPOSITORY }}/sitemap.xml
-            echo "    <lastmod>$lastmod</lastmod>" >> out/${{ env.REPOSITORY }}/sitemap.xml
-            echo '  </url>' >> out/${{ env.REPOSITORY }}/sitemap.xml
+            # サイトマップXMLにエントリを追加
+            echo '  <url>' >> ${{ env.SITEMAP_OUTPUT_DIR }}/sitemap.xml
+            echo "    <loc>$url</loc>" >> ${{ env.SITEMAP_OUTPUT_DIR }}/sitemap.xml
+            echo "    <lastmod>$lastmod</lastmod>" >> ${{ env.SITEMAP_OUTPUT_DIR }}/sitemap.xml
+            echo '  </url>' >> ${{ env.SITEMAP_OUTPUT_DIR }}/sitemap.xml
           done
 
-          echo '</urlset>' >> out/${{ env.REPOSITORY }}/sitemap.xml
+          echo '</urlset>' >> ${{ env.SITEMAP_OUTPUT_DIR }}/sitemap.xml
 
-      - name: 指定したブランチをチェックアウト
-        run: |
-          git checkout ${{ inputs.branch_name }}
+      # 指定のブランチをチェックアウト
+      - name: ブランチのチェックアウト
+        run: git checkout ${{ inputs.branch_name }}
 
-      - name: Commit changes HEAD（最新コミット）とステージングエリアの差分があるか確認し、差分があればコミットする
+      # 変更をコミットしてプッシュ
+      - name: 変更のコミットとプッシュ
         run: |
           git add .
           if ! git diff-index --quiet HEAD; then
-            git commit -m "Automatically create sitemap"
-            echo "::notice:: サイトマップの生成"
+            git commit -m "Automatically generate sitemap for ${{ env.TARGET_REPOSITORY }}"
+            echo "::notice:: サイトマップを生成しました"
           else
-            echo "::warning:: コミット対象が見つかりませんでした。"
+            echo "::warning:: コミット対象のファイルがありませんでした"
           fi
           git push -u origin ${{ inputs.branch_name }}
