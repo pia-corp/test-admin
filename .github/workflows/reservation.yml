@@ -118,7 +118,7 @@ jobs:
             echo "::error::ジョブIDの抽出に失敗しました: $(cat cron_jobs.json)"
             exit 1
           }
-          echo "job_id"
+          echo "$job_id"
 
           if [ -z "$job_id" ]; then
             echo "::error::リポジトリ '${{ env.target_repository }}' に対応するジョブIDが見つかりませんでした"
