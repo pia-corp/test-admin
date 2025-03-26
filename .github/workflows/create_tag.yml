@@ -130,8 +130,6 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-          # echo "changes=$escaped_changes" >> $GITHUB_OUTPUT
-
       # リリースノートの本文を作成
       - name: Prepare Release Note Body
         id: prepare_release_note
@@ -144,7 +142,12 @@ jobs:
           # 余分な引用符を削除し、エスケープ
           cleaned_note=$(echo "$combined_note" | sed 's/[""]//g')
 
-          echo "release_note_body=$cleaned_note" >> $GITHUB_OUTPUT
+          # GITHUB_OUTPUTに改行を含む値を渡す
+          {
+            echo "release_note_body<<EOF"
+            echo "$cleaned_note"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       # リリースの作成
       - name: Create Release
