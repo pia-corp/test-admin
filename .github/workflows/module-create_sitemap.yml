@@ -98,11 +98,15 @@ jobs:
             # Git の変更日時を取得（ISO 8601 フォーマットに変換）
             # lastmod=$(git log -1 --format="%ci" -- "$file" 2>/dev/null || echo "")
 
+
+            # Git のコミット日時を取得（JST）
+            lastmod=$(git log -1 --format="%cI" -- "$file" 2>/dev/null || echo "")
+
             # Gitで取得できなかった場合はstatで代用
             if [ -z "$lastmod" ]; then
-              lastmod=$(stat -c %y "$file" | awk '{print $1"T"$2$3}' 2>/dev/null || echo "")
+              lastmod=$(stat -c %y "$file" | awk -F '[. ]' '{print $1"T"$2}' 2>/dev/null || echo "")
               echo "lastmod3-1: $lastmod"
-              lastmod=$(stat -c %y "$file" | sed 's/ /T/')
+              lastmod=$(TZ=Asia/Tokyo date -d "$lastmod" +"%Y-%m-%dT%H:%M:%S%:z")
               echo "lastmod3-2: $lastmod"
             fi
 
