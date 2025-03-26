@@ -113,6 +113,7 @@ jobs:
         id: extract_job_id
         run: |
           echo "::group::ジョブID抽出"
+          echo "cron_jobs.json"
 
           job_id=$(jq -r '.jobs[] | select(.title == "${{ env.target_repository }}") | .jobId' cron_jobs.json) || {
             echo "::error::ジョブIDの抽出に失敗しました: $(cat cron_jobs.json)"
