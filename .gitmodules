@@ -34,3 +34,6 @@
 [submodule "michou.jp"]
 	path = michou.jp
 	url = https://github.com/pia-corp/michou.jp
+[submodule "faloom.jp"]
+	path = faloom.jp
+	url = https://github.com/pia-corp/faloom.jp
