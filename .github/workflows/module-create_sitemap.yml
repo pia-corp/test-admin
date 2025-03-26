@@ -31,16 +31,6 @@ jobs:
       REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
 
     steps:
-      - name: 概要
-        run: |
-          {
-            echo "# 概要"
-            echo "指定したリポジトリ（ブランド）のファイルをサーバにアップロードします。"
-            echo "| リポジトリ | アップロード先 | ステータス |"
-            echo "| -- | -- | -- |"
-            echo "| ${{ env.REPOSITORY }} | ${{ env.Timezone }} ${{ env.Months }}月${{ env.MDays }}日${{ env.Hours }}時${{ env.Minutes }}分 | ${{ env.ENABLED }} |"
-          } >> $GITHUB_STEP_SUMMARY
-
       - name: リポジトリをチェックアウト(過去の履歴をすべて取得)
         uses: actions/checkout@v4
         with:
@@ -88,21 +78,32 @@ jobs:
           files=$(find ./${{ env.REPOSITORY }}/public -type f -name '*.html')
 
           echo '<?xml version="1.0" encoding="UTF-8"?>' > out/${{ env.REPOSITORY }}/sitemap.xml
-          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> out/${{ env.REPOSITORY }}/sitemap.xml
+          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' >> out/${{ env.REPOSITORY }}/sitemap.xml
 
           for file in $files; do
             relative_path=${file#./${{ env.REPOSITORY }}/public/}
             url="https://${{ env.REPOSITORY }}/$relative_path"
-            lastmod=$(date -r "$file" +"%Y-%m-%dT%H:%M:%S.%3NZ" 2>/dev/null || echo "")
+            lastmod=$(date -r "$file" +"%Y-%m-%dT%H:%M:%S" 2>/dev/null || echo "")\
+            echo "lastmod1: $lastmod"
             # lastmod=$(stat -c %y "$file" | TZ=Asia/Tokyo git log -1 --format="%ci" -- "$file")
 
-            # Git のコミット日時を取得（JST、小数点以下3桁までの秒）
-            lastmod=$(git log -1 --format="%ad" --date=format-local:"%Y-%m-%dT%H:%M:%S.%3NZ" -- "$file" 2>/dev/null || echo "")
+            # Git のコミット日時を取得（JST）
+            lastmod=$(git log -1 --format="%cI" -- "$file" 2>/dev/null || echo "")
+            echo "lastmod1-2: $lastmod"
+
+            lastmod=$(git log -1 --format="%ci" --date=format-local:"%Y-%m-%dT%H:%M:%S" -- "$file" 2>/dev/null || echo "")
+            echo "lastmod2: $lastmod"
+
+            # lastmod=$(git log -1 --format="%ad" --date=format-local:"%Y-%m-%dT%H:%M:%S" -- "$file" 2>/dev/null || echo "")
             # Git の変更日時を取得（ISO 8601 フォーマットに変換）
             # lastmod=$(git log -1 --format="%ci" -- "$file" 2>/dev/null || echo "")
 
+            # Gitで取得できなかった場合はstatで代用
             if [ -z "$lastmod" ]; then
+              lastmod=$(stat -c %y "$file" | awk '{print $1"T"$2$3}' 2>/dev/null || echo "")
+              echo "lastmod3-1: $lastmod"
               lastmod=$(stat -c %y "$file" | sed 's/ /T/')
+              echo "lastmod3-2: $lastmod"
             fi
 
             echo "Processing file: $file"
