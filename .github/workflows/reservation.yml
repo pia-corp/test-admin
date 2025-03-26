@@ -123,7 +123,7 @@ jobs:
           if [ -z "$job_id" ]; then
             echo "::error::リポジトリ '${{ env.target_repository }}' に対応するジョブIDが見つかりませんでした"
             exit 1
-          }
+          fi
 
           echo "抽出されたジョブID: $job_id"
           echo "repository_job_id=$job_id" >> $GITHUB_ENV
