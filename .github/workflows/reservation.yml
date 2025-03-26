@@ -118,7 +118,6 @@ jobs:
             echo "::error::ジョブIDの抽出に失敗しました: $(cat cron_jobs.json)"
             exit 1
           }
-          echo "$job_id"
 
           if [ -z "$job_id" ]; then
             echo "::error::リポジトリ '${{ env.target_repository }}' に対応するジョブIDが見つかりませんでした"
@@ -176,21 +175,11 @@ jobs:
 
           echo "更新リクエスト: $json_payload"
 
-          update_response=$(curl -X PATCH \
+          curl -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.cron_job_token_secret }}" \
             -d "$json_payload" \
-            ${{ env.cron_job_api_endpoint }}/${{ env.repository_job_id }})
-
-          echo "更新レスポンス: $update_response"
-
-          # 更新に失敗した場合のエラーハンドリング
-          if [[ $(echo "$update_response" | jq -r '.status') != "success" ]]; then
-            echo "::error::CronJob更新に失敗しました: $update_response"
-            exit 1
-          fi
-
-          echo "::endgroup::"
+            ${{ env.cron_job_api_endpoint }}/${{ env.repository_job_id }}
 
       # =============================
       # ステップ4: 更新後のCronJob情報を再取得して確認
