@@ -30,62 +30,33 @@ name: 03.公開予約
 on:
   workflow_dispatch:
     inputs:
-      # ブランド選択用の入力フィールド
-      brand_repository:
-        type: choice
-        description: "対象ブランド（リストから選択）"
-        required: true
-        options:
-          - "topards.jp"
-          - "feliamo.jp"
-          - "molak.jp"
-          - "ns-collection.jp"
-          - "lilmoon.jp"
-          - "minette-lens.jp"
-          - "mirage-c.jp"
-          - "mimuco.jp"
-          - "harne.jp"
-          - "louer.jp"
-          - "lumieu.jp"
-          - "puuuuchu.jp"
-          - "melady.jp"
-          - "melloew.jp"
-          - "faloom.jp"
-          - "mimicharme.jp"
-          - "lensbe.jp"
-          - "clainel.jp"
-          - "chapun.jp"
-          - "resay.jp"
-          - "michou.jp"
-
-      # リストにないブランド用の自由入力フィールド
       brand_repository_custom:
-        description: "リストにないブランド（任意入力）"
+        description: "ドメイン"
         default: ""
 
       # 公開日時設定フィールド
       schedule_month:
         type: choice
         required: true
-        description: "予約月"
+        description: "予約（月）"
         options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
       schedule_day:
         type: choice
         required: true
-        description: "予約日"
+        description: "予約（日）"
         options: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
 
       schedule_hour:
         type: choice
         required: true
-        description: "予約時間"
+        description: "予約（時間）"
         options: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
 
       schedule_minute:
         type: choice
         required: true
-        description: "予約分"
+        description: "予約（分）"
         options: ["00", "05", "10", "15", "20", "25", "30", "35", "40", "45", "50", "55"]
 
       # 環境設定フィールド
@@ -112,7 +83,7 @@ jobs:
     timeout-minutes: 3
     env:
       # カスタム入力があればそちらを優先、なければリストから選択されたものを使用
-      target_repository: ${{ inputs.brand_repository_custom != '' && inputs.brand_repository_custom || inputs.brand_repository }}
+      target_repository: ${{ inputs.brand_repository_custom }}
       cron_job_api_endpoint: "https://api.cron-job.org/jobs"
       cron_job_token_secret: ${{ secrets.CRON_JOB_TOKEN }}
 
@@ -167,24 +138,46 @@ jobs:
           job_day: ${{ inputs.schedule_day }}
           job_hour: ${{ inputs.schedule_hour }}
           job_minute: ${{ inputs.schedule_minute }}
+
         run: |
+          echo "::group::CronJob予約設定の更新"
+
+          json_payload=$(jq -n \
+            --arg month "$job_month" \
+            --arg day "$job_day" \
+            --arg hour "$job_hour" \
+            --arg minute "$job_minute" \
+            --arg repo "${{ inputs.brand_repository_custom }}" \
+            --arg target "${{ inputs.deploy_target }}" \
+            --arg sync "${{ inputs.sync_method }}" \
+            '{
+              job: {
+                enabled: true,
+                schedule: {
+                  hours: [$hour | tonumber],
+                  mdays: [$day | tonumber],
+                  minutes: [$minute | tonumber],
+                  months: [$month | tonumber]
+                },
+                extendedData: {
+                  body: {
+                    event_type: "upload",
+                    inputs: {
+                      repository: $repo,
+                      target: $target,
+                      sync: $sync
+                    }
+                  } | @json
+                }
+              }
+            }')
+
+          echo "更新リクエスト: $json_payload"
+
           update_response=$(curl -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.cron_job_token_secret }}" \
-            -d '{
-              \"job\": {
-                \"enabled\": true,
-                \"schedule\": {
-                  \"hours\": ['$hour'],
-                  \"mdays\": ['$day'],
-                  \"minutes\": ['$minutes'],
-                  \"months\": ['$month']
-                },
-                \"extendedData\": {
-                  \"body\": \"{\"event_type\": \"upload\", \"inputs\": {\"repository\": \"${{ inputs.brand_repository }}\", \"repository_custom\": \"${{ inputs.brand_repository_custom }}\", \"target\": \"${{ inputs.deploy_target }}\", \"sync\": \"${{ inputs.sync_method }}\"}}\"
-                }
-              }
-            }'\
+            -d "$json_payload" \
             ${{ env.cron_job_api_endpoint }}/${{ env.repository_job_id }})
 
           echo "更新レスポンス: $update_response"
@@ -194,6 +187,7 @@ jobs:
             echo "::error::CronJob更新に失敗しました: $update_response"
             exit 1
           fi
+
           echo "::endgroup::"
 
       # =============================
