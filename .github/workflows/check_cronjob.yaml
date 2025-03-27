@@ -33,55 +33,34 @@
 #     - Cron-job.org のアカウントでAPIキー（トークン）を発行する必要があります。
 #     - 発行したAPIトークンを、このワークフローが動作するGitHubリポジトリの
 #       Secretsに `CRON_JOB_TOKEN` という名前で登録してください。
-#       Actions secrets の設定手順:
-#       https://docs.github.com/ja/actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository
-#   - API制限:
-#     - Cron-job.org APIには利用制限が存在する可能性があります。
-#       高頻度での実行は避けてください。
 #   - エラーハンドリング:
 #     - API通信エラーやAPI自体が返すエラーメッセージを検知し、
 #       ワークフローを失敗させるようにしています。
 #     - ジョブが1件も登録されていない場合は警告メッセージを出力しますが、
 #       ワークフローは正常終了します。
-#   - 依存ツール:
-#     - `curl`: APIリクエストに使用します。
-#     - `jq`: JSONデータのパースに使用します。
-#     - これらは `ubuntu-latest` ランナーにプリインストールされています。
-#   - タイムゾーン:
-#     - ワークフロー全体のタイムゾーンは `Asia/Tokyo` に設定されています。
-#     - Cronジョブ自体のスケジュールタイムゾーンは、APIから取得した
-#       各ジョブの設定 (`schedule.timezone`) に依存します。
 #
 # ===================================================
 
-name: 07. Cronジョブ設定と公開状況の確認 (Refactored v2) # ワークフロー名 (バージョン追記)
+name: 06. Cronジョブ設定と公開状況の確認
 
 on:
-  workflow_dispatch: # 手動実行をトリガーとする
+  workflow_dispatch:
 
 permissions:
-  contents: read # リポジトリのコンテンツ読み取り権限 (デフォルト)
+  contents: read
 
 jobs:
-  # ジョブ名をより具体的に (スネークケースで統一)
   check_cron_job_status:
-    # ジョブの実行環境
     runs-on: ubuntu-latest
-    # ジョブのタイムアウト設定 (1分)
     timeout-minutes: 1
-    # ジョブ内で利用する環境変数
     env:
-      TZ: 'Asia/Tokyo' # タイムゾーンを日本時間に設定
+      TZ: 'Asia/Tokyo'
 
     steps:
-      # ステップ名をより具体的に
       - name: Cronジョブ情報の取得とサマリー出力
-        # ステップ内で利用する環境変数 (Secretsから取得)
         env:
-          # Cron-job.org APIへの接続に必要な認証トークン
-          # GitHubリポジトリのSecretsに `CRON_JOB_TOKEN` として設定が必要
           CRON_JOB_TOKEN: ${{ secrets.CRON_JOB_TOKEN }}
-        # 実行するシェルスクリプト
+          api_endpoint: "https://api.cron-job.org/jobs"
         run: |
           # スクリプトの堅牢性を高める設定
           # -e: コマンドがエラーになったら即座に終了
@@ -93,28 +72,23 @@ jobs:
           # =============================
           echo "INFO: Cron-job.org APIからジョブ情報を取得しています..."
 
-          # APIエンドポイントURLを変数に格納 (可読性向上)
-          # local を削除
-          api_endpoint="https://api.cron-job.org/jobs"
-
           # curlコマンドでAPIにGETリクエストを送信し、レスポンスを変数に格納
           # -s: プログレスメーターやエラーメッセージを非表示 (エラーは後続でハンドリング)
           # -X GET: HTTPメソッドを指定
           # -H "Authorization: Bearer $CRON_JOB_TOKEN": 認証ヘッダーを追加
           # || { ... }: curlコマンドが失敗した場合の処理 (ネットワークエラー等)
-          # local を削除
-          cron_job_api_response
           cron_job_api_response=$(curl -s -X GET \
             -H "Authorization: Bearer $CRON_JOB_TOKEN" \
-            "$api_endpoint") || {
+            $api_endpoint) || {
               # curl自体の失敗 (ネットワーク接続不可など)
               echo "::error::Cron-job.org APIへの接続に失敗しました。ネットワーク設定やエンドポイントを確認してください。"
               # 失敗時の詳細情報取得を試みる (エラーメッセージが含まれる可能性があるため)
-              # local を削除
-              error_detail
               error_detail=$(curl -s -X GET -H "Authorization: Bearer $CRON_JOB_TOKEN" "$api_endpoint")
               echo "::error::詳細: $error_detail"
-              exit 1 # エラーコード 1 でスクリプトを終了
+
+              echo "::error:: CRONジョブの取得に失敗しました。"
+              echo "エラーログ: $(curl -s -X GET -H "Authorization: Bearer $CRON_JOB_TOKEN" https://api.cron-job.org/jobs)"
+              exit 1
             }
 
           # APIレスポンスがエラーを含んでいないか確認
