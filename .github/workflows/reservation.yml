@@ -153,7 +153,7 @@ jobs:
             --arg sync "${{ inputs.sync_method }}" \
             '{
               "job": {
-                "enabled": true,
+                "enabled": "true",
                 "schedule": {
                   "hours": [$hour | tonumber],
                   "mdays": [$day | tonumber],
