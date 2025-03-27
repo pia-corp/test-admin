@@ -159,20 +159,25 @@ jobs:
                   "mdays": [$day | tonumber],
                   "minutes": [$minute | tonumber],
                   "months": [$month | tonumber]
+                },
+                "extendedData": {
+                  "body": {
+                    "event_type": "upload",
+                    "inputs": {
+                      "repository": $repo,
+                      "target": $target,
+                      "sync": $sync
+                    }
+                  } | @json
                 }
               }
             }')
-
-
 
           curl -X PATCH \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ env.cron_job_token_secret }}' \
               -d "$json_payload" \
               ${{ env.cron_job_api_endpoint }}/${{ env.repository_job_id }}
-
-              # -d '{"job":{"enabled":true,"schedule":{"hours":[${{env.job_hour}}],"mdays":[${{env.job_day}}],"minutes":[${{env.job_minute}}],"months":[${{env.job_month}}]}}}' \
-
 
       # =============================
       # ステップ4: 更新後のCronJob情報を再取得して確認
