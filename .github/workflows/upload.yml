@@ -119,7 +119,7 @@ jobs:
       # 1. repository_dispatchの場合: client_payloadからの値を使用
       # 2. workflow_dispatchの場合: inputsからの値を使用
       # 3. custom_repositoryが指定されていればそちらを優先
-      TARGET_REPOSITORY: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.repository_no_register && github.event.client_payload.repository_no_register || github.event.client_payload.repository) || github.event_name == 'workflow_dispatch' && (inputs.repository_no_register && inputs.repository_no_register || inputs.repository) }}
+      TARGET_REPOSITORY: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.custom_repository && github.event.client_payload.custom_repository || github.event.client_payload.repository) || github.event_name == 'workflow_dispatch' && (inputs.custom_repository && inputs.custom_repository || inputs.repository) }}
 
       # デプロイ先環境の決定ロジック（デフォルト: 検証環境）
       TARGET_ENVIRONMENT: ${{ github.event.client_payload.target && github.event.client_payload.target || inputs.target && inputs.target || '検証環境' }}

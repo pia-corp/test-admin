@@ -161,10 +161,16 @@ jobs:
                   "months": [$month | tonumber]
                 },
                 "extendedData": {
+                  "headers": {
+                    "Accept": "application/vnd.github+json",
+                    "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}",
+                    "X-GitHub-Api-Version": "2022-11-28"
+                  },
                   "body": {
                     "event_type": "upload",
-                    "inputs": {
+                    "client_payload": {
                       "repository": $repo,
+                      "repository_custom": $repo,
                       "target": $target,
                       "sync": $sync
                     }
