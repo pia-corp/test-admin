@@ -146,7 +146,7 @@ jobs:
           curl -X PATCH \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer ${{ env.cron_job_token_secret }}' \
-              -d '{"job":{"enabled":"true","schedule":{"hours":[${{env.job_hour}}],"mdays":[${{env.job_day}}],"minutes":[${{env.job_minute}}],"months":[${{env.job_month}}]}}}' \
+              -d '{"job":{"enabled":true}}' \
               ${{ env.cron_job_api_endpoint }}/${{ env.repository_job_id }}
 
       # =============================
