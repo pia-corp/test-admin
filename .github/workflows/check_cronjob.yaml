@@ -94,8 +94,6 @@ jobs:
           # APIレスポンスがエラーを含んでいないか確認
           # jqを使用してレスポンスJSON内の 'error' フィールドを抽出
           # 値が "null" (文字列) でない場合はAPIエラーと判断
-          # local を削除
-          api_error_message
           api_error_message=$(echo "$cron_job_api_response" | jq -r '.error')
 
           if [ "$api_error_message" != "null" ]; then
@@ -106,8 +104,6 @@ jobs:
           fi
 
           # 取得したジョブ数をjqでカウント
-          # local を削除
-          total_job_count
           total_job_count=$(echo "$cron_job_api_response" | jq -r '.jobs | length')
           echo "INFO: 取得したジョブ数: $total_job_count"
 
@@ -142,10 +138,6 @@ jobs:
             # while IFS= read -r job_json: 展開された各行 (ジョブJSON) を読み込む
             echo "$cron_job_api_response" | jq -c '.jobs[]' | while IFS= read -r job_json; do
               # 各ジョブの情報をjqで抽出 (-r: raw出力, JSON文字列の""を除去)
-              # ループ内の変数宣言から local を削除 (Bashのループ内変数は通常ローカルスコープのように振る舞う)
-              job_id job_title is_enabled
-              schedule_timezone schedule_minutes schedule_hours schedule_mdays schedule_months
-              job_status schedule_details
 
               job_id=$(echo "$job_json" | jq -r '.jobId')
               # titleが存在しない場合に備え、デフォルト値を設定
