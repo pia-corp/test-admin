@@ -184,17 +184,17 @@ jobs:
       # - 検証環境は常にfullアップロード（全ファイル再配置）
       # - 異なるFTPライブラリを使用（検証環境専用）
       # =============================
-      - name: 検証環境へのFTPデプロイ
-        if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ vars.DEVELOPMENT_HOST }}
-          username: ${{ vars.DEVELOPMENT_USER_NAME }}
-          password: ${{ secrets.DEVELOPMENT_PASSWORD }}
-          port: ${{ vars.DEVELOPMENT_PORT }}
-          local-dir: out/${{ env.TARGET_REPOSITORY }}/  # ローカルの対象ディレクトリ
-          server-dir: ${{ vars.DEVELOPMENT_REMOTE_PATH }}/${{ env.TARGET_REPOSITORY }}/  # リモートの対象ディレクトリ
-          # 注: このアクションはdeltaモードをサポートしていないため、常にfullアップロードになる
+      # - name: 検証環境へのFTPデプロイ
+      #   if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
+      #   uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      #   with:
+      #     server: ${{ vars.DEVELOPMENT_HOST }}
+      #     username: ${{ vars.DEVELOPMENT_USER_NAME }}
+      #     password: ${{ secrets.DEVELOPMENT_PASSWORD }}
+      #     port: ${{ vars.DEVELOPMENT_PORT }}
+      #     local-dir: out/${{ env.TARGET_REPOSITORY }}/  # ローカルの対象ディレクトリ
+      #     server-dir: ${{ vars.DEVELOPMENT_REMOTE_PATH }}/${{ env.TARGET_REPOSITORY }}/  # リモートの対象ディレクトリ
+      #     # 注: このアクションはdeltaモードをサポートしていないため、常にfullアップロードになる
 
       # =============================
       # ステップ3B: 検証環境デプロイ結果のサマリー表示
