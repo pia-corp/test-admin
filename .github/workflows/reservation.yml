@@ -179,17 +179,14 @@ jobs:
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ env.cron_job_token_secret }}" \
             -d "{
-              "job": {
-                "enabled": true,
-                "schedule": {
-                  "hours": [$job_hour],
-                  "mdays": [$job_day],
-                  "minutes": [$job_minute],
-                  "months": [$job_month]
-                },
-                "extendedData": {
-                  "body": "{\"event_type\": \"test_result\", \"inputs\": {\"repository\":${{ inputs.brand_repository_custom }},\"repository_no_register\":${{ inputs.deploy_target }}, \"target\": ${{ inputs.target }}, \"sync\": ${{ inputs.sync_method }}}}"
-                },
+              \"job\": {
+                \"enabled\": true,
+                \"schedule\": {
+                  \"hours\": [$job_hour],
+                  \"mdays\": [$job_day],
+                  \"minutes\": [$job_minute],
+                  \"months\": [$job_month]
+                }
               }
             }" \
             ${{ env.cron_job_api_endpoint }}/${{ env.repository_job_id }}
