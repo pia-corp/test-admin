@@ -177,7 +177,7 @@ jobs:
 
           curl -X PATCH \
             -H 'Content-Type: application/json' \
-            -H "Authorization: Bearer ${{ secrets.cron_job_token_secret }}" \
+            -H "Authorization: Bearer ${{ env.cron_job_token_secret }}" \
             -d '$json_payload' \
             ${{ env.cron_job_api_endpoint }}/${{ env.repository_job_id }}
 
