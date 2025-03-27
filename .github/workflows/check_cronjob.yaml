@@ -33,15 +33,28 @@
 #     - Cron-job.org のアカウントでAPIキー（トークン）を発行する必要があります。
 #     - 発行したAPIトークンを、このワークフローが動作するGitHubリポジトリの
 #       Secretsに `CRON_JOB_TOKEN` という名前で登録してください。
+#       Actions secrets の設定手順:
+#       https://docs.github.com/ja/actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository
+#   - API制限:
+#     - Cron-job.org APIには利用制限が存在する可能性があります。
+#       高頻度での実行は避けてください。
 #   - エラーハンドリング:
 #     - API通信エラーやAPI自体が返すエラーメッセージを検知し、
 #       ワークフローを失敗させるようにしています。
 #     - ジョブが1件も登録されていない場合は警告メッセージを出力しますが、
 #       ワークフローは正常終了します。
+#   - 依存ツール:
+#     - `curl`: APIリクエストに使用します。
+#     - `jq`: JSONデータのパースに使用します。
+#     - これらは `ubuntu-latest` ランナーにプリインストールされています。
+#   - タイムゾーン:
+#     - ワークフロー全体のタイムゾーンは `Asia/Tokyo` に設定されています。
+#     - Cronジョブ自体のスケジュールタイムゾーンは、APIから取得した
+#       各ジョブの設定 (`schedule.timezone`) に依存します。
 #
 # ===================================================
 
-name: 07. Cronジョブ設定と公開状況の確認 (Refactored) # ワークフロー名 (GitHub ActionsのUIに表示)
+name: 07. Cronジョブ設定と公開状況の確認 (Refactored v2) # ワークフロー名 (バージョン追記)
 
 on:
   workflow_dispatch: # 手動実行をトリガーとする
@@ -81,21 +94,24 @@ jobs:
           echo "INFO: Cron-job.org APIからジョブ情報を取得しています..."
 
           # APIエンドポイントURLを変数に格納 (可読性向上)
-          local api_endpoint="https://api.cron-job.org/jobs"
+          # local を削除
+          api_endpoint="https://api.cron-job.org/jobs"
 
           # curlコマンドでAPIにGETリクエストを送信し、レスポンスを変数に格納
           # -s: プログレスメーターやエラーメッセージを非表示 (エラーは後続でハンドリング)
           # -X GET: HTTPメソッドを指定
           # -H "Authorization: Bearer $CRON_JOB_TOKEN": 認証ヘッダーを追加
           # || { ... }: curlコマンドが失敗した場合の処理 (ネットワークエラー等)
-          local cron_job_api_response
+          # local を削除
+          cron_job_api_response
           cron_job_api_response=$(curl -s -X GET \
             -H "Authorization: Bearer $CRON_JOB_TOKEN" \
             "$api_endpoint") || {
               # curl自体の失敗 (ネットワーク接続不可など)
               echo "::error::Cron-job.org APIへの接続に失敗しました。ネットワーク設定やエンドポイントを確認してください。"
               # 失敗時の詳細情報取得を試みる (エラーメッセージが含まれる可能性があるため)
-              local error_detail
+              # local を削除
+              error_detail
               error_detail=$(curl -s -X GET -H "Authorization: Bearer $CRON_JOB_TOKEN" "$api_endpoint")
               echo "::error::詳細: $error_detail"
               exit 1 # エラーコード 1 でスクリプトを終了
@@ -104,7 +120,8 @@ jobs:
           # APIレスポンスがエラーを含んでいないか確認
           # jqを使用してレスポンスJSON内の 'error' フィールドを抽出
           # 値が "null" (文字列) でない場合はAPIエラーと判断
-          local api_error_message
+          # local を削除
+          api_error_message
           api_error_message=$(echo "$cron_job_api_response" | jq -r '.error')
 
           if [ "$api_error_message" != "null" ]; then
@@ -115,7 +132,8 @@ jobs:
           fi
 
           # 取得したジョブ数をjqでカウント
-          local total_job_count
+          # local を削除
+          total_job_count
           total_job_count=$(echo "$cron_job_api_response" | jq -r '.jobs | length')
           echo "INFO: 取得したジョブ数: $total_job_count"
 
@@ -150,9 +168,10 @@ jobs:
             # while IFS= read -r job_json: 展開された各行 (ジョブJSON) を読み込む
             echo "$cron_job_api_response" | jq -c '.jobs[]' | while IFS= read -r job_json; do
               # 各ジョブの情報をjqで抽出 (-r: raw出力, JSON文字列の""を除去)
-              local job_id job_title is_enabled
-              local schedule_timezone schedule_minutes schedule_hours schedule_mdays schedule_months
-              local job_status schedule_details
+              # ループ内の変数宣言から local を削除 (Bashのループ内変数は通常ローカルスコープのように振る舞う)
+              job_id job_title is_enabled
+              schedule_timezone schedule_minutes schedule_hours schedule_mdays schedule_months
+              job_status schedule_details
 
               job_id=$(echo "$job_json" | jq -r '.jobId')
               # titleが存在しない場合に備え、デフォルト値を設定
