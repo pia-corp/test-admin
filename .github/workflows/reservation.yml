@@ -143,7 +143,6 @@ jobs:
           echo "::group::CronJob予約設定の更新"
 
           echo "target_repository=${{ env.target_repository }}"
-
           json_payload=$(jq -n \
             --arg month "$job_month" \
             --arg day "$job_day" \
@@ -169,48 +168,21 @@ jobs:
                       target: $target,
                       sync: $sync
                     }
-                  }
+                  } | @json
                 }
               }
-            } | @json')
-
-          # json_payload=$(jq -n \
-          #   --arg month "$job_month" \
-          #   --arg day "$job_day" \
-          #   --arg hour "$job_hour" \
-          #   --arg minute "$job_minute" \
-          #   --arg repo "${{ inputs.brand_repository_custom }}" \
-          #   --arg target "${{ inputs.deploy_target }}" \
-          #   --arg sync "${{ inputs.sync_method }}" \
-          #   '{
-          #     job: {
-          #       enabled: true,
-          #       schedule: {
-          #         hours: [$hour | tonumber],
-          #         mdays: [$day | tonumber],
-          #         minutes: [$minute | tonumber],
-          #         months: [$month | tonumber]
-          #       },
-          #       extendedData: {
-          #         body: {
-          #           event_type: "upload",
-          #           inputs: {
-          #             repository: $repo,
-          #             target: $target,
-          #             sync: $sync
-          #           }
-          #         } | @json
-          #       }
-          #     }
-          #   }')
+            }')
 
           echo "更新リクエスト: $json_payload"
 
           curl -X PATCH \
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ secrets.cron_job_token_secret }}" \
-            -d "$json_payload" \
+            -d '$json_payload' \
             ${{ env.cron_job_api_endpoint }}/${{ env.repository_job_id }}
+
+            # -d '{"job":{"enabled":"true","schedule":{"hours":[${{env.job_hour}}],"mdays":[${{env.job_day}}],"minutes":[${{env.job_minute}}],"months":[${{env.job_month}}]}}}' \
+
 
       # =============================
       # ステップ4: 更新後のCronJob情報を再取得して確認
