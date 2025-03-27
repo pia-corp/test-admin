@@ -153,8 +153,8 @@ jobs:
             --arg target "${{ inputs.deploy_target }}" \
             --arg sync "${{ inputs.sync_method }}" \
             '{
-              job: {
-                enabled: true,
+              \"job\": {
+                \"enabled\": true
               }
             }')
 
