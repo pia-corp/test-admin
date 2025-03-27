@@ -152,11 +152,7 @@ jobs:
             --arg repo "${{ inputs.brand_repository_custom }}" \
             --arg target "${{ inputs.deploy_target }}" \
             --arg sync "${{ inputs.sync_method }}" \
-            '{
-              \"job\": {
-                \"enabled\": true
-              }
-            }')
+            '{job: {enabled: true,}}')
 
           # json_payload=$(jq -n \
           #   --arg month "$job_month" \
