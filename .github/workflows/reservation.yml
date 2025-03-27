@@ -144,10 +144,10 @@ jobs:
 
           echo "target_repository=${{ env.target_repository }}"
           curl -X PATCH \
-          -H 'Content-Type: application/json' \
-          -H "Authorization: Bearer ${{ env.cron_job_token_secret }}" \
-          -d '{"job":{"enabled":"true","schedule":{"hours":[${{env.job_hour}}],"mdays":[${{env.job_day}}],"minutes":[${{env.job_minute}}],"months":[${{env.job_month}}]}}}' \
-          ${{ env.cron_job_api_endpoint }}/${{ env.repository_job_id }}
+              -H 'Content-Type: application/json' \
+              -H 'Authorization: Bearer ${{ env.cron_job_token_secret }}" \
+              -d '{"job":{"enabled":"true","schedule":{"hours":[${{env.job_hour}}],"mdays":[${{env.job_day}}],"minutes":[${{env.job_minute}}],"months":[${{env.job_month}}]}}}' \
+              ${{ env.cron_job_api_endpoint }}/${{ env.repository_job_id }}
 
       # =============================
       # ステップ4: 更新後のCronJob情報を再取得して確認
