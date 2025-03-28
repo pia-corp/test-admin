@@ -271,7 +271,7 @@ jobs:
 
           # Cron-job.org APIから現在のジョブ一覧を再取得
           verify_jobs_response=$(curl -s -X GET \
-            -H "Authorization: Bearer ${{ CRON_JOB_TOKEN }}" \
+            -H "Authorization: Bearer ${{ env.CRON_JOB_TOKEN }}" \
             "${{ env.CRON_JOB_API_URL }}") || {
               echo "::warning::作成確認のためのCronジョブ一覧取得に失敗しました。手動での確認を推奨します。"
               # 検証が失敗してもジョブ作成自体は成功している可能性があるため、警告にとどめる
