@@ -233,7 +233,7 @@ jobs:
           CRON_JOB_API_URL: ${{ env.CRON_JOB_API_URL }}
         run: |
           set -eo pipefail
-          echo "INFO: Verifying creation of cron job ID ${CREATED_JOB_ID}..."
+          echo "INFO: Verifying creation of cron job ID ${{ env.CREATED_JOB_ID }}..."
 
           # 少し待機してAPIの反映を待つ（APIによっては即時反映されない場合があるため）
           echo "INFO: Waiting for 2 seconds for API propagation..."
@@ -247,7 +247,7 @@ jobs:
               # 検証が失敗してもジョブ作成自体は成功している可能性があるため、警告にとどめる
               # サマリーには検証失敗の旨を出力する
               echo "# 処理結果" >> $GITHUB_STEP_SUMMARY
-              echo "⚠️ Cronジョブ '${CRON_JOB_TITLE}' (ID: ${CREATED_JOB_ID}) の作成には成功した可能性がありますが、" >> $GITHUB_STEP_SUMMARY
+              echo "⚠️ Cronジョブ '${{ env.CRON_JOB_TITLE }}' (ID: ${{ env.CREATED_JOB_ID }}) の作成には成功した可能性がありますが、" >> $GITHUB_STEP_SUMMARY
               echo "   APIからの最終確認に失敗しました。cron-job.org でジョブが存在するか確認してください。" >> $GITHUB_STEP_SUMMARY
               echo "   (エラー: GET /jobs API 呼び出し失敗)" >> $GITHUB_STEP_SUMMARY
               exit 0 # 警告なのでワークフローは成功扱い
@@ -259,7 +259,7 @@ jobs:
             echo "::warning::作成確認のためのCronジョブ一覧取得時にAPIエラーが発生しました: ${api_error}"
             echo "::warning::レスポンス: ${verify_jobs_response}"
             echo "# 処理結果" >> $GITHUB_STEP_SUMMARY
-            echo "⚠️ Cronジョブ '${CRON_JOB_TITLE}' (ID: ${CREATED_JOB_ID}) の作成には成功した可能性がありますが、" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ Cronジョブ '${{ env.CRON_JOB_TITLE }}' (ID: ${{ env.CREATED_JOB_ID }}) の作成には成功した可能性がありますが、" >> $GITHUB_STEP_SUMMARY
             echo "   APIからの最終確認時にエラーが発生しました。cron-job.org でジョブが存在するか確認してください。" >> $GITHUB_STEP_SUMMARY
             echo "   (エラー: GET /jobs API エラー ${api_error})" >> $GITHUB_STEP_SUMMARY
             exit 0 # 警告なのでワークフローは成功扱い
@@ -267,18 +267,18 @@ jobs:
 
           # 作成したジョブIDが存在するか確認
           # jq を使用して、指定した jobI dを持つジョブのタイトルを取得
-          verified_job_title=$(echo "$verify_jobs_response" | jq -r --argjson id "${CREATED_JOB_ID}" '.jobs[] | select(.jobId == $id) | .title')
+          verified_job_title=$(echo "$verify_jobs_response" | jq -r --argjson id "${{ env.CREATED_JOB_ID }}" '.jobs[] | select(.jobId == $id) | .title')
 
           # --- 結果をワークフローのサマリーに出力 ---
           echo "# 処理結果" >> $GITHUB_STEP_SUMMARY
-          if [ "$verified_job_title" == "$CRON_JOB_TITLE" ]; then
-            echo "✅ Cronジョブ '${CRON_JOB_TITLE}' (ID: ${CREATED_JOB_ID}) の新規作成が正常に完了し、確認できました。" >> $GITHUB_STEP_SUMMARY
+          if [ "$verified_job_title" == "${ env.CRON_JOB_TITLE }" ]; then
+            echo "✅ Cronジョブ '${{ env.CRON_JOB_TITLE }}' (ID: ${{ env.CREATED_JOB_ID }}) の新規作成が正常に完了し、確認できました。" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "**重要:**" >> $GITHUB_STEP_SUMMARY
             echo "作成されたCronジョブは現在 **無効** 状態です。" >> $GITHUB_STEP_SUMMARY
             echo "以下の手順で有効化とスケジュール設定を行ってください:" >> $GITHUB_STEP_SUMMARY
             echo "1. [cron-job.org](https://cron-job.org/) にログインします。" >> $GITHUB_STEP_SUMMARY
-            echo "2. 作成されたジョブ '${CRON_JOB_TITLE}' を見つけます。" >> $GITHUB_STEP_SUMMARY
+            echo "2. 作成されたジョブ '${{ env.CRON_JOB_TITLE }}' を見つけます。" >> $GITHUB_STEP_SUMMARY
             echo "3. ジョブを編集し、「有効」にチェックを入れます。" >> $GITHUB_STEP_SUMMARY
             echo "4. 実行したいスケジュール（時間、日付など）を設定します。" >> $GITHUB_STEP_SUMMARY
             echo "5. 設定を保存します。" >> $GITHUB_STEP_SUMMARY
@@ -286,7 +286,7 @@ jobs:
           else
             # IDが見つからなかった場合
             echo "❌ Cronジョブ '${CRON_JOB_TITLE}' の作成処理は完了しましたが、API上で最終確認できませんでした。" >> $GITHUB_STEP_SUMMARY
-            echo "   (ジョブID ${CREATED_JOB_ID} が見つかりませんでした。APIの反映遅延か、作成失敗の可能性があります)" >> $GITHUB_STEP_SUMMARY
+            echo "   (ジョブID ${{ env.CREATED_JOB_ID }} が見つかりませんでした。APIの反映遅延か、作成失敗の可能性があります)" >> $GITHUB_STEP_SUMMARY
             echo "   手動で cron-job.org を確認してください。" >> $GITHUB_STEP_SUMMARY
             # この場合、作成自体は成功している可能性があるため、ワークフローを失敗させるかは要検討
             # ここでは成功扱いとし、ユーザーに確認を促す
