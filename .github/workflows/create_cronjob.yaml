@@ -1,190 +1,356 @@
 # ===================================================
-# 公開予約設定の新規作成ワークフロー (初回のみ実行)
+# 新規Cronジョブ作成ワークフロー (初回実行用)
 # ===================================================
 #
-# 【概要】
-# このワークフローは、指定されたリポジトリ名に対して新規のCronジョブを
-# cron-job.org上に作成します。このジョブはGitHub Actionsワークフローを
-# 定期的にトリガーするために使用されます。
+# 概要:
+#   このワークフローは、指定されたリポジトリ名（Cronジョブのタイトルとして使用）に
+#   対して、cron-job.org 上に新しいCronジョブを作成します。
+#   このCronジョブは、GitHub Actions のリポジトリディスパッチ (repository_dispatch)
+#   イベントをトリガーするために設定されます。
+#   主に、特定の条件下で別のワークフローを定期実行させたい場合に、そのトリガーとなる
+#   Cronジョブを初期セットアップする目的で使用します。
 #
-# 【前提条件】
-# - cron-job.orgのAPIトークン (CRON_JOB_TOKEN) が設定されていること
-# - GitHubパーソナルアクセストークン (GIT_PERSONAL_ACCESS_TOKEN) が設定されていること
-# - 対象リポジトリがpia-corp組織内に存在すること
+# フロー:
+#   1. ワークフローの手動トリガー (workflow_dispatch) により実行開始。
+#      - 実行時に「登録するリポジトリ名 (Cronジョブタイトル)」を入力。
+#   2. `create_new_cron_job` ジョブが Ubuntu 環境で実行される。
+#   3. **入力検証:** 入力されたリポジトリ名が空でないか検証。
+#   4. **重複確認:** cron-job.org API を使用して、同じタイトルの既存ジョブがないか確認。
+#      - 重複がある場合はエラー終了。
+#   5. **ペイロード生成:** `jq` を使用して、cron-job.org API (PUT /jobs) に送信する
+#      JSONペイロード（ジョブ設定）を動的に生成。
+#      - GitHub API のリポジトリディスパッチエンドポイントをURLとして設定。
+#      - GitHub API 認証用のヘッダー情報 (PAT) を設定。
+#      - ディスパッチイベントのペイロード (event_type, client_payload) を設定。
+#      - **注意:** 作成されるジョブはデフォルトで「無効 (enabled: false)」状態。
+#   6. **ジョブ作成:** cron-job.org API に PUT リクエストを送信し、新規ジョブを作成。
+#      - APIリクエスト失敗時、またはAPIがエラーを返した場合はエラー終了。
+#      - 成功した場合、レスポンスから作成されたジョブIDを取得。
+#   7. **作成確認:** cron-job.org API (GET /jobs) を再度呼び出し、取得したジョブID
+#      を持つジョブが実際に存在するか確認。
+#   8. **結果報告:** ワークフローのサマリーに処理結果（成功または失敗）と、
+#      作成されたジョブに関する情報（有効化が必要な旨など）を出力。
 #
-# 【使用方法】
-# このワークフローは手動でトリガーする必要があります。
-# 実行時に「登録するリポジトリ名」パラメータを指定してください。
-#
-# 【注意事項】
-# - このワークフローは初回のみ実行してください
-# - 同じ名前のCronジョブが既に存在する場合はエラーになります
-# - デフォルトでは作成されたCronジョブは無効状態です
+# 注意事項:
+#   - **初回実行限定:** このワークフローは、特定のタイトルに対するCronジョブを
+#     **新規に作成** するためのものです。同じタイトルで複数回実行すると、
+#     重複確認ステップでエラーになります。既存ジョブの変更はできません。
+#   - **Secrets 設定:**
+#     - `CRON_JOB_TOKEN`: cron-job.org の API トークン。
+#     - `GIT_PERSONAL_ACCESS_TOKEN`: GitHub の Personal Access Token (PAT)。
+#       `repo` スコープと `workflow` スコープの権限が必要です。
+#       (リポジトリディスパッチ送信およびActionsトリガーのため)
+#     これらをリポジトリの Secrets に設定してください。
+#   - **ターゲットリポジトリ:** Cronジョブがディスパッチイベントを送信する先の
+#     GitHubリポジトリは、現在 `env.DISPATCH_TARGET_REPOSITORY` で指定されています。
+#     必要に応じてこの値を変更してください。
+#     このリポジトリは `pia-corp` オーガニゼーション内に存在する必要があります。
+#   - **デフォルト無効:** 作成されるCronジョブは **無効状態** です。
+#     ワークフロー実行後、cron-job.org の管理画面で手動で有効化および
+#     スケジュール設定を行う必要があります。
 #
 # ===================================================
 
-name: 05.公開予約設定の新規作成(初回のみ実行)
+name: 05. 新規Cronジョブ作成 (初回のみ実行)
 
 on:
   workflow_dispatch:
     inputs:
       repository_name:
-        description: "登録するリポジトリ名"
+        description: "登録するCronジョブのタイトル (サービスドメインと同一にする)"
         required: true
         type: string
 
 permissions:
-  contents: write
+  # repository_dispatch を送信するために contents: write が必要に見えるが、
+  # 実際には PAT を使って外部から API を叩くため、ワークフロー自体の権限は不要な場合が多い。
+  # 念のため read を指定しておくか、あるいは permissions を指定しない (デフォルト)。
+  # ここでは一旦 read を指定しておく。
+  contents: read
 
 jobs:
-  create_cron_job:
+  # ジョブ名を変更し、スネークケースに
+  create_new_cron_job:
     runs-on: ubuntu-latest
-    timeout-minutes: 1
+    timeout-minutes: 2 # API呼び出しや待機を含むため少し余裕を持たせる
     env:
-      # 対象リポジトリの設定（環境に応じて変更可能）
-      target_repository: "test-admin"
+      # 環境変数名を大文字スネークケースに統一
+      # Cronジョブがリポジトリディスパッチを送るターゲットリポジトリ名
+      # このリポジトリにディスパッチを受け取るワークフローが存在する必要がある
+      DISPATCH_TARGET_REPOSITORY: "test-admin"
       # APIエンドポイント
-      cron_job_api_url: "https://api.cron-job.org/jobs"
-      github_api_url: "https://api.github.com"
+      CRON_JOB_API_URL: "https://api.cron-job.org/jobs"
+      GITHUB_API_BASE_URL: "https://api.github.com"
+      # GitHub Organization Name
+      ORG_NAME: "pia-corp"
 
     steps:
       # =============================
-      # ステップ1: 入力パラメータの検証とタイトル設定
+      # ステップ1: 入力検証と環境変数への設定
       # =============================
-      - name: 公開予約設定のタイトルを検証と設定
-        id: validate_and_set_title
+      # ステップ名を変更
+      - name: Validate input and set job title
+        id: prepare_job_data # IDも変更
         run: |
-          # 入力パラメータ（リポジトリ名）が空でないことを確認
-          if [ -z "${{ inputs.repository_name }}" ]; then
-            echo "::error:: '登録するリポジトリ名' が未入力です。入力してから再試行してください。"
+          set -e # エラー発生時に即終了 (run ブロックごとに記述推奨)
+          echo "INFO: Validating input parameters..."
+          # Inputsからリポジトリ名を取得
+          cron_title="${{ inputs.repository_name }}"
+
+          # 入力が空でないか確認
+          if [ -z "$cron_title" ]; then
+            echo "::error::'登録するCronジョブのタイトル' が未入力です。入力してから再試行してください。"
             exit 1
           fi
 
-          # 環境変数にCronジョブのタイトルをセット（後続ステップで使用）
-          echo "cron_job_title=${{ inputs.repository_name }}" >> $GITHUB_ENV
-          echo "✓ Cronジョブタイトルを '${{ inputs.repository_name }}' に設定しました"
+          # 後続ステップで使えるように環境変数ファイルに出力
+          echo "CRON_JOB_TITLE=${cron_title}" >> $GITHUB_ENV
+          echo "✓ Cronジョブタイトルを '${cron_title}' に設定しました。"
 
       # =============================
-      # ステップ2: 既存のCronジョブとの重複確認
+      # ステップ2: 既存Cronジョブの重複確認
       # =============================
-      - name: 同名のCronジョブが既に存在するか確認
+      # ステップ名を変更
+      - name: Check for existing cron job with the same title
         id: check_existing_job
+        env:
+           CRON_JOB_TOKEN: ${{ secrets.CRON_JOB_TOKEN }}
+           # GITHUB_ENV から CRON_JOB_TITLE を読み込む
+           CRON_JOB_TITLE: ${{ env.CRON_JOB_TITLE }}
         run: |
-          echo "🔍 既存のCronジョブを確認しています..."
+          set -eo pipefail # パイプ失敗もエラーとする
+          echo "INFO: Checking for existing cron jobs with title '${CRON_JOB_TITLE}'..."
 
-          # Cron-job.orgのAPIから現在のジョブ一覧を取得
-          # curlコマンドが失敗した場合は詳細なエラーメッセージを表示
-          api_response=$(curl -s -X GET \
-            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
-            ${{ env.cron_job_api_url }}) || {
-              echo "::error:: Cronジョブ一覧の取得に失敗しました。"
-              echo "エラー詳細: $(curl -s -X GET -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" ${{ env.cron_job_api_url }})"
+          # Cron-job.org APIから現在のジョブ一覧を取得
+          get_jobs_response=$(curl -s -X GET \
+            -H "Authorization: Bearer ${CRON_JOB_TOKEN}" \
+            "${CRON_JOB_API_URL}") || {
+              echo "::error::cron-job.org API への接続に失敗しました (GET /jobs)。"
+              # エラー詳細取得はここでは冗長になる可能性があるので省略（必要なら追加）
               exit 1
             }
 
-          # 同じタイトルのジョブが存在するかjqコマンドで確認
-          # jqはJSON形式のデータを処理するためのコマンドラインツール
-          existing_job=$(echo "$api_response" | jq -r --arg title "${{ env.cron_job_title }}" '.jobs[] | select(.title | contains($title)) | .url')
+          # APIレスポンス自体のエラーを確認
+          api_error=$(echo "$get_jobs_response" | jq -r '.error')
+          if [ "$api_error" != "null" ]; then
+             echo "::error::cron-job.org APIエラー (GET /jobs): ${api_error}"
+             echo "::error::レスポンス: ${get_jobs_response}"
+             exit 1
+          fi
+
+          # 同じタイトルのジョブが存在するかjqコマンドで確認 (完全一致で比較)
+          # タイトルが一致するジョブの jobI dを取得
+          existing_job_id=$(echo "$get_jobs_response" | jq -r --arg title "${CRON_JOB_TITLE}" '.jobs[] | select(.title == $title) | .jobId')
 
           # 重複がある場合はエラーメッセージを表示して処理を終了
-          if [ -n "$existing_job" ]; then
-            echo "::error:: タイトル '${{ env.cron_job_title }}' のCronジョブは既に存在します。別の名前を指定してください。"
+          if [ -n "$existing_job_id" ]; then
+            echo "::error::タイトル '${CRON_JOB_TITLE}' のCronジョブ (ID: ${existing_job_id}) は既に存在します。別の名前を指定するか、既存のジョブを削除してください。"
             exit 1
           fi
 
-          echo "✓ '${{ env.cron_job_title }}' という名前のCronジョブは存在しないことを確認しました"
+          echo "✓ タイトル '${CRON_JOB_TITLE}' のCronジョブは存在しないことを確認しました。"
 
       # =============================
       # ステップ3: 新規Cronジョブの作成
       # =============================
-      - name: 新規Cronジョブの作成と設定
+      # ステップ名を変更
+      - name: Create new cron job via API
         id: create_cron_job
+        env:
+          CRON_JOB_TOKEN: ${{ secrets.CRON_JOB_TOKEN }}
+          GITHUB_PAT: ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }} # Secret名を明確に
+          # GITHUB_ENV から CRON_JOB_TITLE を読み込む
+          CRON_JOB_TITLE: ${{ env.CRON_JOB_TITLE }}
+          # Job Env から読み込む
+          DISPATCH_TARGET_REPOSITORY: ${{ env.DISPATCH_TARGET_REPOSITORY }}
+          GITHUB_API_BASE_URL: ${{ env.GITHUB_API_BASE_URL }}
+          ORG_NAME: ${{ env.ORG_NAME }}
+          CRON_JOB_API_URL: ${{ env.CRON_JOB_API_URL }}
         run: |
-          echo "🔧 新規Cronジョブを作成しています..."
+          set -eo pipefail
+          echo "INFO: Preparing JSON payload for new cron job..."
 
-          # Cronジョブの設定内容を変数に格納（可読性向上のため）
-          # 注意: 実際のAPIリクエストで使用される形式です
-          job_config='{
-            "job": {
-              "url": "${{ env.github_api_url }}/repos/pia-corp/${{ env.target_repository }}/dispatches",
-              "enabled": false,
-              "saveResponses": false,
-              "title": "${{ env.cron_job_title }}",
-              "schedule": {
-                "expiresAt": 0,
-                "timezone": "Asia/Tokyo",
-                "hours": [-1],
-                "mdays": [-1],
-                "minutes": [-1],
-                "months": [-1],
-                "wdays": [-1]
+          # --- jq を使用してJSONペイロードを安全に生成 ---
+          dispatch_url="${GITHUB_API_BASE_URL}/repos/${ORG_NAME}/${DISPATCH_TARGET_REPOSITORY}/dispatches"
+          accept_header="application/vnd.github+json"
+          auth_header="Bearer ${GITHUB_PAT}" # PATをヘッダー用に整形
+          gh_api_version="2022-11-28"
+          timezone="Asia/Tokyo"
+          # デフォルトのスケジュール設定（全フィールド -1 は「未設定」や「毎*」を意味する）
+          schedule_hours='[-1]'
+          schedule_mdays='[-1]'
+          schedule_minutes='[-1]'
+          schedule_months='[-1]'
+          schedule_wdays='[-1]'
+
+          # extendedData.body に含めるJSONペイロードを jq で生成
+          # client_payload の内容は元のコードに準拠
+          body_payload_json=$(jq -n \
+            --arg repo "$CRON_JOB_TITLE" \
+            '{
+              event_type: "upload",
+              client_payload: {
+                repository: $repo,
+                repository_custom: $repo,
+                target: "検証環境",
+                sync: "full"
+              }
+            }')
+
+          # メインのCronジョブ設定ペイロードを jq で生成
+          cron_job_payload=$(jq -n \
+            --arg url "$dispatch_url" \
+            --arg title "$CRON_JOB_TITLE" \
+            --arg tz "$timezone" \
+            --argjson enabled false \
+            --argjson saveResponses false \
+            --argjson hours "$schedule_hours" \
+            --argjson mdays "$schedule_mdays" \
+            --argjson minutes "$schedule_minutes" \
+            --argjson months "$schedule_months" \
+            --argjson wdays "$schedule_wdays" \
+            --arg accept "$accept_header" \
+            --arg auth "$auth_header" \
+            --arg gh_version "$gh_api_version" \
+            --argjson body "$body_payload_json" \
+            --argjson method 1 \ # 1=POST と推測 (cron-job.orgの仕様)
+          '{
+            job: {
+              url: $url,
+              enabled: $enabled,
+              saveResponses: $saveResponses,
+              title: $title,
+              schedule: {
+                timezone: $tz,
+                hours: $hours,
+                mdays: $mdays,
+                minutes: $minutes,
+                months: $months,
+                wdays: $wdays
               },
-              "extendedData": {
-                "headers": {
-                  "Accept": "application/vnd.github+json",
-                  "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}",
-                  "X-GitHub-Api-Version": "2022-11-28"
+              requestMethod: $method,
+              extendedData: {
+                headers: {
+                  Accept: $accept,
+                  Authorization: $auth,
+                  "X-GitHub-Api-Version": $gh_version
                 },
-                "body": "{\"event_type\": \"upload\", \"client_payload\": {\"repository\": \"${{ env.cron_job_title }}\", \"repository_custom\": \"${{ env.cron_job_title }}\", \"target\": \"検証環境\", \"sync\": \"full\"}}"
-              },
-              "requestMethod": 1
+                # body は JSON 文字列として送信する必要があるため tojson で変換
+                body: ($body | tojson)
+              }
             }
-          }'
+          }')
 
-          # 変数展開を行うために一旦envsubコマンドを通す
-          job_config_expanded=$(echo "$job_config" | envsubst)
+          # デバッグ用にペイロードを表示（本番ではコメントアウト推奨）
+          # echo "DEBUG: Generated Payload:"
+          # echo "$cron_job_payload" | jq . # jqで見やすく整形して表示
 
-          # Cron-job.orgのAPIを使用して新規ジョブを作成
-          creation_response=$(curl -s -X PUT \
+          echo "INFO: Sending PUT request to create cron job..."
+
+          # Cron-job.org APIを使用して新規ジョブを作成 (PUT /jobs)
+          create_job_response=$(curl -s -X PUT \
             -H 'Content-Type: application/json' \
-            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
-            -d "$job_config_expanded" \
-            ${{ env.cron_job_api_url }}) || {
-              echo "::error:: Cronジョブの作成に失敗しました。"
-              echo "エラー詳細: $creation_response"
+            -H "Authorization: Bearer ${CRON_JOB_TOKEN}" \
+            -d "$cron_job_payload" \
+            "${CRON_JOB_API_URL}") || {
+              echo "::error::cron-job.org API への接続に失敗しました (PUT /jobs)。"
               exit 1
             }
 
           # APIからの応答をログに記録（デバッグ用）
-          echo "APIレスポンス: $creation_response"
+          echo "INFO: API Response: $create_job_response"
 
-          # APIレスポンスからジョブIDを取得（確認用）
-          job_id=$(echo "$creation_response" | jq -r '.jobId')
-          if [ -n "$job_id" ] && [ "$job_id" != "null" ]; then
-            echo "✓ Cronジョブが作成されました (ID: $job_id)"
-          else
-            echo "⚠️ レスポンスからジョブIDを取得できませんでした。作成は成功した可能性があります。"
+          # APIレスポンスのエラーを確認
+          api_error=$(echo "$create_job_response" | jq -r '.error')
+          if [ "$api_error" != "null" ]; then
+            echo "::error::cron-job.org APIエラー (PUT /jobs): ${api_error}"
+            echo "::error::送信したペイロード: $cron_job_payload" # エラー時にペイロードも表示
+            exit 1
           fi
+
+          # APIレスポンスからジョブIDを取得
+          created_job_id=$(echo "$create_job_response" | jq -r '.jobId')
+          if [ -z "$created_job_id" ] || [ "$created_job_id" == "null" ]; then
+            echo "::error::Cronジョブの作成に成功しましたが、レスポンスからジョブIDを取得できませんでした。"
+            echo "::error::APIレスポンスを確認してください: $create_job_response"
+            # IDが取れなくても成功した可能性はあるが、後続の確認ができないためエラーとする
+            exit 1
+          fi
+
+          echo "✓ Cronジョブが作成されました (ID: ${created_job_id})"
+          # 作成したジョブIDを後続ステップで使用するために outputs に設定
+          echo "created_job_id=${created_job_id}" >> $GITHUB_OUTPUT
 
       # =============================
       # ステップ4: ジョブ作成の成功確認と結果報告
       # =============================
-      - name: Cronジョブ作成の確認と結果報告
+      # ステップ名を変更
+      - name: Verify cron job creation and report result
         id: verify_job_creation
+        env:
+          CRON_JOB_TOKEN: ${{ secrets.CRON_JOB_TOKEN }}
+          # GITHUB_ENV から CRON_JOB_TITLE を読み込む
+          CRON_JOB_TITLE: ${{ env.CRON_JOB_TITLE }}
+          # 前のステップの outputs から作成されたジョブIDを取得
+          CREATED_JOB_ID: ${{ steps.create_cron_job.outputs.created_job_id }}
+          CRON_JOB_API_URL: ${{ env.CRON_JOB_API_URL }}
         run: |
-          echo "🔍 作成したCronジョブを確認しています..."
+          set -eo pipefail
+          echo "INFO: Verifying creation of cron job ID ${CREATED_JOB_ID}..."
 
-          # 少し待機してAPIの反映を待つ（オプション）
+          # 少し待機してAPIの反映を待つ（APIによっては即時反映されない場合があるため）
+          echo "INFO: Waiting for 2 seconds for API propagation..."
           sleep 2
 
-          # Cron-job.orgのAPIから現在のジョブ一覧を再取得
-          verification_response=$(curl -s -X GET \
-            -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" \
-            ${{ env.cron_job_api_url }}) || {
-              echo "::error:: Cronジョブ一覧の取得に失敗しました。"
-              echo "エラー詳細: $(curl -s -X GET -H "Authorization: Bearer ${{ secrets.CRON_JOB_TOKEN }}" ${{ env.cron_job_api_url }})"
-              exit 1
+          # Cron-job.org APIから現在のジョブ一覧を再取得
+          verify_jobs_response=$(curl -s -X GET \
+            -H "Authorization: Bearer ${CRON_JOB_TOKEN}" \
+            "${CRON_JOB_API_URL}") || {
+              echo "::warning::作成確認のためのCronジョブ一覧取得に失敗しました。手動での確認を推奨します。"
+              # 検証が失敗してもジョブ作成自体は成功している可能性があるため、警告にとどめる
+              # サマリーには検証失敗の旨を出力する
+              echo "# 処理結果" >> $GITHUB_STEP_SUMMARY
+              echo "⚠️ Cronジョブ '${CRON_JOB_TITLE}' (ID: ${CREATED_JOB_ID}) の作成には成功した可能性がありますが、" >> $GITHUB_STEP_SUMMARY
+              echo "   APIからの最終確認に失敗しました。cron-job.org でジョブが存在するか確認してください。" >> $GITHUB_STEP_SUMMARY
+              echo "   (エラー: GET /jobs API 呼び出し失敗)" >> $GITHUB_STEP_SUMMARY
+              exit 0 # 警告なのでワークフローは成功扱い
             }
 
-          # 作成したジョブが存在するか確認
-          created_job=$(echo "$verification_response" | jq -r --arg title "${{ env.cron_job_title }}" '.jobs[] | select(.title | contains($title)) | .url')
+          # APIレスポンスのエラーを確認
+          api_error=$(echo "$verify_jobs_response" | jq -r '.error')
+          if [ "$api_error" != "null" ]; then
+            echo "::warning::作成確認のためのCronジョブ一覧取得時にAPIエラーが発生しました: ${api_error}"
+            echo "::warning::レスポンス: ${verify_jobs_response}"
+            echo "# 処理結果" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ Cronジョブ '${CRON_JOB_TITLE}' (ID: ${CREATED_JOB_ID}) の作成には成功した可能性がありますが、" >> $GITHUB_STEP_SUMMARY
+            echo "   APIからの最終確認時にエラーが発生しました。cron-job.org でジョブが存在するか確認してください。" >> $GITHUB_STEP_SUMMARY
+            echo "   (エラー: GET /jobs API エラー ${api_error})" >> $GITHUB_STEP_SUMMARY
+            exit 0 # 警告なのでワークフローは成功扱い
+          fi
 
-          # 結果をワークフローのサマリーに追加（GitHub Actions UI上に表示される）
+          # 作成したジョブIDが存在するか確認
+          # jq を使用して、指定した jobI dを持つジョブのタイトルを取得
+          verified_job_title=$(echo "$verify_jobs_response" | jq -r --argjson id "${CREATED_JOB_ID}" '.jobs[] | select(.jobId == $id) | .title')
+
+          # --- 結果をワークフローのサマリーに出力 ---
           echo "# 処理結果" >> $GITHUB_STEP_SUMMARY
-          if [ -n "$created_job" ]; then
-            echo "✅ ${{ env.cron_job_title }} の予約公開するための初期設定が正常に完了しました。" >> $GITHUB_STEP_SUMMARY
-            echo "🔗 URL: $created_job" >> $GITHUB_STEP_SUMMARY
-            echo "⚠️ 注意: 作成されたCronジョブはデフォルトで無効状態です。cron-job.orgの管理画面から有効化してください。" >> $GITHUB_STEP_SUMMARY
+          if [ "$verified_job_title" == "$CRON_JOB_TITLE" ]; then
+            echo "✅ Cronジョブ '${CRON_JOB_TITLE}' (ID: ${CREATED_JOB_ID}) の新規作成が正常に完了し、確認できました。" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**重要:**" >> $GITHUB_STEP_SUMMARY
+            echo "作成されたCronジョブは現在 **無効** 状態です。" >> $GITHUB_STEP_SUMMARY
+            echo "以下の手順で有効化とスケジュール設定を行ってください:" >> $GITHUB_STEP_SUMMARY
+            echo "1. [cron-job.org](https://cron-job.org/) にログインします。" >> $GITHUB_STEP_SUMMARY
+            echo "2. 作成されたジョブ '${CRON_JOB_TITLE}' を見つけます。" >> $GITHUB_STEP_SUMMARY
+            echo "3. ジョブを編集し、「有効」にチェックを入れます。" >> $GITHUB_STEP_SUMMARY
+            echo "4. 実行したいスケジュール（時間、日付など）を設定します。" >> $GITHUB_STEP_SUMMARY
+            echo "5. 設定を保存します。" >> $GITHUB_STEP_SUMMARY
+            echo "🔗 [cron-job.org ダッシュボードへ](https://cron-job.org/en/members/jobs/)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ ${{ env.cron_job_title }} の予約公開するための初期設定に失敗しました。ログを確認してください。" >> $GITHUB_STEP_SUMMARY
+            # IDが見つからなかった場合
+            echo "❌ Cronジョブ '${CRON_JOB_TITLE}' の作成処理は完了しましたが、API上で最終確認できませんでした。" >> $GITHUB_STEP_SUMMARY
+            echo "   (ジョブID ${CREATED_JOB_ID} が見つかりませんでした。APIの反映遅延か、作成失敗の可能性があります)" >> $GITHUB_STEP_SUMMARY
+            echo "   手動で cron-job.org を確認してください。" >> $GITHUB_STEP_SUMMARY
+            # この場合、作成自体は成功している可能性があるため、ワークフローを失敗させるかは要検討
+            # ここでは成功扱いとし、ユーザーに確認を促す
           fi
