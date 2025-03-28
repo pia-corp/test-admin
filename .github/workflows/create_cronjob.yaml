@@ -164,76 +164,46 @@ jobs:
           set -eo pipefail
           echo "INFO: Preparing JSON payload for new cron job..."
 
-          # --- jq を使用してJSONペイロードを安全に生成 ---
-          dispatch_url="${GITHUB_API_BASE_URL}/repos/${ORG_NAME}/${DISPATCH_TARGET_REPOSITORY}/dispatches"
-          accept_header="application/vnd.github+json"
-          auth_header="Bearer ${GITHUB_PAT}" # PATをヘッダー用に整形
-          gh_api_version="2022-11-28"
-          timezone="Asia/Tokyo"
-          # デフォルトのスケジュール設定（全フィールド -1 は「未設定」や「毎*」を意味する）
-          schedule_hours='[-1]'
-          schedule_mdays='[-1]'
-          schedule_minutes='[-1]'
-          schedule_months='[-1]'
-          schedule_wdays='[-1]'
-
-          # extendedData.body に含めるJSONペイロードを jq で生成
-          # client_payload の内容は元のコードに準拠
-          body_payload_json=$(jq -n \
-            --arg repo "$CRON_JOB_TITLE" \
-            '{
-              event_type: "upload",
-              client_payload: {
-                repository: $repo,
-                repository_custom: $repo,
-                target: "検証環境",
-                sync: "full"
-              }
-            }')
-
-          # メインのCronジョブ設定ペイロードを jq で生成
-          cron_job_payload=$(jq -n \
-            --arg url "$dispatch_url" \
-            --arg title "$CRON_JOB_TITLE" \
-            --arg tz "$timezone" \
-            --argjson enabled false \
-            --argjson saveResponses false \
-            --argjson hours "$schedule_hours" \
-            --argjson mdays "$schedule_mdays" \
-            --argjson minutes "$schedule_minutes" \
-            --argjson months "$schedule_months" \
-            --argjson wdays "$schedule_wdays" \
-            --arg accept "$accept_header" \
-            --arg auth "$auth_header" \
-            --arg gh_version "$gh_api_version" \
-            --argjson body "$body_payload_json" \
-            --argjson method 1 \ # 1=POST と推測 (cron-job.orgの仕様)
-          '{
-            job: {
-              url: $url,
-              enabled: $enabled,
-              saveResponses: $saveResponses,
-              title: $title,
-              schedule: {
-                timezone: $tz,
-                hours: $hours,
-                mdays: $mdays,
-                minutes: $minutes,
-                months: $months,
-                wdays: $wdays
+          job_config='{
+            "job": {
+              "url": "${{ env.GITHUB_API_BASE_URL }}/repos/${{ env.ORG_NAME }}/${{ env.DISPATCH_TARGET_REPOSITORY }}/dispatches",
+              "enabled": false,
+              "saveResponses": false,
+              "title": "${{ env.CRON_JOB_TITLE }}",
+              "schedule": {
+                "expiresAt": 0,
+                "timezone": "Asia/Tokyo",
+                "hours": [-1],
+                "mdays": [-1],
+                "minutes": [-1],
+                "months": [-1],
+                "wdays": [-1]
               },
-              requestMethod: $method,
-              extendedData: {
-                headers: {
-                  Accept: $accept,
-                  Authorization: $auth,
-                  "X-GitHub-Api-Version": $gh_version
+              "extendedData": {
+                "headers": {
+                  "Accept": "application/vnd.github+json",
+                  "Authorization": "Bearer ${{ secrets.GIT_PERSONAL_ACCESS_TOKEN }}",
+                  "X-GitHub-Api-Version": "2022-11-28"
                 },
-                # body は JSON 文字列として送信する必要があるため tojson で変換
-                body: ($body | tojson)
-              }
+                "body": "{\"event_type\": \"upload\", \"client_payload\": {\"repository\": \"${{ env.CRON_JOB_TITLE }}\", \"repository_custom\": \"${{ env.CRON_JOB_TITLE }}\", \"target\": \"検証環境\", \"sync\": \"full\"}}"
+              },
+              "requestMethod": 1
             }
-          }')
+          }'
+
+          # 変数展開を行うために一旦envsubコマンドを通す
+          job_config_expanded=$(echo "$job_config" | envsubst)
+
+          # Cron-job.orgのAPIを使用して新規ジョブを作成
+          creation_response=$(curl -s -X PUT \
+            -H 'Content-Type: application/json' \
+            -H "Authorization: Bearer ${{ env.CRON_JOB_TOKEN }}" \
+            -d "$job_config_expanded" \
+            ${{ env.CRON_JOB_API_URL }}) || {
+              echo "::error:: Cronジョブの作成に失敗しました。"
+              echo "エラー詳細: $creation_response"
+              exit 1
+            }
 
           # デバッグ用にペイロードを表示（本番ではコメントアウト推奨）
           # echo "DEBUG: Generated Payload:"
