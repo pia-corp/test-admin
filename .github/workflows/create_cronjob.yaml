@@ -255,6 +255,7 @@ jobs:
 
           # 作成したジョブが存在するか確認
           verified_job_title=$(echo "$verify_jobs_response" | jq -r --arg title "${{ env.CRON_JOB_TITLE }}" '.jobs[] | select(.title | contains($title)) | .url')
+          echo "$verified_job_title"
 
           # --- 結果をワークフローのサマリーに出力 ---
           echo "# 処理結果" >> $GITHUB_STEP_SUMMARY
