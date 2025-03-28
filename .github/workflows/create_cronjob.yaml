@@ -255,8 +255,6 @@ jobs:
 
           # 作成したジョブが存在するか確認
           verified_job_title=$(echo "$verify_jobs_response" | jq -r --arg title "${{ env.CRON_JOB_TITLE }}" '.jobs[] | select(.title | contains($title)) | .title')
-          echo "verified_job_title=$verified_job_title"
-          echo "cron_job_title=${{ env.CRON_JOB_TITLE }}"
 
           # --- 結果をワークフローのサマリーに出力 ---
           echo "# 処理結果" >> $GITHUB_STEP_SUMMARY
@@ -266,11 +264,10 @@ jobs:
             echo "**重要:**" >> $GITHUB_STEP_SUMMARY
             echo "作成されたCronジョブは現在 **無効** 状態です。" >> $GITHUB_STEP_SUMMARY
             echo "以下の手順で有効化とスケジュール設定を行ってください:" >> $GITHUB_STEP_SUMMARY
-            echo "1. [cron-job.org](https://cron-job.org/) にログインします。" >> $GITHUB_STEP_SUMMARY
-            echo "2. 作成されたジョブ '${{ env.CRON_JOB_TITLE }}' を見つけます。" >> $GITHUB_STEP_SUMMARY
-            echo "3. ジョブを編集し、「有効」にチェックを入れます。" >> $GITHUB_STEP_SUMMARY
-            echo "4. 実行したいスケジュール（時間、日付など）を設定します。" >> $GITHUB_STEP_SUMMARY
-            echo "5. 設定を保存します。" >> $GITHUB_STEP_SUMMARY
+            echo "1. action「03.公開予約」を開きます。" >> $GITHUB_STEP_SUMMARY
+            echo "2. 予約設定するサイトのドメインを入力します。" >> $GITHUB_STEP_SUMMARY
+            echo "3. 実行したいスケジュール（時間、日付など）を設定します。" >> $GITHUB_STEP_SUMMARY
+            echo "4. Run Workflowで実行します。" >> $GITHUB_STEP_SUMMARY
             echo "🔗 [cron-job.org ダッシュボードへ](https://cron-job.org/en/members/jobs/)" >> $GITHUB_STEP_SUMMARY
           else
             # IDが見つからなかった場合
