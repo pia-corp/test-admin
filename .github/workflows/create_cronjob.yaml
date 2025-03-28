@@ -118,7 +118,7 @@ jobs:
           # Cron-job.org APIから現在のジョブ一覧を取得
           get_jobs_response=$(curl -s -X GET \
             -H "Authorization: Bearer ${{ env.CRON_JOB_TOKEN }}" \
-            "${CRON_JOB_API_URL}") || {
+            "${{ env.CRON_JOB_API_URL }}") || {
               echo "::error::cron-job.org API への接続に失敗しました (GET /jobs)。"
               # エラー詳細取得はここでは冗長になる可能性があるので省略（必要なら追加）
               exit 1
@@ -246,7 +246,7 @@ jobs:
             -H 'Content-Type: application/json' \
             -H "Authorization: Bearer ${{ env.CRON_JOB_TOKEN }}" \
             -d "$cron_job_payload" \
-            "${{ CRON_JOB_API_URL }}"
+            "${{ env.CRON_JOB_API_URL }}"
 
       # =============================
       # ステップ4: ジョブ作成の成功確認と結果報告
@@ -272,7 +272,7 @@ jobs:
           # Cron-job.org APIから現在のジョブ一覧を再取得
           verify_jobs_response=$(curl -s -X GET \
             -H "Authorization: Bearer ${{ CRON_JOB_TOKEN }}" \
-            "${CRON_JOB_API_URL}") || {
+            "${{ env.CRON_JOB_API_URL }}") || {
               echo "::warning::作成確認のためのCronジョブ一覧取得に失敗しました。手動での確認を推奨します。"
               # 検証が失敗してもジョブ作成自体は成功している可能性があるため、警告にとどめる
               # サマリーには検証失敗の旨を出力する
