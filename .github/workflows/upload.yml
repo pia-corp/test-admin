@@ -169,12 +169,16 @@ jobs:
       # =============================
       - name: Use SSH private key from GitHub Secrets
         run: |
-          mkdir -p ~/.ssh  # SSHディレクトリを作成
+          if [ ! -d "~/.ssh" ]; then
+            mkdir -p ~/.ssh  # SSHディレクトリを作成
+          fi
           # GitHub Secretsから暗号化されたプライベートキーを取り出し、ファイルに保存
           echo "${{ secrets.DEVELOPMENT_SSH_KEY }}" > ~/.ssh/id_rsa.enc
           # 復号化のためのパスフレーズをGitHub Secretsから取得（もしあれば）
           echo "${{ secrets.SSH_PASSPHRASE }}" | openssl rsa -in ~/.ssh/id_rsa.enc -out ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa  # パーミッションを設定
+          # configファイルがない場合に作成（必要な場合）
+          echo -e "Host ${{ env.HOST }}\n  User ${{ env.USER_NAME }}\n  Port ${{ env.PORT }}\n  IdentityFile ~/.ssh/id_rsa\n" > ~/.ssh/config
           ssh -v -p ${{ env.PORT }} -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ env.USER_NAME }}@${{ env.HOST }} "mkdir -p ${{ env.REMOTE_PATH }}"
 
       # 2. ファイルをデプロイ
