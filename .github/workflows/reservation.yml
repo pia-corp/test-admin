@@ -28,7 +28,8 @@ name: 03.公開予約
 on:
   workflow_dispatch:
     inputs:
-      brand_repository_custom:
+      repository:
+        required: true
         description: "ドメイン"
         default: ""
 
@@ -56,7 +57,7 @@ on:
         description: "予約（分）"
         options: [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 
-      deploy_target:
+      environment:
         description: "デプロイ環境"
         type: choice
         required: true
@@ -64,7 +65,7 @@ on:
           - "検証環境"
           - "本番環境"
 
-      sync_method:
+      sync_mode:
         description: "同期タイプ"
         type: choice
         required: true
@@ -78,7 +79,7 @@ jobs:
     timeout-minutes: 3
     env:
       # カスタム入力があればそちらを優先、なければリストから選択されたものを使用
-      target_repository: ${{ inputs.brand_repository_custom }}
+      target_repository: ${{ inputs.repository }}
       cron_job_api_endpoint: "https://api.cron-job.org/jobs"
       cron_job_token_secret: ${{ secrets.CRON_JOB_TOKEN }}
 
@@ -143,9 +144,9 @@ jobs:
             --arg day "$job_day" \
             --arg hour "$job_hour" \
             --arg minute "$job_minute" \
-            --arg repo "${{ inputs.brand_repository_custom }}" \
-            --arg target "${{ inputs.deploy_target }}" \
-            --arg sync "${{ inputs.sync_method }}" \
+            --arg repo "${{ inputs.repository }}" \
+            --arg target "${{ inputs.environment }}" \
+            --arg sync "${{ inputs.sync_mode }}" \
             '{
               "job": {
                 "enabled": true,
@@ -165,9 +166,8 @@ jobs:
                     "event_type": "upload",
                     "client_payload": {
                       "repository": $repo,
-                      "repository_custom": $repo,
-                      "target": $target,
-                      "sync": $sync
+                      "environment": $target,
+                      "sync_mode": $sync
                     }
                   } | @json
                 }
@@ -236,8 +236,8 @@ jobs:
             echo "| ---- | ---- |"
             echo "| 対象リポジトリ | $target_repository |"
             echo "| 予約日時 | ${{ env.job_months }}月 ${{ env.job_days }}日 ${{ env.job_hours }}時 ${{ env.job_minutes }}分 (${{ env.job_timezone }}) |"
-            echo "| デプロイ環境 | ${{ inputs.deploy_target }} |"
-            echo "| 同期タイプ | ${{ inputs.sync_method }} |"
+            echo "| デプロイ環境 | ${{ inputs.environment }} |"
+            echo "| 同期タイプ | ${{ inputs.sync_mode }} |"
             echo "| 予約状態 | ${{ env.job_enabled == 'true' && '有効' || '無効' }} |"
             echo ""
             echo "## 備考"

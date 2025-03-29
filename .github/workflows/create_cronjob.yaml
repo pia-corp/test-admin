@@ -46,7 +46,7 @@ name: 05. 新規Cronジョブ作成 (初回のみ実行)
 on:
   workflow_dispatch:
     inputs:
-      repository_name:
+      repository:
         description: "登録するCronジョブのタイトル (サービスドメインと同一にする)"
         required: true
         type: string
@@ -78,7 +78,7 @@ jobs:
           set -e # エラー発生時に即終了 (run ブロックごとに記述推奨)
           echo "INFO: Validating input parameters..."
           # Inputsからリポジトリ名を取得
-          cron_title="${{ inputs.repository_name }}"
+          cron_title="${{ inputs.repository }}"
 
           # 入力が空でないか確認
           if [ -z "$cron_title" ]; then

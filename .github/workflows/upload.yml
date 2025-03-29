@@ -46,9 +46,9 @@ on:
 
   workflow_dispatch:
     inputs:
-      custom_repository:
+      repository:
         description: "任意のブランドリポジトリ（リストにない場合）"
-        required: false
+        required: true
         type: string
 
       environment:
@@ -84,37 +84,40 @@ jobs:
       # 対象リポジトリ（ブランド）名の決定ロジック
       # 1. repository_dispatchの場合: client_payloadからの値を使用
       # 2. workflow_dispatchの場合: inputsからの値を使用
-      # 3. custom_repositoryが指定されていればそちらを優先
+      # 3. repositoryが指定されていればそちらを優先
       # HOST の決定
-      HOST: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.host ||
+      HOST: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && vars.PRODUCTION_HOST ||
+        github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && vars.DEVELOPMENT_HOST ||
         github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_HOST ||
         github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_HOST }}
 
       # PORT の決定
-      PORT: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.port ||
+      PORT: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境'  && vars.PRODUCTION_PORT ||
+        github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && vars.DEVELOPMENT_PORT ||
         github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_PORT ||
         github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_PORT }}
 
       # USER_NAME の決定
-      USER_NAME: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.user_name ||
+      USER_NAME: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && vars.PRODUCTION_USER_NAME ||
+        github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && vars.DEVELOPMENT_USER_NAME ||
         github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_USER_NAME ||
         github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_USER_NAME }}
 
       # LOCAL_PATH の決定
-      LOCAL_PATH: ${{ vars.LOCAL_PATH }}${{ github.event_name == 'repository_dispatch' && github.event.client_payload.local_path ||
-        github.event_name == 'workflow_dispatch' && inputs.custom_repository }}
+      LOCAL_PATH: ${{ vars.LOCAL_PATH }}${{ github.event_name == 'repository_dispatch' && github.event.client_payload.repository ||
+        github.event_name == 'workflow_dispatch' && inputs.repository }}
 
       # REMOTE_PATH の決定
-      REMOTE_PATH: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.remote_path ||
-        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && format('{0}/{1}', inputs.custom_repository, vars.PRODUCTION_REMOTE_PATH) ||
-        github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && format('{0}/{1}', vars.DEVELOPMENT_REMOTE_PATH, inputs.custom_repository) }}
+      REMOTE_PATH: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && format('{0}/{1}', inputs.repository, vars.PRODUCTION_REMOTE_PATH) ||
+        github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && format('{0}/{1}', vars.DEVELOPMENT_REMOTE_PATH, inputs.repository) ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && format('{0}/{1}', inputs.repository, vars.PRODUCTION_REMOTE_PATH) ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && format('{0}/{1}', vars.DEVELOPMENT_REMOTE_PATH, inputs.repository) }}
 
       # SYNC_MODE の決定
       SYNC_MODE: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.sync_mode ||
         github.event_name == 'workflow_dispatch' && inputs.sync_mode }}
 
-
-      TARGET_REPOSITORY: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.custom_repository && github.event.client_payload.custom_repository || github.event.client_payload.repository) || github.event_name == 'workflow_dispatch' && (inputs.custom_repository && inputs.custom_repository || inputs.repository) }}
+      TARGET_REPOSITORY: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.repository && github.event.client_payload.repository || github.event.client_payload.repository) || github.event_name == 'workflow_dispatch' && (inputs.repository && inputs.repository || inputs.repository) }}
 
       # デプロイ先環境の決定ロジック（デフォルト: 検証環境）
       TARGET_ENVIRONMENT: ${{ github.event.client_payload.target && github.event.client_payload.target || inputs.target && inputs.target || '検証環境' }}
@@ -128,19 +131,6 @@ jobs:
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v4.2.2
         # 注: 必要に応じてfetch-depthやsubmodulesなどのオプションを追加可能
-
-      - name: ログ
-        run: |
-          echo "${{ env.HOST }}"
-          echo "${{ env.PORT }}"
-          echo "${{ env.USER_NAME }}"
-          echo "${{ env.LOCAL_PATH }}"
-          echo "${{ env.REMOTE_PATH }}"
-          echo "${{ env.SYNC_MODE }}"
-
-      - name: ローカルディレクトリ確認
-        run: |
-          ls -la ./out/melloew.jp
 
       # =============================
       # ステップ2A: 本番環境デプロイ（SFTP使用）
@@ -159,7 +149,7 @@ jobs:
           local-path: ${{ env.LOCAL_PATH }}
           remote-path: ${{ env.REMOTE_PATH }}
           sync: ${{ env.SYNC_MODE }}
-          debug: true
+          debug: false
 
 
       # =============================
@@ -193,10 +183,7 @@ jobs:
           local-path: ${{ env.LOCAL_PATH }}
           remote-path: ${{ env.REMOTE_PATH }}
           sync: ${{ env.SYNC_MODE }}
-          debug: true
-          ftp-options: |
-            set xfer:parallel 10
-            set mirror:parallel-transfer-count 10
+          debug: false
 
       # =============================
       # ステップ2B: 本番環境デプロイ結果のサマリー表示
@@ -236,12 +223,12 @@ jobs:
             echo ""
             echo "| ブランド | アクセスURL |"
             echo "| ------ | ------------ |"
-            echo "| ${{ env.TARGET_REPOSITORY }} | http://piapiapia.xsrv.jp/test/${{ env.TARGET_REPOSITORY }}/ |"
+            echo "| ${{ env.TARGET_REPOSITORY }} | http://piapiapia.xsrv.jp/dev/${{ env.TARGET_REPOSITORY }}/ |"
             echo ""
             echo "## 📋 詳細情報"
             echo "- **環境**: 検証環境"
             echo "- **ブランド**: ${{ env.TARGET_REPOSITORY }}"
-            echo "- **同期モード**: full（検証環境は常にfull）"
+            echo "- **同期モード**: ${{ env.SYNC_MODE }}"
             echo "- **実行日時**: $(date "+%Y-%m-%d %H:%M:%S")"
             echo "- **実行者**: ${{ github.actor }}"
           } >> $GITHUB_STEP_SUMMARY

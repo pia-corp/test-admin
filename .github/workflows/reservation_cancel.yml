@@ -25,7 +25,8 @@ name: 04.公開予約キャンセル
 on:
   workflow_dispatch:
     inputs:
-      custom_repository:
+      repository:
+        required: true
         description: "任意のブランドリポジトリ（リストにない場合）"
         default: ""
 
@@ -38,7 +39,7 @@ jobs:
       contents: read
       actions: write
     env:
-      TARGET_REPOSITORY: ${{ inputs.custom_repository }}
+      TARGET_REPOSITORY: ${{ inputs.repository }}
       CRON_API_BASE_URL: "https://api.cron-job.org/jobs"
       CRON_JOBS_FILE: "cron_jobs.json"
       UPDATED_JOBS_FILE: "updated_jobs.json"
