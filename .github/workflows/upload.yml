@@ -85,7 +85,7 @@ jobs:
       # 1. repository_dispatchの場合: client_payloadからの値を使用
       # 2. workflow_dispatchの場合: inputsからの値を使用
       # 3. custom_repositoryが指定されていればそちらを優先
-      HOST: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.host || github.event_name == 'workflow_dispatch' && github.event.client_payload.environment == '本番環境' && vars.PRODUCTION_HOST || github.event_name == 'workflow_dispatch' && github.event.client_payload.environment == '検証環境' && vars.DEVELOPMENT_HOST }}
+      HOST: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.host || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_HOST || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_HOST }}
 
       # TARGET_REPOSITORY: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.custom_repository && github.event.client_payload.custom_repository || github.event.client_payload.repository) || github.event_name == 'workflow_dispatch' && (inputs.custom_repository && inputs.custom_repository || inputs.repository) }}
 
