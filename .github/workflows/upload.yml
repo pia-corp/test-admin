@@ -85,14 +85,52 @@ jobs:
       # 1. repository_dispatchの場合: client_payloadからの値を使用
       # 2. workflow_dispatchの場合: inputsからの値を使用
       # 3. custom_repositoryが指定されていればそちらを優先
-      HOST: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.host || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_HOST || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_HOST }}
-      PORT: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.port || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_PORT || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_PORT }}
-      USER_NAME: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.user_name || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_USER_NAME || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_USER_NAME }}
-      PASSWORD: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && secrets.PRODUCTION_PASSWORD || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && secrets.PRODUCTION_PASSWORD || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && '' }}
-      SSH_PRIVATE_KEY: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && secrets.DEVELOPMENT_PASSWORD || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && secrets.DEVELOPMENT_PASSWORD || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && '' }}
-      LOCAL_PATH: /out/${{ github.event_name == 'repository_dispatch' && github.event.client_payload.local_path || github.event_name == 'workflow_dispatch' && inputs.custom_repository }}
-      REMOTE_PATH: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.remote_path || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && '/inputs.custom_repository/'vars.PRODUCTION_REMOTE_PATH || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_REMOTE_PATH'/inputs.custom_repository' }}
-      SYNC_MODE: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.sync_mode || github.event_name == 'workflow_dispatch' && inputs.sync_mode }}
+      # HOST の決定
+      HOST: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.host ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_HOST ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_HOST }}
+
+      # PORT の決定
+      PORT: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.port ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_PORT ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_PORT }}
+
+      # USER_NAME の決定
+      USER_NAME: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.user_name ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_USER_NAME ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_USER_NAME }}
+
+      # PASSWORD の決定（検証環境では空にする）
+      PASSWORD: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && secrets.PRODUCTION_PASSWORD ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && secrets.PRODUCTION_PASSWORD ||
+        github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && '' ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && '' }}
+
+      # SSH_PRIVATE_KEY の決定（本番環境では空にする）
+      SSH_PRIVATE_KEY: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && secrets.DEVELOPMENT_SSH_KEY ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && secrets.DEVELOPMENT_SSH_KEY ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && '' ||
+        github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && '' }}
+
+      # LOCAL_PATH の決定
+      LOCAL_PATH: /out/${{ github.event_name == 'repository_dispatch' && github.event.client_payload.local_path ||
+        github.event_name == 'workflow_dispatch' && inputs.custom_repository }}
+
+      # REMOTE_PATH の決定
+      REMOTE_PATH: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.remote_path ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && format('{0}/{1}', vars.PRODUCTION_REMOTE_PATH, inputs.custom_repository) ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && format('{0}/{1}', vars.DEVELOPMENT_REMOTE_PATH, inputs.custom_repository) }}
+
+      # SYNC_MODE の決定
+      SYNC_MODE: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.sync_mode ||
+        github.event_name == 'workflow_dispatch' && inputs.sync_mode }}
+
+
+
+      # PASSWORD: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && secrets.PRODUCTION_PASSWORD ||
+      #  github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && secrets.PRODUCTION_PASSWORD ||
+      #   github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && '' }}
+      # SSH_PRIVATE_KEY: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && secrets.DEVELOPMENT_PASSWORD || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && secrets.DEVELOPMENT_PASSWORD || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && '' }}
 
       # TARGET_REPOSITORY: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.custom_repository && github.event.client_payload.custom_repository || github.event.client_payload.repository) || github.event_name == 'workflow_dispatch' && (inputs.custom_repository && inputs.custom_repository || inputs.repository) }}
 
