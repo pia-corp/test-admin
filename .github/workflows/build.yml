@@ -184,7 +184,7 @@ jobs:
   # ===================================================
   create_sitemap:
     needs: [get_commit_message]
-    if: ${{ needs.get_commit_message.outputs.COMMIT_MESSAGE && (needs.get_commit_message.outputs.COMMIT_MESSAGE == 'Automatically update submodules' || needs.get_commit_message.outputs.COMMIT_MESSAGE == 'Automatically add submodules') }}
+    if: ${{ needs.get_commit_message.outputs.COMMIT_MESSAGE && (needs.get_commit_message.outputs.COMMIT_MESSAGE == '自動サブモジュール更新 (Automatically update submodules)' || needs.get_commit_message.outputs.COMMIT_MESSAGE == '自動サブモジュール追加 (Automatically add submodules)') }}
 
     uses: ./.github/workflows/module-create_sitemap.yml
     with:
