@@ -173,9 +173,13 @@ jobs:
           remote-user: ${{ env.USER_NAME }}
           ssh-private-key: ${{ secrets.DEVELOPMENT_SSH_KEY }}
           local-path: ${{ env.LOCAL_PATH }}
-          remote-path: ${{ env.REMOTE_PATH }}
+          remote-path: ${{ env.REMOTE_PATH }}/
           sync: ${{ env.SYNC_MODE }}
           debug: true
+          ftp-options: |
+            set xfer:parallel 10
+            set mirror:parallel-transfer-count 10
+          # ssh-options: '--parallel=10'
 
       # =============================
       # ステップ2B: 本番環境デプロイ結果のサマリー表示
