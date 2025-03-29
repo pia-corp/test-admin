@@ -119,7 +119,7 @@ jobs:
 
       # 既存サブモジュールの更新
       - name: サブモジュールを更新
-        if: env.submodule_exists == 'true'
+        if: env.repository_exists == 'true'
         run: |
           # サブモジュールの更新
           echo "既存のサブモジュールを更新します (Updating existing submodule): ${TARGET_REPOSITORY}"
