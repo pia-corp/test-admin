@@ -138,8 +138,9 @@ jobs:
           echo "${{ env.REMOTE_PATH }}"
           echo "${{ env.SYNC_MODE }}"
 
-      - name: デバッグ: ローカルディレクトリ確認
-        run: ls -la /out/melloew.jp
+      - name: ローカルディレクトリ確認
+        run: |
+          ls -la /out/melloew.jp
 
       # =============================
       # ステップ2A: 本番環境デプロイ（SFTP使用）
