@@ -169,6 +169,15 @@ jobs:
       # =============================
       - name: SFTPデプロイ（検証環境）
         if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
+
+      # 1. リモートディレクトリを作成
+      - name: Create remote directory if it doesn't exist
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ env.USER_NAME }}@${{ env.HOST }} \
+          "mkdir -p ${{ env.REMOTE_PATH }}"
+
+      # 2. ファイルをデプロイ
+      - name: Deploy files to the remote server (検証環境)
         uses: milanmk/actions-file-deployer@1.16
         with:
           remote-protocol: 'sftp'
@@ -177,7 +186,7 @@ jobs:
           remote-user: ${{ env.USER_NAME }}
           ssh-private-key: ${{ secrets.DEVELOPMENT_SSH_KEY }}
           local-path: ${{ env.LOCAL_PATH }}
-          remote-path: ${{ env.REMOTE_PATH }}/
+          remote-path: ${{ env.REMOTE_PATH }}
           sync: ${{ env.SYNC_MODE }}
           debug: true
           ftp-options: |
