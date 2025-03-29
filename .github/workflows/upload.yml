@@ -185,7 +185,6 @@ jobs:
           local-path: ${{ env.LOCAL_PATH }}
           remote-path: ${{ env.REMOTE_PATH }}
           sync: ${{ env.SYNC_MODE }}
-          clean: true
           debug: false
 
       # =============================
