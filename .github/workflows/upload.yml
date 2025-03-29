@@ -126,19 +126,11 @@ jobs:
         github.event_name == 'workflow_dispatch' && inputs.sync_mode }}
 
 
+      TARGET_REPOSITORY: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.custom_repository && github.event.client_payload.custom_repository || github.event.client_payload.repository) || github.event_name == 'workflow_dispatch' && (inputs.custom_repository && inputs.custom_repository || inputs.repository) }}
 
-      # PASSWORD: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && secrets.PRODUCTION_PASSWORD ||
-      #  github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && secrets.PRODUCTION_PASSWORD ||
-      #   github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && '' }}
-      # SSH_PRIVATE_KEY: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && secrets.DEVELOPMENT_PASSWORD || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && secrets.DEVELOPMENT_PASSWORD || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && '' }}
+      # デプロイ先環境の決定ロジック（デフォルト: 検証環境）
+      TARGET_ENVIRONMENT: ${{ github.event.client_payload.target && github.event.client_payload.target || inputs.target && inputs.target || '検証環境' }}
 
-      # TARGET_REPOSITORY: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.custom_repository && github.event.client_payload.custom_repository || github.event.client_payload.repository) || github.event_name == 'workflow_dispatch' && (inputs.custom_repository && inputs.custom_repository || inputs.repository) }}
-
-      # # デプロイ先環境の決定ロジック（デフォルト: 検証環境）
-      # TARGET_ENVIRONMENT: ${{ github.event.client_payload.target && github.event.client_payload.target || inputs.target && inputs.target || '検証環境' }}
-
-      # # 同期モードの決定ロジック（デフォルト: full）
-      # SYNC_MODE: ${{ github.event.client_payload.sync && github.event.client_payload.sync || inputs.sync && inputs.sync || 'full' }}
 
     steps:
       # =============================
@@ -160,39 +152,44 @@ jobs:
           echo "${{ env.REMOTE_PATH }}"
           echo "${{ env.SYNC_MODE }}"
 
-      # # =============================
-      # # ステップ2A: デプロイ（SFTP使用）
-      # # - セキュリティ向上のためSFTPを使用
-      # # - delta同期に対応（変更ファイルのみアップロード可能）
-      # # =============================
-      # - name: SFTPデプロイ
-      #   env:
-      #     HOST: ${{ vars.PRODUCTION_HOST }}
-      #     PORT: ${{ vars.PRODUCTION_PORT }}
-      #     USER_NAME: ${{ vars.PRODUCTION_USER_NAME }}
-      #     PASSWORD: ${{ vars.PRODUCTION_PASSWORD }}
-      #     SSH_PRIVATE_KEY: ${{ vars.DEPLOY_SSH_KEY }}
-      #     LOCAL_PATH: ${{ vars.TARGET_REPOSITORY }}
-      #     REMOTE_PATH: ${{ env.TARGET_REPOSITORY }}/${{ vars.PRODUCTION_REMOTE_PATH }}/
-      #     SYNC_MODE: ${{ env.SYNC_MODE }}
+      # =============================
+      # ステップ2A: 本番環境デプロイ（SFTP使用）
+      # - セキュリティ向上のためSFTPを使用
+      # - delta同期に対応（変更ファイルのみアップロード可能）
+      # =============================
+      - name: SFTPデプロイ
+        if: ${{ env.TARGET_ENVIRONMENT == '本番環境' }}
+        uses: milanmk/actions-file-deployer@1.15
+        with:
+          remote-protocol: 'sftp'
+          remote-host: ${{ env.HOST }}
+          remote-port: ${{ env.PORT }}
+          remote-user: ${{ env.USER_NAME }}
+          remote-password: ${{ env.PASSWORD }}
+          local-path: out/${{ env.LOCAL_PATH }}  # ローカルの対象ディレクトリ
+          remote-path: ${{ env.REMOTE_PATH }}  # リモートの対象ディレクトリ
+          sync: ${{ env.SYNC_MODE }}  # 同期モード（full/delta）
+          debug: false  # デバッグログを有効化（トラブルシューティングのため）
 
-      #   # github.event.client_payload.repository
-      #   # github.event.client_payload.custom_repository
-      #   # github.event.client_payload.target
-      #   # github.event.client_payload.sync
 
-      #   uses: milanmk/actions-file-deployer@1.15
-      #   with:
-      #     remote-protocol: 'sftp'
-      #     remote-host: ${{ env.HOST }}
-      #     remote-port: ${{ env.PORT }}
-      #     remote-user: ${{ env.USER_NAME }}
-      #     remote-password: ${{ env.PASSWORD }}
-      #     ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
-      #     local-path: out/${{ env.LOCAL_PATH }}  # ローカルの対象ディレクトリ
-      #     remote-path: ${{ env.REMOTE_PATH }}  # リモートの対象ディレクトリ
-      #     sync: ${{ env.SYNC_MODE }}  # 同期モード（full/delta）
-      #     debug: false  # デバッグログを有効化（トラブルシューティングのため）
+      # =============================
+      # ステップ2A: 検証環境デプロイ（SFTP使用）
+      # - セキュリティ向上のためSFTPを使用
+      # - delta同期に対応（変更ファイルのみアップロード可能）
+      # =============================
+      - name: SFTPデプロイ
+        if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
+        uses: milanmk/actions-file-deployer@1.15
+        with:
+          remote-protocol: 'sftp'
+          remote-host: ${{ env.HOST }}
+          remote-port: ${{ env.PORT }}
+          remote-user: ${{ env.USER_NAME }}
+          ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
+          local-path: out/${{ env.LOCAL_PATH }}  # ローカルの対象ディレクトリ
+          remote-path: ${{ env.REMOTE_PATH }}  # リモートの対象ディレクトリ
+          sync: ${{ env.SYNC_MODE }}  # 同期モード（full/delta）
+          debug: false  # デバッグログを有効化（トラブルシューティングのため）
 
       # # =============================
       # # ステップ2B: 本番環境デプロイ結果のサマリー表示
