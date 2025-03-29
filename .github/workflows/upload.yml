@@ -168,7 +168,7 @@ jobs:
           remote-password: ${{ env.PASSWORD }}
           local-path: ${{ env.LOCAL_PATH }}  # ローカルの対象ディレクトリ
           remote-path: ${{ env.REMOTE_PATH }}  # リモートの対象ディレクトリ
-          sync: full  # 同期モード（full/delta）
+          sync: ${{ env.SYNC_MODE }}  # 同期モード（full/delta）
           debug: true  # デバッグログを有効化（トラブルシューティングのため）
 
 
@@ -188,7 +188,7 @@ jobs:
           ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
           local-path: ${{ env.LOCAL_PATH }}  # ローカルの対象ディレクトリ
           remote-path: ${{ env.REMOTE_PATH }}  # リモートの対象ディレクトリ
-          sync: ${{ env.SYNC_MODE }}  # 同期モード（full/delta）
+          sync: full  # 同期モード（full/delta）
           debug: true  # デバッグログを有効化（トラブルシューティングのため）
 
       # =============================
