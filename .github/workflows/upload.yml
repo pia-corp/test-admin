@@ -169,9 +169,6 @@ jobs:
       # =============================
       - name: SFTPデプロイ（検証環境）
         if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
-
-      # 1. リモートディレクトリを作成
-      - name: Create remote directory if it doesn't exist
         run: |
           ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ env.USER_NAME }}@${{ env.HOST }} \
           "mkdir -p ${{ env.REMOTE_PATH }}"
