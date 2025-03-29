@@ -157,7 +157,7 @@ jobs:
       # - セキュリティ向上のためSFTPを使用
       # - delta同期に対応（変更ファイルのみアップロード可能）
       # =============================
-      - name: SFTPデプロイ
+      - name: SFTPデプロイ（本番環境）
         if: ${{ env.TARGET_ENVIRONMENT == '本番環境' }}
         uses: milanmk/actions-file-deployer@1.15
         with:
@@ -177,7 +177,7 @@ jobs:
       # - セキュリティ向上のためSFTPを使用
       # - delta同期に対応（変更ファイルのみアップロード可能）
       # =============================
-      - name: SFTPデプロイ
+      - name: SFTPデプロイ（検証環境）
         if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
         uses: milanmk/actions-file-deployer@1.15
         with:
@@ -186,7 +186,7 @@ jobs:
           remote-port: ${{ env.PORT }}
           remote-user: ${{ env.USER_NAME }}
           ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
-          local-path: out/${{ env.LOCAL_PATH }}  # ローカルの対象ディレクトリ
+          local-path: ${{ env.LOCAL_PATH }}  # ローカルの対象ディレクトリ
           remote-path: ${{ env.REMOTE_PATH }}  # リモートの対象ディレクトリ
           sync: ${{ env.SYNC_MODE }}  # 同期モード（full/delta）
           debug: false  # デバッグログを有効化（トラブルシューティングのため）
