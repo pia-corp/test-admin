@@ -106,7 +106,7 @@ jobs:
 
       # REMOTE_PATH の決定
       REMOTE_PATH: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.remote_path ||
-        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && format('{0}/{1}', vars.PRODUCTION_REMOTE_PATH, inputs.custom_repository) ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && format('{0}/{1}', inputs.custom_repository, vars.PRODUCTION_REMOTE_PATH) ||
         github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && format('{0}/{1}', vars.DEVELOPMENT_REMOTE_PATH, inputs.custom_repository) }}
 
       # SYNC_MODE の決定
@@ -137,6 +137,9 @@ jobs:
           echo "${{ env.LOCAL_PATH }}"
           echo "${{ env.REMOTE_PATH }}"
           echo "${{ env.SYNC_MODE }}"
+
+      - name: デバッグ: ローカルディレクトリ確認
+        run: ls -la /out/${{ inputs.custom_repository}}
 
       # =============================
       # ステップ2A: 本番環境デプロイ（SFTP使用）
