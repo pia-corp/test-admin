@@ -86,6 +86,13 @@ jobs:
       # 2. workflow_dispatchの場合: inputsからの値を使用
       # 3. custom_repositoryが指定されていればそちらを優先
       HOST: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.host || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_HOST || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_HOST }}
+      PORT: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.port || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_PORT || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_PORT }}
+      USER_NAME: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.user_name || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_USER_NAME || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_USER_NAME }}
+      PASSWORD: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && secrets.PRODUCTION_PASSWORD || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && secrets.PRODUCTION_PASSWORD }}
+      SSH_PRIVATE_KEY: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && secrets.DEVELOPMENT_PASSWORD || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && secrets.DEVELOPMENT_PASSWORD }}
+      LOCAL_PATH: /out/${{ github.event_name == 'repository_dispatch' && github.event.client_payload.local_path || github.event_name == 'workflow_dispatch' && inputs.custom_repository }}
+      REMOTE_PATH: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.remote_path || github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && vars.PRODUCTION_REMOTE_PATH || github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_REMOTE_PATH }}
+      SYNC_MODE: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.sync_mode || github.event_name == 'workflow_dispatch' && inputs.sync_mode }}
 
       # TARGET_REPOSITORY: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.custom_repository && github.event.client_payload.custom_repository || github.event.client_payload.repository) || github.event_name == 'workflow_dispatch' && (inputs.custom_repository && inputs.custom_repository || inputs.repository) }}
 
@@ -107,6 +114,13 @@ jobs:
       - name: ログ
         run: |
           echo "${{ env.HOST }}"
+          echo "${{ env.PORT }}"
+          echo "${{ env.USER_NAME }}"
+          echo "${{ env.PASSWORD }}"
+          echo "${{ env.SSH_PRIVATE_KEY }}"
+          echo "${{ env.LOCAL_PATH }}"
+          echo "${{ env.REMOTE_PATH }}"
+          echo "${{ env.SYNC_MODE }}"
 
       # # =============================
       # # ステップ2A: デプロイ（SFTP使用）
@@ -114,7 +128,6 @@ jobs:
       # # - delta同期に対応（変更ファイルのみアップロード可能）
       # # =============================
       # - name: SFTPデプロイ
-      #   if: ${{ env.TARGET_ENVIRONMENT == '本番環境' }}
       #   env:
       #     HOST: ${{ vars.PRODUCTION_HOST }}
       #     PORT: ${{ vars.PRODUCTION_PORT }}
