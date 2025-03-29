@@ -130,6 +130,8 @@ jobs:
       # =============================
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
         # 注: 必要に応じてfetch-depthやsubmodulesなどのオプションを追加可能
 
       # =============================
