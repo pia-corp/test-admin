@@ -106,7 +106,7 @@ jobs:
 
       - name: ログ
         run: |
-          echo "env.HOST"
+          echo "${{ env.HOST }}"
 
       # # =============================
       # # ステップ2A: デプロイ（SFTP使用）
