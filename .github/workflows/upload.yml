@@ -168,8 +168,8 @@ jobs:
           remote-password: ${{ env.PASSWORD }}
           local-path: ${{ env.LOCAL_PATH }}  # ローカルの対象ディレクトリ
           remote-path: ${{ env.REMOTE_PATH }}  # リモートの対象ディレクトリ
-          sync: ${{ env.SYNC_MODE }}  # 同期モード（full/delta）
-          debug: false  # デバッグログを有効化（トラブルシューティングのため）
+          sync: '${{ env.SYNC_MODE }}'  # 同期モード（full/delta）
+          debug: true  # デバッグログを有効化（トラブルシューティングのため）
 
 
       # =============================
@@ -189,7 +189,7 @@ jobs:
           local-path: ${{ env.LOCAL_PATH }}  # ローカルの対象ディレクトリ
           remote-path: ${{ env.REMOTE_PATH }}  # リモートの対象ディレクトリ
           sync: ${{ env.SYNC_MODE }}  # 同期モード（full/delta）
-          debug: false  # デバッグログを有効化（トラブルシューティングのため）
+          debug: true  # デバッグログを有効化（トラブルシューティングのため）
 
       # =============================
       # ステップ2B: 本番環境デプロイ結果のサマリー表示
