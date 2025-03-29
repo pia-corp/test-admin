@@ -166,7 +166,7 @@ jobs:
           echo "取得したコミットメッセージ: '$COMMIT_MESSAGE'"
 
           # 期待値との一致を確認
-          if [[ "$COMMIT_MESSAGE" == "Automatically update submodules" || "$COMMIT_MESSAGE" == "Automatically add submodules" ]]; then
+          if [[ "$COMMIT_MESSAGE" == "自動サブモジュール更新 (Automatically update submodules)" || "$COMMIT_MESSAGE" == "自動サブモジュール追加 (Automatically add submodules)" ]]; then
             echo "✅ 有効なコミットメッセージです。処理を続行します。"
           else
             echo "⚠️ 無効なコミットメッセージです。ブランチは削除されます。"
