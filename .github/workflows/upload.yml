@@ -175,7 +175,7 @@ jobs:
           # 復号化のためのパスフレーズをGitHub Secretsから取得（もしあれば）
           echo "${{ secrets.SSH_PASSPHRASE }}" | openssl rsa -in ~/.ssh/id_rsa.enc -out ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa  # パーミッションを設定
-          ssh -p ${{ env.PORT }} -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ env.USER_NAME }}@${{ env.HOST }} "mkdir -p ${{ env.REMOTE_PATH }}"
+          ssh -v -p ${{ env.PORT }} -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ env.USER_NAME }}@${{ env.HOST }} "mkdir -p ${{ env.REMOTE_PATH }}"
 
       # 2. ファイルをデプロイ
       - name: Deploy files to the remote server (検証環境)
