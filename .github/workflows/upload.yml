@@ -194,9 +194,6 @@ jobs:
           remote-path: ${{ env.REMOTE_PATH }}
           sync: ${{ env.SYNC_MODE }}
           debug: true
-          ftp-options: |
-            set xfer:parallel 10
-            set mirror:parallel-transfer-count 10
           # ssh-options: '--parallel=10'
 
       # =============================
