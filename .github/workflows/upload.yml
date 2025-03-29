@@ -171,7 +171,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh  # SSHディレクトリを作成
           # GitHub Secretsから暗号化されたプライベートキーを取り出し、ファイルに保存
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa.enc
+          echo "${{ secrets.DEVELOPMENT_SSH_KEY }}" > ~/.ssh/id_rsa.enc
           # 復号化のためのパスフレーズをGitHub Secretsから取得（もしあれば）
           echo "${{ secrets.SSH_PASSPHRASE }}" | openssl rsa -in ~/.ssh/id_rsa.enc -out ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa  # パーミッションを設定
