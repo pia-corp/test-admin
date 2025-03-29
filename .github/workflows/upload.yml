@@ -184,9 +184,9 @@ jobs:
           local-path: ${{ env.LOCAL_PATH }}
           remote-path: ${{ env.REMOTE_PATH }}
           sync: ${{ env.SYNC_MODE }}
-          debug: false
+          debug: true
           ftp-post-sync-commands: |
-            mirror --reverse --delete ${{ env.LOCAL_PATH }} ${{ env.REMOTE_PATH }}
+            mirror --reverse --delete --dry-run ${{ env.LOCAL_PATH }} ${{ env.REMOTE_PATH }}
 
       # =============================
       # ステップ2B: 本番環境デプロイ結果のサマリー表示
