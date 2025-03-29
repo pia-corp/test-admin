@@ -167,11 +167,11 @@ jobs:
       # - セキュリティ向上のためSFTPを使用
       # - delta同期に対応（変更ファイルのみアップロード可能）
       # =============================
-      - name: SFTPデプロイ（検証環境）
-        if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
+      - name: Use SSH private key from GitHub Secrets
         run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_PRIVATE_KEY }} ${{ env.USER_NAME }}@${{ env.HOST }} \
-          "mkdir -p ${{ env.REMOTE_PATH }}"
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ env.USER_NAME }}@${{ env.HOST }} "mkdir -p ${{ env.REMOTE_PATH }}"
 
       # 2. ファイルをデプロイ
       - name: Deploy files to the remote server (検証環境)
