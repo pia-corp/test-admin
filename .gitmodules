@@ -10,3 +10,6 @@
 [submodule "louer.jp"]
 	path = louer.jp
 	url = https://github.com/pia-corp/louer.jp
+[submodule "melloew.jp"]
+	path = melloew.jp
+	url = https://github.com/pia-corp/melloew.jp
