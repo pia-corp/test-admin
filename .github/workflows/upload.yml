@@ -104,7 +104,7 @@ jobs:
         uses: actions/checkout@v4.2.2
         # 注: 必要に応じてfetch-depthやsubmodulesなどのオプションを追加可能
 
-        - name: ログ
+      - name: ログ
         run: |
           echo "env.HOST"
 
