@@ -101,7 +101,7 @@ jobs:
         github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && vars.DEVELOPMENT_USER_NAME }}
 
       # LOCAL_PATH の決定
-      LOCAL_PATH: /out/${{ github.event_name == 'repository_dispatch' && github.event.client_payload.local_path ||
+      LOCAL_PATH: ${{ vars.LOCAL_PATH }}${{ github.event_name == 'repository_dispatch' && github.event.client_payload.local_path ||
         github.event_name == 'workflow_dispatch' && inputs.custom_repository }}
 
       # REMOTE_PATH の決定
@@ -140,7 +140,7 @@ jobs:
 
       - name: ローカルディレクトリ確認
         run: |
-          ls -la /out/melloew.jp
+          ls -la ./out/melloew.jp
 
       # =============================
       # ステップ2A: 本番環境デプロイ（SFTP使用）
