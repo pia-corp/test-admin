@@ -3,8 +3,7 @@
 # ===================================================
 #
 # 概要
-# このワークフローは、指定されたリポジトリのHTMLファイルから自動的にサイトマップを生成し、
-# 対象のブランチにコミットするGitHub Actionsワークフローです。
+# このワークフローは、指定されたリポジトリのHTMLファイルから自動的にサイトマップを生成し、対象のブランチにコミットするGitHub Actionsワークフローです。
 #
 # 主な機能:
 # - 指定されたリポジトリの公開フォルダからHTMLファイルを検索
@@ -25,23 +24,25 @@ on:
   workflow_call:
     inputs:
       repository:
-        description: "対象ブランドのリポジトリ名"
+        description: "Cronジョブのタイトル"
         required: true
         type: string
+
       repository_no_register:
-        description: "任意のブランドリポジトリ"
+        description: "Cronジョブのタイトル (サービスドメインと同一にする)"
         required: false
         type: string
+
       branch_name:
         description: "ブランチのパス"
         required: true
         type: string
+
     secrets:
       GITHUB_TOKEN_VALUE:
         description: "GitHub認証トークン"
         required: true
 
-# リポジトリへの書き込み権限を設定
 permissions:
   contents: write
 
@@ -50,28 +51,33 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
-    # 動的にリポジトリ名を設定（任意のリポジトリが指定されている場合は優先）
     env:
       TARGET_REPOSITORY: ${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
       SITEMAP_OUTPUT_DIR: out/${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}
       PUBLIC_DIR: ./${{ inputs.repository_no_register != '' && inputs.repository_no_register || inputs.repository }}/public
 
     steps:
-      # リポジトリの完全な履歴を取得
+      # =============================
+      # ステップ1: リポジトリの完全な履歴を取得
+      # =============================
       - name: リポジトリのチェックアウト
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ inputs.branch_name }}
 
-      # Git設定を行い、GitHub Tokenを使用した操作を可能にする
+      # =============================
+      # ステップ2: Git設定を行い、GitHub Tokenを使用した操作を可能にする
+      # =============================
       - name: Gitユーザー設定
         run: |
           git config --global user.name ${{ vars.GIT_USERNAME }}
           git config --global user.email ${{ vars.GIT_MAILADDRESS }}
           git config --global url."https://${{ secrets.GITHUB_TOKEN_VALUE }}@github.com/".insteadOf "https://github.com/"
 
-      # サブモジュールを含むリポジトリをクローン
+      # =============================
+      # ステップ3: サブモジュールを含むリポジトリをクローン
+      # =============================
       - name: サブモジュールの更新
         run: |
           git clone https://github.com/pia-corp/${{ env.TARGET_REPOSITORY }} --recursive || {
@@ -81,7 +87,9 @@ jobs:
         env:
           GITHUB_TOKEN_VALUE: ${{ secrets.GITHUB_TOKEN_VALUE }}
 
-      # 出力フォルダの準備
+      # =============================
+      # ステップ4: 出力フォルダの準備
+      # =============================
       - name: 出力フォルダの再生成
         run: |
           rm -rf out/${{ env.TARGET_REPOSITORY }}
@@ -95,7 +103,9 @@ jobs:
             exit 1
           fi
 
-      # サイトマップXMLの生成
+      # =============================
+      # ステップ5: サイトマップXMLの生成
+      # =============================
       - name: サイトマップXML生成
         run: |
           if [ ! -d "${{ env.PUBLIC_DIR }}" ]; then
@@ -135,11 +145,15 @@ jobs:
 
           echo '</urlset>' >> ${{ env.SITEMAP_OUTPUT_DIR }}/sitemap.xml
 
-      # 指定のブランチをチェックアウト
+      # =============================
+      # ステップ6: 指定のブランチをチェックアウト
+      # =============================
       - name: ブランチのチェックアウト
         run: git checkout ${{ inputs.branch_name }}
 
-      # 変更をコミットしてプッシュ
+      # =============================
+      # ステップ7: 変更をコミットしてプッシュ
+      # =============================
       - name: 変更のコミットとプッシュ
         run: |
           git add .

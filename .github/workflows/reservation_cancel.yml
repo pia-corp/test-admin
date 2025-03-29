@@ -22,20 +22,13 @@
 
 name: 04.公開予約キャンセル
 
-# =============================
-# ワークフロートリガー設定
-# =============================
 on:
-  # 手動実行のみに対応
   workflow_dispatch:
     inputs:
       custom_repository:
         description: "任意のブランドリポジトリ（リストにない場合）"
         default: ""
 
-# =============================
-# ジョブ定義
-# =============================
 jobs:
   cancel_reservation:
     name: 予約キャンセル処理
@@ -45,17 +38,14 @@ jobs:
       contents: read
       actions: write
     env:
-      # カスタムリポジトリが入力された場合はそちらを優先、なければドロップダウンで選択されたリポジトリを使用
       TARGET_REPOSITORY: ${{ inputs.custom_repository }}
-      # CronJob.org API エンドポイント
       CRON_API_BASE_URL: "https://api.cron-job.org/jobs"
-      # 出力ファイル名
       CRON_JOBS_FILE: "cron_jobs.json"
       UPDATED_JOBS_FILE: "updated_jobs.json"
 
     steps:
       # =============================
-      # Step 1: CronJob一覧取得
+      # ステップ 1: CronJob一覧取得
       # =============================
       - name: CronJobリストを取得
         id: fetch_cron_jobs
@@ -82,7 +72,7 @@ jobs:
           echo "::endgroup::"
 
       # =============================
-      # Step 2: 対象ジョブ情報抽出
+      # ステップ 2: 対象ジョブ情報抽出
       # =============================
       - name: 対象ジョブの情報を抽出
         id: extract_job_info
@@ -115,7 +105,7 @@ jobs:
           echo "::endgroup::"
 
       # =============================
-      # Step 3: 予約キャンセル処理
+      # ステップ 3: 予約キャンセル処理
       # =============================
       - name: 予約をキャンセル（無効化）
         id: disable_job
@@ -142,7 +132,7 @@ jobs:
               ${{ env.CRON_API_BASE_URL }}/${{ env.job_id }})
 
       # =============================
-      # Step 4: 更新後の情報取得
+      # ステップ 4: 更新後の情報取得
       # =============================
       - name: 更新後のジョブ情報を取得
         id: verify_update
@@ -187,7 +177,7 @@ jobs:
           echo "::endgroup::"
 
       # =============================
-      # Step 5: 結果サマリー作成
+      # ステップ 5: 結果サマリー作成
       # =============================
       - name: 結果のサマリーを作成
         id: create_summary
@@ -215,7 +205,7 @@ jobs:
             echo ""
             echo "## 備考"
             echo "- このワークフローは CronJob.org の登録予約を無効化するだけであり、予約自体は削除されません"
-            echo "- 予約を再度有効化したい場合は、CronJob.org の管理画面から手動で行ってください"
-            echo "- 予約状況を直接確認する場合は以下のサイトへアクセスしてください"
+            echo "- 予約を再度有効化したい場合は、「03.公開予約」の管理画面から手動で行ってください"
+            echo "- 予約状況を直接確認する場合は「06. Cronジョブ設定と公開状況の確認」を実行するか以下のサイトへアクセスしてください"
             echo "  [Cron-Job.org管理画面](https://cron-job.org/en/)"
           } >> $GITHUB_STEP_SUMMARY

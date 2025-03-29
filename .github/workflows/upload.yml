@@ -31,8 +31,7 @@
 #    - 大量のファイルがある場合は分割アップロードを検討
 #
 # 環境変数の設定方法:
-# - PRODUCTION_*およびDEVELOPMENT_*の変数/シークレットは
-#   リポジトリ設定のSecretsおよびVariablesから設定してください
+# - PRODUCTION_*およびDEVELOPMENT_*の変数/シークレットはリポジトリ設定のSecretsおよびVariablesから設定してください
 #
 # ===================================================
 
@@ -42,14 +41,11 @@ name: 02.ファイルアップロード
 # トリガー設定
 # =============================
 on:
-  # 外部APIからのトリガー（CI/CDパイプラインや他のシステムからの呼び出し用）
   repository_dispatch:
     types: [upload]
 
-  # GitHub上での手動実行用トリガー
   workflow_dispatch:
     inputs:
-      # 定義済みブランドリスト（プルダウンで選択）
       repository:
         description: "対象ブランド（リストから選択）"
         type: choice
@@ -77,13 +73,11 @@ on:
           - "resay.jp"
           - "michou.jp"
 
-      # リストにない任意のブランド（自由入力）
       custom_repository:
         description: "任意のブランドリポジトリ（リストにない場合）"
         required: false
         type: string
 
-      # デプロイ先環境の選択
       environment:
         description: "アップロード先環境"
         type: choice
@@ -92,14 +86,13 @@ on:
           - "検証環境"
           - "本番環境"
 
-      # 同期モードの選択（検証環境では常にfull）
       sync_mode:
         description: "同期モード（※検証環境はfullアップロードのみ）"
         type: choice
         required: true
         options:
-          - "full"  # 全ファイルを再アップロード
-          - "delta" # 変更があったファイルのみアップロード（本番環境のみ有効）
+          - "full"
+          - "delta"
 
 # =============================
 # ジョブ定義
@@ -107,7 +100,7 @@ on:
 jobs:
   Upload:
     runs-on: ubuntu-latest
-    timeout-minutes: 5  # タイムアウト設定（長時間のアップロードを防止）
+    timeout-minutes: 30
 
     # =============================
     # 環境変数の設定
