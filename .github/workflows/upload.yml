@@ -139,7 +139,7 @@ jobs:
           echo "${{ env.SYNC_MODE }}"
 
       - name: デバッグ: ローカルディレクトリ確認
-        run: ls -la /out/${{ inputs.custom_repository}}
+        run: ls -la /out/melloew.jp
 
       # =============================
       # ステップ2A: 本番環境デプロイ（SFTP使用）
