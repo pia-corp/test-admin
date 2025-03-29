@@ -61,16 +61,16 @@ on:
         type: choice
         required: true
         options:
-          - "verification_env"
-          - "production_env"
+          - "検証環境"
+          - "本番環境"
 
       sync_method:
-        description: "同期タイプ（※検証環境はfullアップロードのみ）"
+        description: "同期タイプ"
         type: choice
         required: true
         options:
-          - "full_sync"
-          - "delta_sync"
+          - "full"
+          - "delta"
 
 jobs:
   schedule_content_publication:

@@ -209,7 +209,7 @@ jobs:
     needs: [get_commit_message]
     runs-on: ubuntu-latest
     timeout-minutes: 1
-    if: ${{ needs.get_commit_message.outputs.COMMIT_MESSAGE && needs.get_commit_message.outputs.COMMIT_MESSAGE != 'Automatically update submodules' && needs.get_commit_message.outputs.COMMIT_MESSAGE != 'Automatically add submodules' }}
+    if: ${{ needs.get_commit_message.outputs.COMMIT_MESSAGE && needs.get_commit_message.outputs.COMMIT_MESSAGE != '自動サブモジュール更新 (Automatically update submodules)' && needs.get_commit_message.outputs.COMMIT_MESSAGE != '自動サブモジュール追加 (Automatically add submodules)' }}
 
     steps:
       - name: リポジトリをチェックアウト

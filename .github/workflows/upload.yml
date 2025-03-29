@@ -46,33 +46,6 @@ on:
 
   workflow_dispatch:
     inputs:
-      repository:
-        description: "対象ブランド（リストから選択）"
-        type: choice
-        required: true
-        options:
-          - "topards.jp"
-          - "feliamo.jp"
-          - "molak.jp"
-          - "ns-collection.jp"
-          - "lilmoon.jp"
-          - "minette-lens.jp"
-          - "mirage-c.jp"
-          - "mimuco.jp"
-          - "harne.jp"
-          - "louer.jp"
-          - "lumieu.jp"
-          - "puuuuchu.jp"
-          - "melady.jp"
-          - "melloew.jp"
-          - "faloom.jp"
-          - "mimicharme.jp"
-          - "lensbe.jp"
-          - "clainel.jp"
-          - "chapun.jp"
-          - "resay.jp"
-          - "michou.jp"
-
       custom_repository:
         description: "任意のブランドリポジトリ（リストにない場合）"
         required: false
@@ -112,13 +85,15 @@ jobs:
       # 1. repository_dispatchの場合: client_payloadからの値を使用
       # 2. workflow_dispatchの場合: inputsからの値を使用
       # 3. custom_repositoryが指定されていればそちらを優先
-      TARGET_REPOSITORY: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.custom_repository && github.event.client_payload.custom_repository || github.event.client_payload.repository) || github.event_name == 'workflow_dispatch' && (inputs.custom_repository && inputs.custom_repository || inputs.repository) }}
+      HOST: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.host || github.event_name == 'workflow_dispatch' && github.event.client_payload.environment == '本番環境' && vars.PRODUCTION_HOST || github.event_name == 'workflow_dispatch' && github.event.client_payload.environment == '検証環境' && vars.DEVELOPMENT_HOST }}
 
-      # デプロイ先環境の決定ロジック（デフォルト: 検証環境）
-      TARGET_ENVIRONMENT: ${{ github.event.client_payload.target && github.event.client_payload.target || inputs.target && inputs.target || '検証環境' }}
+      # TARGET_REPOSITORY: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.custom_repository && github.event.client_payload.custom_repository || github.event.client_payload.repository) || github.event_name == 'workflow_dispatch' && (inputs.custom_repository && inputs.custom_repository || inputs.repository) }}
 
-      # 同期モードの決定ロジック（デフォルト: full）
-      SYNC_MODE: ${{ github.event.client_payload.sync && github.event.client_payload.sync || inputs.sync && inputs.sync || 'full' }}
+      # # デプロイ先環境の決定ロジック（デフォルト: 検証環境）
+      # TARGET_ENVIRONMENT: ${{ github.event.client_payload.target && github.event.client_payload.target || inputs.target && inputs.target || '検証環境' }}
+
+      # # 同期モードの決定ロジック（デフォルト: full）
+      # SYNC_MODE: ${{ github.event.client_payload.sync && github.event.client_payload.sync || inputs.sync && inputs.sync || 'full' }}
 
     steps:
       # =============================
@@ -129,86 +104,89 @@ jobs:
         uses: actions/checkout@v4.2.2
         # 注: 必要に応じてfetch-depthやsubmodulesなどのオプションを追加可能
 
-      # =============================
-      # ステップ2A: 本番環境へのデプロイ（SFTP使用）
-      # - セキュリティ向上のためSFTPを使用
-      # - delta同期に対応（変更ファイルのみアップロード可能）
-      # =============================
-      - name: 本番環境へのSFTPデプロイ
-        if: ${{ env.TARGET_ENVIRONMENT == '本番環境' }}
-        uses: milanmk/actions-file-deployer@1.15
-        with:
-          remote-protocol: 'sftp'
-          remote-host: ${{ vars.PRODUCTION_HOST }}
-          remote-port: ${{ vars.PRODUCTION_PORT }}
-          remote-user: ${{ vars.PRODUCTION_USER_NAME }}
-          remote-password: ${{ secrets.PRODUCTION_PASSWORD }}
-          local-path: out/${{ env.TARGET_REPOSITORY }}  # ローカルの対象ディレクトリ
-          remote-path: ${{ env.TARGET_REPOSITORY }}/${{ vars.PRODUCTION_REMOTE_PATH }}/  # リモートの対象ディレクトリ
-          sync: ${{ env.SYNC_MODE }}  # 同期モード（full/delta）
-          debug: true  # デバッグログを有効化（トラブルシューティングのため）
-
-      # =============================
-      # ステップ2B: 本番環境デプロイ結果のサマリー表示
-      # - デプロイ結果をわかりやすく表示
-      # - GitHub Actionsの実行サマリーに表示される
-      # =============================
-      - name: 本番環境デプロイ結果サマリー
-        if: ${{ env.TARGET_ENVIRONMENT == '本番環境' }}
+        - name: ログ
         run: |
-          {
-            echo "# 🚀 デプロイ完了レポート"
-            echo "指定したブランドのファイルを本番サーバにアップロードしました。"
-            echo ""
-            echo "| ブランド | アクセスURL |"
-            echo "| ------ | ------------ |"
-            echo "| ${{ env.TARGET_REPOSITORY }} | https://www.${{ env.TARGET_REPOSITORY }} |"
-            echo ""
-            echo "## 📋 詳細情報"
-            echo "- **環境**: 本番環境"
-            echo "- **ブランド**: ${{ env.TARGET_REPOSITORY }}"
-            echo "- **同期モード**: ${{ env.SYNC_MODE }}"
-            echo "- **実行日時**: $(date "+%Y-%m-%d %H:%M:%S")"
-            echo "- **実行者**: ${{ github.actor }}"
-          } >> $GITHUB_STEP_SUMMARY
+          echo "env.HOST"
 
-      # =============================
-      # ステップ3A: 検証環境へのデプロイ（FTP使用）
-      # - 検証環境は常にfullアップロード（全ファイル再配置）
-      # - 異なるFTPライブラリを使用（検証環境専用）
-      # =============================
-      # - name: 検証環境へのFTPデプロイ
-      #   if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
-      #   uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      # # =============================
+      # # ステップ2A: デプロイ（SFTP使用）
+      # # - セキュリティ向上のためSFTPを使用
+      # # - delta同期に対応（変更ファイルのみアップロード可能）
+      # # =============================
+      # - name: SFTPデプロイ
+      #   if: ${{ env.TARGET_ENVIRONMENT == '本番環境' }}
+      #   env:
+      #     HOST: ${{ vars.PRODUCTION_HOST }}
+      #     PORT: ${{ vars.PRODUCTION_PORT }}
+      #     USER_NAME: ${{ vars.PRODUCTION_USER_NAME }}
+      #     PASSWORD: ${{ vars.PRODUCTION_PASSWORD }}
+      #     SSH_PRIVATE_KEY: ${{ vars.DEPLOY_SSH_KEY }}
+      #     LOCAL_PATH: ${{ vars.TARGET_REPOSITORY }}
+      #     REMOTE_PATH: ${{ env.TARGET_REPOSITORY }}/${{ vars.PRODUCTION_REMOTE_PATH }}/
+      #     SYNC_MODE: ${{ env.SYNC_MODE }}
+
+      #   # github.event.client_payload.repository
+      #   # github.event.client_payload.custom_repository
+      #   # github.event.client_payload.target
+      #   # github.event.client_payload.sync
+
+      #   uses: milanmk/actions-file-deployer@1.15
       #   with:
-      #     server: ${{ vars.DEVELOPMENT_HOST }}
-      #     username: ${{ vars.DEVELOPMENT_USER_NAME }}
-      #     password: ${{ secrets.DEVELOPMENT_PASSWORD }}
-      #     port: ${{ vars.DEVELOPMENT_PORT }}
-      #     local-dir: out/${{ env.TARGET_REPOSITORY }}/  # ローカルの対象ディレクトリ
-      #     server-dir: ${{ vars.DEVELOPMENT_REMOTE_PATH }}/${{ env.TARGET_REPOSITORY }}/  # リモートの対象ディレクトリ
-      #     # 注: このアクションはdeltaモードをサポートしていないため、常にfullアップロードになる
+      #     remote-protocol: 'sftp'
+      #     remote-host: ${{ env.HOST }}
+      #     remote-port: ${{ env.PORT }}
+      #     remote-user: ${{ env.USER_NAME }}
+      #     remote-password: ${{ env.PASSWORD }}
+      #     ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
+      #     local-path: out/${{ env.LOCAL_PATH }}  # ローカルの対象ディレクトリ
+      #     remote-path: ${{ env.REMOTE_PATH }}  # リモートの対象ディレクトリ
+      #     sync: ${{ env.SYNC_MODE }}  # 同期モード（full/delta）
+      #     debug: false  # デバッグログを有効化（トラブルシューティングのため）
 
-      # =============================
-      # ステップ3B: 検証環境デプロイ結果のサマリー表示
-      # - デプロイ結果をわかりやすく表示
-      # - GitHub Actionsの実行サマリーに表示される
-      # =============================
-      - name: 検証環境デプロイ結果サマリー
-        if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
-        run: |
-          {
-            echo "# 🚀 デプロイ完了レポート"
-            echo "指定したブランドのファイルを検証サーバにアップロードしました。"
-            echo ""
-            echo "| ブランド | アクセスURL |"
-            echo "| ------ | ------------ |"
-            echo "| ${{ env.TARGET_REPOSITORY }} | http://piapiapia.xsrv.jp/test/${{ env.TARGET_REPOSITORY }}/ |"
-            echo ""
-            echo "## 📋 詳細情報"
-            echo "- **環境**: 検証環境"
-            echo "- **ブランド**: ${{ env.TARGET_REPOSITORY }}"
-            echo "- **同期モード**: full（検証環境は常にfull）"
-            echo "- **実行日時**: $(date "+%Y-%m-%d %H:%M:%S")"
-            echo "- **実行者**: ${{ github.actor }}"
-          } >> $GITHUB_STEP_SUMMARY
+      # # =============================
+      # # ステップ2B: 本番環境デプロイ結果のサマリー表示
+      # # - デプロイ結果をわかりやすく表示
+      # # - GitHub Actionsの実行サマリーに表示される
+      # # =============================
+      # - name: 本番環境デプロイ結果サマリー
+      #   if: ${{ env.TARGET_ENVIRONMENT == '本番環境' }}
+      #   run: |
+      #     {
+      #       echo "# 🚀 デプロイ完了レポート"
+      #       echo "指定したブランドのファイルを本番サーバにアップロードしました。"
+      #       echo ""
+      #       echo "| ブランド | アクセスURL |"
+      #       echo "| ------ | ------------ |"
+      #       echo "| ${{ env.TARGET_REPOSITORY }} | https://www.${{ env.TARGET_REPOSITORY }} |"
+      #       echo ""
+      #       echo "## 📋 詳細情報"
+      #       echo "- **環境**: 本番環境"
+      #       echo "- **ブランド**: ${{ env.TARGET_REPOSITORY }}"
+      #       echo "- **同期モード**: ${{ env.SYNC_MODE }}"
+      #       echo "- **実行日時**: $(date "+%Y-%m-%d %H:%M:%S")"
+      #       echo "- **実行者**: ${{ github.actor }}"
+      #     } >> $GITHUB_STEP_SUMMARY
+
+      # # =============================
+      # # ステップ3B: 検証環境デプロイ結果のサマリー表示
+      # # - デプロイ結果をわかりやすく表示
+      # # - GitHub Actionsの実行サマリーに表示される
+      # # =============================
+      # - name: 検証環境デプロイ結果サマリー
+      #   if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
+      #   run: |
+      #     {
+      #       echo "# 🚀 デプロイ完了レポート"
+      #       echo "指定したブランドのファイルを検証サーバにアップロードしました。"
+      #       echo ""
+      #       echo "| ブランド | アクセスURL |"
+      #       echo "| ------ | ------------ |"
+      #       echo "| ${{ env.TARGET_REPOSITORY }} | http://piapiapia.xsrv.jp/test/${{ env.TARGET_REPOSITORY }}/ |"
+      #       echo ""
+      #       echo "## 📋 詳細情報"
+      #       echo "- **環境**: 検証環境"
+      #       echo "- **ブランド**: ${{ env.TARGET_REPOSITORY }}"
+      #       echo "- **同期モード**: full（検証環境は常にfull）"
+      #       echo "- **実行日時**: $(date "+%Y-%m-%d %H:%M:%S")"
+      #       echo "- **実行者**: ${{ github.actor }}"
+      #     } >> $GITHUB_STEP_SUMMARY
