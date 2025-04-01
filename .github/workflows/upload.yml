@@ -110,7 +110,7 @@ jobs:
       # REMOTE_PATH の決定
       REMOTE_PATH: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && format('{0}/{1}', inputs.repository, vars.PRODUCTION_REMOTE_PATH) ||
         github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && format('{0}/{1}', vars.DEVELOPMENT_REMOTE_PATH, inputs.repository) ||
-        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && format('{0}/{1}', inputs.repository, vars.PRODUCTION_REMOTE_PATH) ||
+        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && format('/{0}/{1}', inputs.repository, vars.PRODUCTION_REMOTE_PATH) ||
         github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && format('{0}/{1}', vars.DEVELOPMENT_REMOTE_PATH, inputs.repository) }}
 
       # SYNC_MODE の決定
@@ -120,7 +120,7 @@ jobs:
       TARGET_REPOSITORY: ${{ github.event_name == 'repository_dispatch' && (github.event.client_payload.repository && github.event.client_payload.repository || github.event.client_payload.repository) || github.event_name == 'workflow_dispatch' && (inputs.repository && inputs.repository || inputs.repository) }}
 
       # デプロイ先環境の決定ロジック（デフォルト: 検証環境）
-      TARGET_ENVIRONMENT: ${{ github.event.client_payload.target && github.event.client_payload.target || inputs.target && inputs.target || '検証環境' }}
+      TARGET_ENVIRONMENT: ${{ github.event.client_payload.environment && github.event.client_payload.environment || inputs.environment && inputs.environment || '検証環境' }}
 
 
     steps:
@@ -150,7 +150,7 @@ jobs:
           local-path: ${{ env.LOCAL_PATH }}
           remote-path: ${{ env.REMOTE_PATH }}
           sync: ${{ env.SYNC_MODE }}
-          debug: false
+          debug: true
 
 
       # =============================
