@@ -60,7 +60,7 @@ on:
           - "本番環境"
 
       sync_mode:
-        description: "同期モード（※検証環境はfullアップロードのみ）"
+        description: "同期モード"
         type: choice
         required: true
         options:
@@ -140,7 +140,7 @@ jobs:
       # =============================
       - name: SFTPデプロイ（本番環境）
         if: ${{ env.TARGET_ENVIRONMENT == '本番環境' }}
-        uses: milanmk/actions-file-deployer@1.15
+        uses: milanmk/actions-file-deployer@1.16
         with:
           remote-protocol: 'sftp'
           remote-host: ${{ env.HOST }}
@@ -149,8 +149,8 @@ jobs:
           remote-password: ${{ secrets.PRODUCTION_PASSWORD }}
           local-path: ${{ env.LOCAL_PATH }}
           remote-path: ${{ env.REMOTE_PATH }}
-          sync: "${{ env.SYNC_MODE || 'full' }}"
-          debug: true
+          sync: ${{ env.SYNC_MODE }}
+          debug: false
 
 
       # =============================
