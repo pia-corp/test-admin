@@ -159,6 +159,7 @@ jobs:
       # - delta同期に対応（変更ファイルのみアップロード可能）
       # =============================
       - name: Use SSH private key from GitHub Secrets
+        if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
         run: |
           if [ ! -d "~/.ssh" ]; then
             mkdir -p ~/.ssh  # SSHディレクトリを作成
@@ -175,6 +176,7 @@ jobs:
       # 2. ファイルをデプロイ
       - name: Deploy files to the remote server (検証環境)
         uses: milanmk/actions-file-deployer@1.16
+        if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
         with:
           remote-protocol: 'sftp'
           remote-host: ${{ env.HOST }}
