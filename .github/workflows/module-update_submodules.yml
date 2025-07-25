@@ -101,7 +101,6 @@ jobs:
           # ステータスコードに基づいて処理
           if [ "$status_code" -eq 200 ]; then
             echo "::notice::リポジトリが見つかりました (Repository found): $repo_url"
-            echo "repository_exists=true" >> $GITHUB_ENV
 
             # サブモジュールの追加と初期化
             git submodule add "$repo_url" "${{ env.TARGET_REPOSITORY }}"
@@ -119,7 +118,7 @@ jobs:
 
       # 既存サブモジュールの更新
       - name: サブモジュールを更新
-        if: env.repository_exists == 'true'
+        if: env.submodule_exists == 'true'
         run: |
           # サブモジュールの更新
           echo "既存のサブモジュールを更新します (Updating existing submodule): ${TARGET_REPOSITORY}"
