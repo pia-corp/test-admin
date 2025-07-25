@@ -16,3 +16,6 @@
 [submodule "molak.jp"]
 	path = molak.jp
 	url = https://github.com/pia-corp/molak.jp
+[submodule "lilmoon.jp"]
+	path = lilmoon.jp
+	url = https://github.com/pia-corp/lilmoon.jp
