@@ -604,6 +604,7 @@ NEWS
 ------------------------------------------------------------------------*/
 
 section.news {
+  padding-bottom: 80px;
 }
 
 section.news .ttl_times {
@@ -672,7 +673,13 @@ LENS
   width: 640px;
   max-width: 100%;
 }
+.w-870 {
+  margin: 0 auto;
+  width: 870px;
+  max-width: 100%;
+}
 #section-lens {
+  padding-top: 80px;
   /*background: url(../images/top/lens_bg_pc.png);*/
   background-color: #FEF8FC;
   background-size: contain;
@@ -693,25 +700,26 @@ COLORMAP
 ------------------------------------------------------------------------*/
 
 #section-colormap {
-  background-image: url(../images/top/color-map_bg_pc.png);
+  /*background-image: url(../images/top/color-map_bg_pc.png);
   background-repeat: no-repeat;
   background-size: cover;
-  background-position: center center;
-  padding: 80px 20px;
+  background-position: center center;*/
+  padding: 0 20px 80px;
 }
 
 .section-colormap__inner {
-  max-width: 790px;
+  margin: 0 auto;
+  width: 870px;
+  max-width: 100%;
 }
 
 @media only screen and (max-width: 750px) {
   #section-colormap {
     margin-bottom: 60px;
-    padding: 80px 0;
+    padding: 0 0 20px;
   }
   .section-colormap__inner {
     padding: 0;
-    max-width: initial;
   }
 }
 /*-------------------------------------------------------------------------
@@ -720,13 +728,17 @@ LOWER_MV
 body.product01 header,
 body.product02 header,
 body.product03 header,
-body.product04 header {
+body.product04 header,
+body.product05 header,
+body.product06 header {
   background: transparent;
 }
 body.product01 header.fixed,
 body.product02 header.fixed,
 body.product03 header.fixed,
-body.product04 header.fixed {
+body.product04 header.fixed,
+body.product05 header.fixed,
+body.product06 header.fixed {
   background: #F8CBE8;
 }
 body.product01 #section-fv {
@@ -889,6 +901,12 @@ COLOR LINEUP
 .p-card_list li.is-product04 {
   background-image: url('../images/top/lineup_bg_product04.png');
 }
+.p-card_list li.is-product05 {
+  background-image: url('../images/top/lineup_bg_product05.png');
+}
+.p-card_list li.is-product06 {
+  background-image: url('../images/top/lineup_bg_product06.png');
+}
 .p-card_list li.is-product01::before {
   background-image: url('../images/top/lineup_ribbon_product01.png');
 }
@@ -901,17 +919,29 @@ COLOR LINEUP
 .p-card_list li.is-product04::before {
   background-image: url('../images/top/lineup_ribbon_product04.png');
 }
+.p-card_list li.is-product05::before,
+.p-card_list li.is-product06::before {
+  width: 26.56%;
+  height: 44%;
+  background-image: url('../images/top/lineup_fixing_lens.png');
+}
 .p-card_list li.is-product01::after {
-  background-image: url('../images/top/lineup_product01.png');
+  background-image: url('../images/top/lineup_product01.webp');
 }
 .p-card_list li.is-product02::after {
-  background-image: url('../images/top/lineup_product02.png');
+  background-image: url('../images/top/lineup_product02.webp');
 }
 .p-card_list li.is-product03::after {
-  background-image: url('../images/top/lineup_product03.png');
+  background-image: url('../images/top/lineup_product03.webp');
 }
 .p-card_list li.is-product04::after {
-  background-image: url('../images/top/lineup_product04.png');
+  background-image: url('../images/top/lineup_product04.webp');
+}
+.p-card_list li.is-product05::after {
+  background-image: url('../images/top/lineup_product05.webp');
+}
+.p-card_list li.is-product06::after {
+  background-image: url('../images/top/lineup_product06.webp');
 }
 .p-card_ttl {
   width: 52%;
@@ -920,8 +950,14 @@ COLOR LINEUP
 }
 .p-card-lens {
   position: relative;
-  width: 44%;
+  /*width: 44%;*/
+  width: 33%;
   margin: 15px auto 0;
+}
+
+.is-product05 .p-card-lens,
+.is-product06 .p-card-lens {
+  margin-top: 50px;
 }
 .p-card_icon-new {
   position: absolute;
@@ -999,6 +1035,14 @@ COLOR LINEUP
   border-color: #5AB4EB;
   color: #5AB4EB;
 }
+.p-card_list li.is-product05 .p-card_btn {
+  border-color: #f55573;
+  color: #f55573;
+}
+.p-card_list li.is-product06 .p-card_btn {
+  border-color: #2882aa;
+  color: #2882aa;
+}
 
 .p-card_list li:hover .p-card_btn {
   color: #fff;
@@ -1014,6 +1058,12 @@ COLOR LINEUP
 }
 .p-card_list li.is-product04:hover .p-card_btn {
   background-color: #5AB4EB;
+}
+.p-card_list li.is-product05:hover .p-card_btn {
+  background-color: #f55573;
+}
+.p-card_list li.is-product06:hover .p-card_btn {
+  background-color: #2882aa;
 }
 .p-card_list li a {
   position: absolute;
@@ -1064,6 +1114,15 @@ COLOR LINEUP
     padding: 0;
     font-size: 10px;
   }
+  .is-product05 .p-card-lens,
+  .is-product06 .p-card-lens {
+    margin-top: 15px;
+  }
+  .p-card_list li.is-product05::before,
+  .p-card_list li.is-product06::before {
+    width: 18%;
+    height: 35%;
+  }
 }
 /*-------------------------------------------------------------------------
 POPUP
@@ -1113,8 +1172,9 @@ body.popup .blur_bg {
   visibility: hidden;
   opacity: 0;
   transition: 0.3s;
-  max-width: 1200px;
-  width: 100%;
+  /*max-width: 1200px;*/
+  max-width: 1400px;
+  width: 90%;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
@@ -1131,11 +1191,31 @@ body.popup .blur_bg {
   opacity: 1;
 }
 
+.popup_lineup_list.popup .fle_btw {
+  justify-content: left;
+}
 .popup_lineup_list ul li {
-  width: 270px;
+  /*width: 270px;*/
+  width: 220px;
 }
 
+.popup_lineup_list ul li.new {
+  position: relative;
+}
 
+.popup_lineup_list ul li.new a::before {
+  content:'';
+  position: absolute;
+  left: 0;
+  top: -2rem;
+  width: 120px;
+  height: 68px;
+  background: url(../images/top/lineup_tb_new.png) no-repeat left top / 100%;
+  z-index: 1;
+}
+.popup_lineup_list ul li:nth-of-type(2).new a::before {
+  background-image: url(../images/top/lineup_tg_new.png);
+}
 .popup_lineup_list ul li a {
   transition: 0.3s;
 }
@@ -1242,7 +1322,8 @@ PRODUCER
 .producer {
   padding: 150px 0;
   position: relative;
-  background: #EFE6F4;
+  background: url(../images/top/profile_bg.png);
+  /*background: #EFE6F4;*/
 }
 @media only screen and (max-width: 860px) {
   .producer .inner {
@@ -1356,6 +1437,7 @@ CHUKI SEC
   padding: 27px 27px 20px;
   margin: 32px auto;
   background: #f8f8f8;
+  display: block;
 }
 
 .chuki_list dt {
@@ -1368,6 +1450,7 @@ CHUKI SEC
 }
 
 .chuki_list dd {
+  display: block;
   text-align: left;
   padding-left: 13px;
   position: relative;
@@ -2328,15 +2411,21 @@ PRODUCT
 }
 
 #section-colorlineup ul li:nth-of-type(1) a {
-  background: #F56EB9;
+  background: #f55573;
 }
 #section-colorlineup ul li:nth-of-type(2) a {
-  background: #FA8764;
+  background: #2882aa;
 }
 #section-colorlineup ul li:nth-of-type(3) a {
-  background: #A06EE6;
+  background: #F56EB9;
 }
 #section-colorlineup ul li:nth-of-type(4) a {
+  background: #FA8764;
+}
+#section-colorlineup ul li:nth-of-type(5) a {
+  background: #A06EE6;
+}
+#section-colorlineup ul li:nth-of-type(6) a {
   background: #5AB4EB;
 }
 
@@ -2344,18 +2433,26 @@ PRODUCT
   background: #FFFFFF;
 }
 #section-colorlineup ul li:nth-of-type(1) a:hover {
+  color: #f55573;
+  border-color: #f55573;
+}
+#section-colorlineup ul li:nth-of-type(2) a:hover {
+  color: #2882aa;
+  border-color: #2882aa;
+}
+#section-colorlineup ul li:nth-of-type(3) a:hover {
   color: #F56EB9;
   border-color: #F56EB9;
 }
-#section-colorlineup ul li:nth-of-type(2) a:hover {
+#section-colorlineup ul li:nth-of-type(4) a:hover {
   color: #FA8764;
   border-color: #FA8764;
 }
-#section-colorlineup ul li:nth-of-type(3) a:hover {
+#section-colorlineup ul li:nth-of-type(5) a:hover {
   color: #A06EE6;
   border-color: #A06EE6;
 }
-#section-colorlineup ul li:nth-of-type(4) a:hover {
+#section-colorlineup ul li:nth-of-type(6) a:hover {
   color: #5AB4EB;
   border-color: #5AB4EB;
 }
@@ -2645,6 +2742,12 @@ LOWER MV
   }
   .detail.product04 .main_visual .cnt_in {
     background: #A4BCCD;
+  }
+  .detail.product05 .main_visual .cnt_in {
+    background: #ebb4b0;
+  }
+  .detail.product06 .main_visual .cnt_in {
+    background: #a0cae5;
   }
   .detail .main_visual .cnt_in .cnt_box,
   .detail.product04 .main_visual .cnt_in .cnt_box {
@@ -3314,6 +3417,11 @@ COLOR LINEUP
 
   .popup_lineup_list ul li {
     width: 48%;
+  }
+  .popup_lineup_list ul li.new a::before {
+    top: -1rem;
+    width: 90px;
+    height: 54px;
   }
   .popup_lineup_title {
     margin: 0 auto 13px;
