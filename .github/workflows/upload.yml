@@ -108,17 +108,10 @@ jobs:
         github.event_name == 'workflow_dispatch' && inputs.repository }}
 
       # REMOTE_PATH の決定
-      REMOTE_PATH: ${{
-        github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && format('{0}/{1}', inputs.repository, vars.PRODUCTION_REMOTE_PATH) ||
-        github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && format('{0}/{1}', vars.DEVELOPMENT_REMOTE_PATH, inputs.repository) ||
-        github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && format('/{0}/{1}', inputs.repository, vars.PRODUCTION_REMOTE_PATH) ||
-        github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && format('{0}/{1}', vars.DEVELOPMENT_REMOTE_PATH, inputs.repository) }}
-
-        github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && format('{0}/{1}', github.event.client_payload.repository, vars.PRODUCTION_REMOTE_PATH) ||
+      REMOTE_PATH: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '本番環境' && format('/{0}/{1}', github.event.client_payload.repository, vars.PRODUCTION_REMOTE_PATH) ||
         github.event_name == 'repository_dispatch' && github.event.client_payload.environment == '検証環境' && format('{0}/{1}', vars.DEVELOPMENT_REMOTE_PATH, github.event.client_payload.repository) ||
         github.event_name == 'workflow_dispatch' && inputs.environment == '本番環境' && format('/{0}/{1}', inputs.repository, vars.PRODUCTION_REMOTE_PATH) ||
         github.event_name == 'workflow_dispatch' && inputs.environment == '検証環境' && format('{0}/{1}', vars.DEVELOPMENT_REMOTE_PATH, inputs.repository) }}
-
 
       # SYNC_MODE の決定
       SYNC_MODE: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.sync_mode ||
@@ -136,7 +129,7 @@ jobs:
       # - アップロード対象のファイルにアクセスするために必要
       # =============================
       - name: リポジトリをチェックアウト
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -145,7 +138,7 @@ jobs:
       # - セキュリティ向上のためSFTPを使用
       # - delta同期に対応（変更ファイルのみアップロード可能）
       # =============================
-      - name: SFTPデプロイ（本番環境）
+      - name: Deploy via SFTP
         if: ${{ env.TARGET_ENVIRONMENT == '本番環境' }}
         uses: milanmk/actions-file-deployer@1.16
         with:
@@ -168,17 +161,12 @@ jobs:
       - name: Use SSH private key from GitHub Secrets
         if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
         run: |
-          if [ ! -d "~/.ssh" ]; then
-            mkdir -p ~/.ssh  # SSHディレクトリを作成
-          fi
-          # GitHub Secretsから暗号化されたプライベートキーを取り出し、ファイルに保存
-          echo "${{ secrets.DEVELOPMENT_SSH_KEY }}" > ~/.ssh/id_rsa.enc
-          # 復号化のためのパスフレーズをGitHub Secretsから取得（もしあれば）
-          echo "${{ secrets.SSH_PASSPHRASE }}" | openssl rsa -in ~/.ssh/id_rsa.enc -out ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa  # パーミッションを設定
-          # configファイルがない場合に作成（必要な場合）
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEVELOPMENT_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           echo -e "Host ${{ env.HOST }}\n  User ${{ env.USER_NAME }}\n  Port ${{ env.PORT }}\n  IdentityFile ~/.ssh/id_rsa\n" > ~/.ssh/config
-          ssh -v -p ${{ env.PORT }} -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ env.USER_NAME }}@${{ env.HOST }} "mkdir -p ${{ env.REMOTE_PATH }}"
+          ssh-keyscan -p ${{ env.PORT }} ${{ env.HOST }} >> ~/.ssh/known_hosts
+          ssh -p ${{ env.PORT }} -i ~/.ssh/id_rsa ${{ env.USER_NAME }}@${{ env.HOST }} "mkdir -p ${{ env.REMOTE_PATH }}"
 
       # 2. ファイルをデプロイ
       - name: Deploy files to the remote server (検証環境)
@@ -219,26 +207,14 @@ jobs:
             echo "- **実行者**: ${{ github.actor }}"
           } >> $GITHUB_STEP_SUMMARY
 
-      # =============================
-      # ステップ3B: 検証環境デプロイ結果のサマリー表示
-      # - デプロイ結果をわかりやすく表示
-      # - GitHub Actionsの実行サマリーに表示される
-      # =============================
-      - name: 検証環境デプロイ結果サマリー
-        if: ${{ env.TARGET_ENVIRONMENT == '検証環境' }}
-        run: |
-          {
-            echo "# 🚀 デプロイ完了レポート"
-            echo "指定したブランドのファイルを検証サーバにアップロードしました。"
-            echo ""
-            echo "| ブランド | アクセスURL |"
-            echo "| ------ | ------------ |"
-            echo "| ${{ env.TARGET_REPOSITORY }} | http://piapiapia.xsrv.jp/dev/${{ env.TARGET_REPOSITORY }}/ |"
-            echo ""
-            echo "## 📋 詳細情報"
-            echo "- **環境**: 検証環境"
-            echo "- **ブランド**: ${{ env.TARGET_REPOSITORY }}"
-            echo "- **同期モード**: ${{ env.SYNC_MODE }}"
-            echo "- **実行日時**: $(date "+%Y-%m-%d %H:%M:%S")"
-            echo "- **実行者**: ${{ github.actor }}"
-          } >> $GITHUB_STEP_SUMMARY
+  # =============================
+  # アップロード完了後のcronジョブ無効化
+  # =============================
+  disable_cron_job_after_upload:
+    needs: [Upload]
+    # repository_dispatchイベントでのみ実行（手動実行時は除外）
+    if: ${{ github.event_name == 'repository_dispatch' }}
+    uses: ./.github/workflows/reservation_cancel.yml
+    with:
+      repository: ${{ github.event.client_payload.repository }}
+    secrets: inherit
