@@ -29,6 +29,13 @@ on:
         required: true
         description: "任意のブランドリポジトリ（リストにない場合）"
         default: ""
+  
+  workflow_call:
+    inputs:
+      repository:
+        required: true
+        description: "任意のブランドリポジトリ（リストにない場合）"
+        type: string
 
 jobs:
   cancel_reservation:

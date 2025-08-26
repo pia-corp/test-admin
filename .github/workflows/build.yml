@@ -96,7 +96,7 @@ jobs:
 
     steps:
       - name: リポジトリをチェックアウト
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v5
 
       - name: リリース用の新しいブランチを作成
         run: |
@@ -149,7 +149,7 @@ jobs:
 
     steps:
       - name: リリースブランチをチェックアウト
-        uses: actions/checkout@v4.2.1
+        uses: actions/checkout@v5
         with:
           ref: release/github_${{ github.run_id }}
 
@@ -213,7 +213,7 @@ jobs:
 
     steps:
       - name: リポジトリをチェックアウト
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: ブランチを削除
         run: |
@@ -250,7 +250,7 @@ jobs:
 
     steps:
       - name: リリースブランチをチェックアウト
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ env.RELEASE_BRANCH_NAME }}
           fetch-depth: 0
@@ -298,7 +298,7 @@ jobs:
 
     steps:
       - name: リポジトリをチェックアウト
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 前回のリリースタグを取得する
         id: fetch_previous_tag
