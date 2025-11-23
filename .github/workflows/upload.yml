@@ -129,7 +129,7 @@ jobs:
       # - アップロード対象のファイルにアクセスするために必要
       # =============================
       - name: リポジトリをチェックアウト
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
